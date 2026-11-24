@@ -1,0 +1,2200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Focal Mechanism &amp; Stereographic Projection Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-obsidian: #060913;
+      --bg-card: rgba(13, 19, 34, 0.90);
+      --border-subtle: rgba(148, 163, 184, 0.16);
+    }
+    body {
+      font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-obsidian);
+      background-image:
+        radial-gradient(circle at 16% 0%, rgba(6, 182, 212, 0.14), transparent 44%),
+        radial-gradient(circle at 86% 0%, rgba(168, 85, 247, 0.11), transparent 42%);
+      color: #e2e8f0;
+      overflow-x: hidden;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .obs-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 20px 44px -16px rgba(0, 0, 0, 0.78);
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 5px;
+      border-radius: 999px;
+      background: #1e293b;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #38bdf8;
+      cursor: pointer;
+      border: 2px solid #060913;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.85);
+      transition: transform 0.12s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.22);
+    }
+    input[type="range"].emerald-slider::-webkit-slider-thumb {
+      background: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.85);
+    }
+    input[type="range"].amber-slider::-webkit-slider-thumb {
+      background: #f59e0b;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.85);
+    }
+    input[type="range"].rose-slider::-webkit-slider-thumb {
+      background: #f43f5e;
+      box-shadow: 0 0 8px rgba(244, 63, 94, 0.85);
+    }
+    canvas {
+      display: block;
+      outline: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-cyan-500/30 selection:text-cyan-200">
+
+  <!-- ======================================================================= -->
+  <!-- TOP OBSERVATORY HEADER, PRESET BAR & BILINGUAL SWITCHER                 -->
+  <!-- ======================================================================= -->
+  <header class="border-b border-slate-800/85 bg-[#060913]/95 sticky top-0 z-30 backdrop-blur-md">
+    <div class="max-w-[1860px] mx-auto px-3 sm:px-5 py-2.5 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-2.5">
+      <!-- Brand & Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#0e7490] via-[#06b6d4] to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-cyan-300/30 shrink-0 font-extrabold text-white text-xs tracking-tighter">
+          3D·FM
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 id="uiTitle" class="text-sm sm:text-base font-bold text-white tracking-tight">
+              3D Focal Mechanism &amp; Stereographic Projection Lab
+            </h1>
+            <span id="uiBadgeTheory" class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-slate-800/95 text-cyan-300 border border-slate-700/80">
+              Aki &amp; Richards (1980) · GMT pscoupe
+            </span>
+          </div>
+          <p id="uiSubtitle" class="text-[11px] text-slate-400">
+            Synchronized 3-Column Observatory: 3D Fault Kinematics · Lower-Hemisphere Map Cutaway · Back-Hemisphere Section Cutaway
+          </p>
+        </div>
+      </div>
+
+      <!-- 4 Classic Faulting Presets + Slow Auto-Sweep + Reset Views + EN/中文 Toggle -->
+      <div class="flex flex-wrap items-center gap-1.5">
+        <span id="uiRegimesLabel" class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mr-1 hidden 2xl:inline">Regimes:</span>
+        <button data-preset="strike_slip" id="btnPresetSS" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition">
+          Strike-Slip
+        </button>
+        <button data-preset="normal" id="btnPresetNorm" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition">
+          Normal Fault
+        </button>
+        <button data-preset="thrust" id="btnPresetThrust" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition">
+          Thrust / Reverse
+        </button>
+        <button data-preset="oblique" id="btnPresetOblique" class="preset-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/60 shadow-sm shadow-amber-500/10 transition">
+          Oblique-Slip
+        </button>
+
+        <div class="h-5 w-px bg-slate-800 mx-0.5"></div>
+
+        <button id="btnAutoSweep" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-500/20 border border-emerald-400/40 transition flex items-center gap-1.5">
+          <span id="autoSweepIcon">▶</span>
+          <span id="autoSweepText">Auto-Sweep (Slow)</span>
+        </button>
+
+        <button id="btnResetAllViews" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-300 border border-slate-700/80 transition">
+          Reset Views
+        </button>
+
+        <div class="h-5 w-px bg-slate-800 mx-0.5"></div>
+
+        <!-- Bilingual Language Switcher (EN Default / 中文 Optional) -->
+        <div class="inline-flex rounded-lg bg-slate-900 p-0.5 border border-slate-700/90 shadow-inner" role="group" aria-label="Language Switcher">
+          <button id="btnLangEN" class="px-2.5 py-1 rounded-md text-xs font-bold bg-sky-600 text-white shadow transition">
+            EN
+          </button>
+          <button id="btnLangZH" class="px-2.5 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-white transition">
+            中文
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-[1860px] w-full mx-auto px-3 sm:px-5 py-3 space-y-3">
+
+    <!-- ===================================================================== -->
+    <!-- CONTROL & MULTI-FORMAT PARSER BAR                                     -->
+    <!-- ===================================================================== -->
+    <section class="obs-card rounded-2xl p-3.5 space-y-3">
+      <!-- Top Row: Multi-Format Seismological Query Input + Live Telemetry -->
+      <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 flex-1">
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span id="uiQueryLabel" class="text-xs font-bold text-slate-200 uppercase tracking-wider">Mechanism Query:</span>
+          </div>
+
+          <div class="flex items-center gap-1.5 flex-1 max-w-2xl">
+            <input
+              type="text"
+              id="inputQuery"
+              value="135 / 60 / 40"
+              placeholder="Strike/Dip/Rake, Mrr Mtt Mpp Mrt Mrp Mtp, NP1:..., or P: tr/pl T: tr/pl"
+              class="w-full bg-slate-950/95 text-xs text-slate-100 font-mono px-3 py-1.5 rounded-xl border border-slate-700/90 focus:border-cyan-400 outline-none shadow-inner"
+            />
+            <button id="btnParseQuery" class="px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-md shadow-sky-500/20 transition whitespace-nowrap">
+              Parse &amp; Plot
+            </button>
+            <button id="btnSwapNodal" class="px-2.5 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/35 text-xs font-semibold transition whitespace-nowrap">
+              ⇄ Swap NP1 / NP2
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Computed Focal Mechanism Summary Pill Strip -->
+        <div class="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+          <span id="badgeRegime" class="px-2.5 py-1 rounded-lg bg-sky-500/15 text-sky-300 border border-sky-500/30 font-sans font-bold">
+            Oblique-Slip
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-slate-900/95 border border-slate-800 text-emerald-400">
+            NP1: <strong id="readNP1">135° / 60° / 40°</strong>
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-slate-900/95 border border-slate-800 text-purple-300">
+            NP2: <strong id="readNP2">22° / 56° / 164°</strong>
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-slate-900/95 border border-slate-800 text-rose-400">
+            P: <strong id="readP">258° / 2°</strong>
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-slate-900/95 border border-slate-800 text-cyan-400">
+            T: <strong id="readT">350° / 48°</strong>
+          </span>
+        </div>
+      </div>
+
+      <!-- Sample Format Chips & Parser Feedback -->
+      <div class="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span id="uiFormatsLabel" class="text-slate-400 font-medium">Supported formats (click to test):</span>
+          <button data-sample="210 / 32 / 90" class="sample-chip px-2 py-0.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 font-mono border border-slate-700/70 transition">
+            210 / 32 / 90
+          </button>
+          <button data-sample="Strike=135 Dip=60 Rake=40" class="sample-chip px-2 py-0.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 font-mono border border-slate-700/70 transition">
+            Strike=135 Dip=60 Rake=40
+          </button>
+          <button data-sample="NP1: strike=180, dip=55, rake=-90" class="sample-chip px-2 py-0.5 rounded-md bg-slate-900 hover:bg-slate-800 text-slate-300 font-mono border border-slate-700/70 transition">
+            NP1: strike=180, dip=55, rake=-90
+          </button>
+          <button data-sample="1.52, -0.85, -0.67, 0.42, -0.31, 0.25" class="sample-chip px-2 py-0.5 rounded-md bg-slate-900 hover:bg-slate-800 text-sky-300 font-mono border border-sky-500/30 transition">
+            GCMT Tensor (Mrr..Mtp)
+          </button>
+          <button data-sample="P: 135/05, T: 225/05" class="sample-chip px-2 py-0.5 rounded-md bg-slate-900 hover:bg-slate-800 text-rose-300 font-mono border border-rose-500/30 transition">
+            P: 135/05, T: 225/05
+          </button>
+        </div>
+        <div id="parseStatus" class="font-mono text-[11px] text-emerald-400">
+          ✓ Format: Strike / Dip / Rake
+        </div>
+      </div>
+
+      <!-- Fine-Tuning Sliders Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-1">
+        <!-- Strike -->
+        <div class="bg-slate-950/70 px-3 py-2 rounded-xl border border-slate-800/80">
+          <div class="flex justify-between text-xs mb-1">
+            <span id="lblSliderStrike" class="font-semibold text-slate-300">Strike (φ)</span>
+            <span id="valStrike" class="font-mono font-bold text-emerald-400">135°</span>
+          </div>
+          <input type="range" id="sliderStrike" min="0" max="360" step="1" value="135" class="emerald-slider w-full">
+        </div>
+
+        <!-- Dip -->
+        <div class="bg-slate-950/70 px-3 py-2 rounded-xl border border-slate-800/80">
+          <div class="flex justify-between text-xs mb-1">
+            <span id="lblSliderDip" class="font-semibold text-slate-300">Dip (δ)</span>
+            <span id="valDip" class="font-mono font-bold text-emerald-400">60°</span>
+          </div>
+          <input type="range" id="sliderDip" min="0" max="90" step="1" value="60" class="emerald-slider w-full">
+        </div>
+
+        <!-- Rake -->
+        <div class="bg-slate-950/70 px-3 py-2 rounded-xl border border-slate-800/80">
+          <div class="flex justify-between text-xs mb-1">
+            <span id="lblSliderRake" class="font-semibold text-slate-300">Rake (λ)</span>
+            <span id="valRake" class="font-mono font-bold text-sky-400">40°</span>
+          </div>
+          <input type="range" id="sliderRake" min="-180" max="180" step="1" value="40" class="w-full">
+        </div>
+
+        <!-- Section A-A' Azimuth -->
+        <div class="bg-amber-950/20 px-3 py-2 rounded-xl border border-amber-500/25">
+          <div class="flex justify-between items-center text-xs mb-1">
+            <span id="lblSliderProfile" class="font-semibold text-amber-200">Section A–A' Azimuth</span>
+            <div class="flex items-center gap-1.5">
+              <button id="btnAlignParallel" class="px-1.5 py-0.5 rounded bg-amber-500/15 hover:bg-amber-500/30 text-[10px] font-bold text-amber-200 border border-amber-500/30 transition">
+                ∥ Strike
+              </button>
+              <button id="btnAlignPerp" class="px-1.5 py-0.5 rounded bg-amber-500/25 hover:bg-amber-500/40 text-[10px] font-bold text-amber-300 border border-amber-500/45 transition">
+                ⊥ Strike
+              </button>
+              <span id="valProfileAz" class="font-mono font-bold text-amber-400">45°</span>
+            </div>
+          </div>
+          <input type="range" id="sliderProfileAz" min="0" max="360" step="1" value="45" class="amber-slider w-full">
+        </div>
+
+        <!-- Stress Magnitude -->
+        <div class="bg-rose-950/20 px-3 py-2 rounded-xl border border-rose-500/25">
+          <div class="flex justify-between text-xs mb-1">
+            <span id="lblSliderStress" class="font-semibold text-rose-200">Stress Magnitude</span>
+            <span id="valStress" class="font-mono font-bold text-rose-400">1.20×</span>
+          </div>
+          <input type="range" id="sliderStress" min="0.5" max="2.0" step="0.05" value="1.20" class="rose-slider w-full">
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MAIN STAGE: 1-ROW × 3-COLUMN COMPARATIVE VIEWPORTS                    -->
+    <!-- ===================================================================== -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-3.5 items-stretch">
+
+      <!-- =================================================================== -->
+      <!-- COLUMN 01: 3D Fault Kinematics & Nodal Planes                       -->
+      <!-- =================================================================== -->
+      <div class="obs-card rounded-2xl overflow-hidden flex flex-col">
+        <div class="px-3.5 py-2.5 border-b border-slate-800/90 bg-slate-900/75 flex items-center justify-between gap-2">
+          <div>
+            <h2 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+              <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold font-mono">01</span>
+              <span id="col1Title">3D Fault Kinematics &amp; Nodal Planes</span>
+            </h2>
+            <p id="col1Sub" class="text-[10px] text-slate-400 mt-0.5">Full focal sphere · Hanging-wall sawtooth slip-and-reset · NP1 &amp; NP2</p>
+          </div>
+          <div class="flex items-center gap-1.5 text-[10px]">
+            <label class="inline-flex items-center gap-1 cursor-pointer bg-slate-800/90 px-2 py-1 rounded-md border border-slate-700/80">
+              <input type="checkbox" id="chkSlipMotion" checked class="rounded text-amber-500 bg-slate-900 border-slate-600">
+              <span id="lblSlipReset" class="text-amber-200 font-medium">Slip → Reset</span>
+            </label>
+          </div>
+        </div>
+
+        <div id="col1Container" class="relative w-full h-[460px] xl:h-[520px]">
+          <div class="absolute top-2.5 left-2.5 pointer-events-none bg-slate-950/85 backdrop-blur-md border border-slate-800/90 rounded-xl p-2 text-[10px] space-y-1">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-sm bg-emerald-500/80 inline-block border border-emerald-300"></span>
+              <span id="legFaultPlane" class="text-slate-200">Fault Plane (NP1)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-sm bg-purple-500/60 inline-block border border-purple-300"></span>
+              <span id="legAuxPlane" class="text-slate-300">Auxiliary Plane (NP2)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-0.5 bg-amber-400 inline-block"></span>
+              <span id="legSlipVec" class="text-amber-300">Slip Vector (Rake λ)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-0.5 bg-rose-500 inline-block"></span>
+              <span id="legPAxis" class="text-rose-300">P-Axis (Inward)</span>
+              <span class="text-slate-600">|</span>
+              <span class="w-3 h-0.5 bg-cyan-400 inline-block"></span>
+              <span id="legTAxis" class="text-cyan-300">T-Axis (Outward)</span>
+            </div>
+            <div class="flex items-center gap-1.5 pt-0.5 border-t border-slate-800/80">
+              <span class="w-2.5 h-2.5 rounded-full border border-sky-400 inline-block"></span>
+              <span id="legBlueRing" class="text-sky-300">Map Cut (z=0)</span>
+              <span class="text-slate-600">|</span>
+              <span class="w-2.5 h-2.5 rounded-full border border-amber-400 inline-block"></span>
+              <span id="legYellowRing" class="text-amber-300">Section Cut (A–A')</span>
+            </div>
+          </div>
+
+          <button id="btnCam1Reset" class="absolute bottom-2.5 right-2.5 px-2 py-1 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-[10px] text-slate-300 border border-slate-700/80 transition">
+            Reset Cam 1
+          </button>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- COLUMN 02: Map View: Lower-Hemisphere Cutaway                       -->
+      <!-- =================================================================== -->
+      <div class="obs-card rounded-2xl overflow-hidden flex flex-col border-cyan-500/25">
+        <div class="px-3.5 py-2.5 border-b border-slate-800/90 bg-gradient-to-r from-slate-900/85 via-[#0e7490]/25 to-slate-900/85 flex items-center justify-between gap-2">
+          <div>
+            <h2 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+              <span class="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[10px] font-extrabold font-mono">02</span>
+              <span id="col2Title">Map View: Lower-Hemisphere Cutaway</span>
+            </h2>
+            <p id="col2Sub" class="text-[10px] text-slate-400 mt-0.5">Upper hemisphere (z &gt; 0) removed · Projects onto horizontal N/E/S/W beachball disc</p>
+          </div>
+          <div class="flex items-center gap-1 text-[10px]">
+            <button id="btn2Oblique" class="px-2 py-1 rounded-md bg-cyan-950/90 hover:bg-cyan-900 text-cyan-200 border border-cyan-600/50 transition">
+              3D Oblique
+            </button>
+            <button id="btn2Top" class="px-2 py-1 rounded-md bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+              Map Top
+            </button>
+          </div>
+        </div>
+
+        <div id="col2Container" class="relative w-full h-[460px] xl:h-[520px]">
+          <div class="absolute top-2.5 left-2.5 pointer-events-none bg-slate-950/85 backdrop-blur-md border border-slate-800/90 rounded-xl p-2 text-[10px] space-y-1">
+            <div id="legLowerTitle" class="font-bold text-cyan-300">Lower Hemisphere (z ≤ 0)</div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-sm bg-[#06b6d4] inline-block border border-cyan-200"></span>
+              <span id="legComp" class="text-slate-200">Compressional (P-wave +)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-sm bg-[#f8fafc] inline-block border border-slate-400"></span>
+              <span id="legDilat" class="text-slate-200">Dilatational (P-wave -)</span>
+            </div>
+          </div>
+
+          <div class="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 text-[10px]">
+            <label class="inline-flex items-center gap-1 cursor-pointer bg-slate-950/85 px-2 py-1 rounded-md border border-slate-800">
+              <input type="checkbox" id="chk2Field" checked class="rounded text-rose-500 bg-slate-900 border-slate-600">
+              <span id="lbl2Vec" class="text-slate-300">Surface Vectors</span>
+            </label>
+            <label class="inline-flex items-center gap-1 cursor-pointer bg-slate-950/85 px-2 py-1 rounded-md border border-slate-800">
+              <input type="checkbox" id="chk2Rays" checked class="rounded text-purple-500 bg-slate-900 border-slate-600">
+              <span id="lbl2Rays" class="text-slate-300">Rays</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- COLUMN 03: Cross-Section View: Back-Hemisphere Cutaway              -->
+      <!-- =================================================================== -->
+      <div class="obs-card rounded-2xl overflow-hidden flex flex-col border-amber-500/25">
+        <div class="px-3.5 py-2.5 border-b border-slate-800/90 bg-gradient-to-r from-slate-900/85 via-amber-950/25 to-slate-900/85 flex items-center justify-between gap-2">
+          <div>
+            <h2 class="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
+              <span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-extrabold font-mono">03</span>
+              <span id="col3Title">Cross-Section View: Back-Hemisphere Cutaway</span>
+            </h2>
+            <p id="col3Sub" class="text-[10px] text-slate-400 mt-0.5">
+              Cut along vertical plane <span id="lblSecAz" class="text-amber-300 font-semibold">A–A' (45°)</span> · GMT <code class="text-amber-200">pscoupe</code> screen
+            </p>
+          </div>
+          <div class="flex items-center gap-1 text-[10px]">
+            <button id="btn3Oblique" class="px-2 py-1 rounded-md bg-amber-950/90 hover:bg-amber-900 text-amber-200 border border-amber-600/50 transition">
+              3D Oblique
+            </button>
+            <button id="btn3Front" class="px-2 py-1 rounded-md bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+              Section Front
+            </button>
+          </div>
+        </div>
+
+        <div id="col3Container" class="relative w-full h-[460px] xl:h-[520px]">
+          <div class="absolute top-2.5 left-2.5 pointer-events-none bg-slate-950/85 backdrop-blur-md border border-slate-800/90 rounded-xl p-2 text-[10px] space-y-1">
+            <div id="legBackTitle" class="font-bold text-amber-300">Back Hemisphere (Behind A–A')</div>
+            <div id="legBackAxes" class="text-slate-300">Horizontal: <span class="text-amber-200 font-semibold">A → A'</span> · Vertical: <span class="text-sky-200 font-semibold">Depth ↓</span></div>
+            <div id="legBackNote" class="text-slate-400">True subsurface dip angle projected on screen</div>
+          </div>
+
+          <div class="absolute bottom-2.5 left-2.5 flex items-center gap-1.5 text-[10px]">
+            <label class="inline-flex items-center gap-1 cursor-pointer bg-slate-950/85 px-2 py-1 rounded-md border border-slate-800">
+              <input type="checkbox" id="chk3Field" checked class="rounded text-rose-500 bg-slate-900 border-slate-600">
+              <span id="lbl3Vec" class="text-slate-300">Surface Vectors</span>
+            </label>
+            <label class="inline-flex items-center gap-1 cursor-pointer bg-slate-950/85 px-2 py-1 rounded-md border border-slate-800">
+              <input type="checkbox" id="chk3Rays" checked class="rounded text-purple-500 bg-slate-900 border-slate-600">
+              <span id="lbl3Rays" class="text-slate-300">Rays</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // 0. Bilingual Dictionary (English Default / 中文 Optional)
+    // =========================================================================
+    const I18N = {
+      en: {
+        docTitle: '3D Focal Mechanism & Stereographic Projection Lab',
+        uiTitle: '3D Focal Mechanism & Stereographic Projection Lab',
+        uiBadgeTheory: 'Aki & Richards (1980) · GMT pscoupe',
+        uiSubtitle: 'Synchronized 3-Column Observatory: 3D Fault Kinematics · Lower-Hemisphere Map Cutaway · Back-Hemisphere Section Cutaway',
+        uiRegimesLabel: 'Regimes:',
+        btnPresetSS: 'Strike-Slip',
+        btnPresetNorm: 'Normal Fault',
+        btnPresetThrust: 'Thrust / Reverse',
+        btnPresetOblique: 'Oblique-Slip',
+        autoSweepStart: 'Auto-Sweep (Slow)',
+        autoSweepPause: 'Pause Sweep',
+        btnResetAllViews: 'Reset Views',
+        uiQueryLabel: 'Mechanism Query:',
+        inputPlaceholder: 'Strike/Dip/Rake, Mrr Mtt Mpp Mrt Mrp Mtp, NP1:..., or P: tr/pl T: tr/pl',
+        btnParseQuery: 'Parse & Plot',
+        btnSwapNodal: '⇄ Swap NP1 / NP2',
+        uiFormatsLabel: 'Supported formats (click to test):',
+        lblSliderStrike: 'Strike (φ)',
+        lblSliderDip: 'Dip (δ)',
+        lblSliderRake: 'Rake (λ)',
+        lblSliderProfile: "Section A–A' Azimuth",
+        btnAlignParallel: '∥ Strike',
+        btnAlignPerp: '⊥ Strike',
+        lblSliderStress: 'Stress Magnitude',
+        col1Title: '3D Fault Kinematics & Nodal Planes',
+        col1Sub: 'Full focal sphere · Hanging-wall sawtooth slip-and-reset · NP1 & NP2',
+        lblSlipReset: 'Slip → Reset',
+        legFaultPlane: 'Fault Plane (NP1)',
+        legAuxPlane: 'Auxiliary Plane (NP2)',
+        legSlipVec: 'Slip Vector (Rake λ)',
+        legPAxis: 'P-Axis (Inward)',
+        legTAxis: 'T-Axis (Outward)',
+        legBlueRing: 'Map Cut (z=0)',
+        legYellowRing: "Section Cut (A–A')",
+        btnCam1Reset: 'Reset Cam 1',
+        col2Title: 'Map View: Lower-Hemisphere Cutaway',
+        col2Sub: 'Upper hemisphere (z > 0) removed · Projects onto horizontal N/E/S/W beachball disc',
+        btn2Oblique: '3D Oblique',
+        btn2Top: 'Map Top',
+        legLowerTitle: 'Lower Hemisphere (z ≤ 0)',
+        legComp: 'Compressional (P-wave +)',
+        legDilat: 'Dilatational (P-wave -)',
+        lblVec: 'Surface Vectors',
+        lblRays: 'Rays',
+        col3Title: 'Cross-Section View: Back-Hemisphere Cutaway',
+        col3SubPrefix: 'Cut along vertical plane',
+        col3SubSuffix: '· GMT pscoupe screen',
+        btn3Oblique: '3D Oblique',
+        btn3Front: 'Section Front',
+        legBackTitle: "Back Hemisphere (Behind A–A')",
+        legBackAxes: "Horizontal: A → A' · Vertical: Depth ↓",
+        legBackNote: 'True subsurface dip angle projected on screen',
+        regimes: {
+          low_thrust: 'Low-Angle Thrust',
+          thrust: 'Thrust / Reverse',
+          normal: 'Normal Fault',
+          strike_slip: 'Strike-Slip',
+          oblique: 'Oblique-Slip'
+        },
+        formats: {
+          mt: 'Global CMT / Moment Tensor (6-comp)',
+          pt: 'Principal Stress Axes (P & T Trend/Plunge)',
+          np: 'USGS / Key-Value Nodal Plane',
+          sdr: 'Strike / Dip / Rake'
+        },
+        statusDefault: '✓ Format: Strike / Dip / Rake',
+        statusSwapped: (np1, np2) => `⇄ Swapped Conjugate Planes: NP1 (${np1}) ↔ NP2 (${np2})`,
+        statusError: '⚠ Unrecognized format. Try "210/32/90", "1.52, -0.85, -0.67, 0.42, -0.31, 0.25", or "P: 135/05, T: 225/05"',
+        statusParsed: (fmt, s, d, r) => `✓ Parsed [${fmt}] → ${s}° / ${d}° / ${r}°`,
+        statusPreset: (lbl) => `✓ Loaded Regime Preset (${lbl})`,
+        secSurface: 'Surface',
+        secDepth: 'Depth ↓'
+      },
+      zh: {
+        docTitle: '三维震源机制与赤平投影实验室',
+        uiTitle: '三维震源机制与赤平投影实验室',
+        uiBadgeTheory: 'Aki & Richards (1980) 震源理论 · GMT pscoupe 剖面规范',
+        uiSubtitle: '三列同步观测台：三维断层运动学 · 下半球地图平面切割投影 · 后半球深度剖面切割投影',
+        uiRegimesLabel: '典型机制：',
+        btnPresetSS: '走滑断层',
+        btnPresetNorm: '正断层',
+        btnPresetThrust: '逆冲断层',
+        btnPresetOblique: '斜滑断层',
+        autoSweepStart: '慢速自动演示',
+        autoSweepPause: '暂停演示',
+        btnResetAllViews: '重置全部视角',
+        uiQueryLabel: '震源机制查询：',
+        inputPlaceholder: '输入 走向/倾角/滑动角、矩张量 Mrr..Mtp、NP1:... 或 P/T 轴倾伏向/倾伏角',
+        btnParseQuery: '解析并绘图',
+        btnSwapNodal: '⇄ 切换共轭节面',
+        uiFormatsLabel: '支持多种地震学标准格式（点击测试）：',
+        lblSliderStrike: '走向 Strike (φ)',
+        lblSliderDip: '倾角 Dip (δ)',
+        lblSliderRake: '滑动角 Rake (λ)',
+        lblSliderProfile: "剖面 A–A' 方位角",
+        btnAlignParallel: '∥ 平行走向',
+        btnAlignPerp: '⊥ 垂直走向',
+        lblSliderStress: '应力幅值缩放',
+        col1Title: '三维断层运动学与双节面模型',
+        col1Sub: '完整震源球 · 上盘单向滑移复位演示 · 断层面与辅助节面',
+        lblSlipReset: '滑移 → 复位',
+        legFaultPlane: '主断层面 (NP1)',
+        legAuxPlane: '共轭辅助节面 (NP2)',
+        legSlipVec: '滑动矢量 (滑动角 λ)',
+        legPAxis: 'P 轴 (主压应力向内)',
+        legTAxis: 'T 轴 (主张应力向外)',
+        legBlueRing: '水平切割圈 (地图投影)',
+        legYellowRing: "竖直切割圈 (A–A' 剖面)",
+        btnCam1Reset: '重置视角 1',
+        col2Title: '地图平面视角：下半球切割投影',
+        col2Sub: '切除上半球 (z > 0) · 垂直投影至水平 N/E/S/W 沙滩球圆盘',
+        btn2Oblique: '三维斜视',
+        btn2Top: '地图正俯视',
+        legLowerTitle: '下半球碗壳 (z ≤ 0)',
+        legComp: '压缩区 (P 波初动向上 +)',
+        legDilat: '拉张区 (P 波初动向下 -)',
+        lblVec: '球面应力矢量',
+        lblRays: '投影射线',
+        col3Title: '垂直剖面视角：后半球切割投影',
+        col3SubPrefix: '沿垂直剖面线',
+        col3SubSuffix: '切开 · GMT pscoupe 剖面沙滩球',
+        btn3Oblique: '三维斜视',
+        btn3Front: '剖面正视',
+        legBackTitle: "后半球碗壳 (位于 A–A' 剖面后方)",
+        legBackAxes: "水平轴: A → A' · 垂直轴: 深度 Depth ↓",
+        legBackNote: '直观呈现地下断层面真实倾角',
+        regimes: {
+          low_thrust: '低角度逆冲断层',
+          thrust: '逆冲 / 逆断层',
+          normal: '正断层',
+          strike_slip: '走滑断层',
+          oblique: '斜滑断层'
+        },
+        formats: {
+          mt: 'Global CMT / USGS 六分量矩张量',
+          pt: 'P / T 主应力轴 (倾伏向/倾伏角)',
+          np: 'USGS / 键值对节面参数',
+          sdr: '走向 / 倾角 / 滑动角'
+        },
+        statusDefault: '✓ 当前格式：走向 / 倾角 / 滑动角',
+        statusSwapped: (np1, np2) => `⇄ 已无损互换共轭节面：NP1 (${np1}) ↔ NP2 (${np2})`,
+        statusError: '⚠ 未能识别输入格式，请尝试 "210/32/90"、"1.52, -0.85, -0.67, 0.42, -0.31, 0.25" 或 "P: 135/05, T: 225/05"',
+        statusParsed: (fmt, s, d, r) => `✓ 成功解析 [${fmt}] → ${s}° / ${d}° / ${r}°`,
+        statusPreset: (lbl) => `✓ 已加载典型机制预设 (${lbl})`,
+        secSurface: '地表 Surface',
+        secDepth: '深度 Depth ↓'
+      }
+    };
+
+    // =========================================================================
+    // 1. Seismological Focal Mechanism, Moment Tensor & Spherical Math Engine
+    //    Coordinate Convention: NED (North = +X, East = +Y, Down = +Z)
+    // =========================================================================
+    const DEG2RAD = Math.PI / 180;
+    const RAD2DEG = 180 / Math.PI;
+
+    function normalizeVec(v) {
+      const len = Math.hypot(v[0], v[1], v[2]) || 1;
+      return [v[0] / len, v[1] / len, v[2] / len];
+    }
+
+    function dotVec(a, b) {
+      return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    }
+
+    function crossVec(a, b) {
+      return [
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0]
+      ];
+    }
+
+    function sdrToNormalSlip(strikeDeg, dipDeg, rakeDeg) {
+      const phi = strikeDeg * DEG2RAD;
+      const delta = dipDeg * DEG2RAD;
+      const lambda = rakeDeg * DEG2RAD;
+
+      // Unit fault normal n (pointing toward hanging wall, n_U = -n_Z >= 0)
+      const n = normalizeVec([
+        -Math.sin(delta) * Math.sin(phi),
+         Math.sin(delta) * Math.cos(phi),
+        -Math.cos(delta)
+      ]);
+
+      // Unit hanging-wall slip vector s
+      const d = normalizeVec([
+         Math.cos(lambda) * Math.cos(phi) + Math.cos(delta) * Math.sin(lambda) * Math.sin(phi),
+         Math.cos(lambda) * Math.sin(phi) - Math.cos(delta) * Math.sin(lambda) * Math.cos(phi),
+        -Math.sin(delta) * Math.sin(lambda)
+      ]);
+
+      return { n, d };
+    }
+
+    /**
+     * Exact sign-consistent Aki & Richards (1980) vector-to-SDR inversion.
+     * In NED coordinates, Up is -Z. If normalVec points downward (normalVec[2] > 0,
+     * i.e. n_U < 0, which occurs when swapping a normal-fault slip vector s1 with s1_U < 0),
+     * we negate BOTH normalVec and slipVec simultaneously so n_U >= 0 while preserving
+     * the exact double-couple moment tensor M = n*s^T + s*n^T.
+     */
+    function normalSlipToSDR(normalVec, slipVec) {
+      let n = normalizeVec(normalVec);
+      let d = normalizeVec(slipVec);
+
+      if (n[2] > 1e-9) {
+        n = [-n[0], -n[1], -n[2]];
+        d = [-d[0], -d[1], -d[2]];
+      } else if (Math.abs(n[2]) <= 1e-9) {
+        n[2] = 0;
+        // Canonical sign for vertical planes (dip = 90°)
+        if (Math.abs(n[1]) > 1e-9 ? n[1] < 0 : n[0] > 0) {
+          n = [-n[0], -n[1], 0];
+          d = [-d[0], -d[1], -d[2]];
+        }
+      }
+
+      const cosDelta = Math.min(1, Math.max(0, -n[2]));
+      const dip = Math.acos(cosDelta) * RAD2DEG;
+
+      let strike;
+      const horizN = Math.hypot(n[0], n[1]);
+      if (horizN < 1e-7) {
+        // Pure horizontal plane (dip = 0°): strike follows slip azimuth
+        strike = Math.atan2(d[1], d[0]) * RAD2DEG;
+      } else {
+        strike = Math.atan2(-n[0], n[1]) * RAD2DEG;
+      }
+      strike = ((strike % 360) + 360) % 360;
+      if (Math.abs(strike - 360) < 1e-6) strike = 0;
+
+      const sRad = strike * DEG2RAD;
+      const dRad = dip * DEG2RAD;
+      const strikeDir = [Math.cos(sRad), Math.sin(sRad), 0];
+      const upDipDir = [
+        -Math.cos(dRad) * Math.sin(sRad),
+         Math.cos(dRad) * Math.cos(sRad),
+        -Math.sin(dRad)
+      ];
+      let rake = Math.atan2(dotVec(d, upDipDir), dotVec(d, strikeDir)) * RAD2DEG;
+      if (rake <= -180 + 1e-6) rake += 360;
+      if (rake > 180) rake -= 360;
+
+      return {
+        strike: Math.round(strike * 100) / 100,
+        dip: Math.max(0, Math.min(90, Math.round(dip * 100) / 100)),
+        rake: Math.round(rake * 100) / 100
+      };
+    }
+
+    function buildConjugatePair(strikeDeg, dipDeg, rakeDeg) {
+      const { n, d } = sdrToNormalSlip(strikeDeg, dipDeg, rakeDeg);
+      const aux = normalSlipToSDR(d, n);
+      return {
+        np1: { strike: strikeDeg, dip: dipDeg, rake: rakeDeg },
+        np2: { strike: aux.strike, dip: aux.dip, rake: aux.rake }
+      };
+    }
+
+    function computeFocalMechanism(strikeDeg, dipDeg, rakeDeg, explicitAux = null) {
+      const { n, d } = sdrToNormalSlip(strikeDeg, dipDeg, rakeDeg);
+      const P = normalizeVec([n[0] - d[0], n[1] - d[1], n[2] - d[2]]);
+      const T = normalizeVec([n[0] + d[0], n[1] + d[1], n[2] + d[2]]);
+      const aux = explicitAux || normalSlipToSDR(d, n);
+      return { n, d, P, T, aux };
+    }
+
+    function formatAngle(val) {
+      const r = Math.round(val);
+      return Math.abs(val - r) < 0.05 ? `${r}°` : `${val.toFixed(1)}°`;
+    }
+
+    function formatSDRTriplet(sdr) {
+      return `${formatAngle(sdr.strike)} / ${formatAngle(sdr.dip)} / ${formatAngle(sdr.rake)}`;
+    }
+
+    function trendPlungeToNed(trendDeg, plungeDeg) {
+      const tr = trendDeg * DEG2RAD;
+      const pl = plungeDeg * DEG2RAD;
+      return normalizeVec([
+        Math.cos(pl) * Math.cos(tr),
+        Math.cos(pl) * Math.sin(tr),
+        Math.sin(pl)
+      ]);
+    }
+
+    function vecToTrendPlunge(v) {
+      let vec = [...v];
+      if (vec[2] < 0) vec = [-vec[0], -vec[1], -vec[2]];
+      const plunge = Math.asin(Math.min(1, Math.max(-1, vec[2]))) * RAD2DEG;
+      let trend = Math.atan2(vec[1], vec[0]) * RAD2DEG;
+      if (trend < 0) trend += 360;
+      return { trend: Math.round(trend) % 360, plunge: Math.round(plunge) };
+    }
+
+    /**
+     * Jacobi Symmetric 3x3 Eigenvalue Solver (Global CMT / USGS 6-component Moment Tensor)
+     */
+    function eigenSymmetric3x3(A) {
+      const M = [
+        [A[0][0], A[0][1], A[0][2]],
+        [A[1][0], A[1][1], A[1][2]],
+        [A[2][0], A[2][1], A[2][2]]
+      ];
+      const V = [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+      ];
+      for (let iter = 0; iter < 50; iter++) {
+        let p = 0, q = 1;
+        let maxVal = Math.abs(M[0][1]);
+        if (Math.abs(M[0][2]) > maxVal) { p = 0; q = 2; maxVal = Math.abs(M[0][2]); }
+        if (Math.abs(M[1][2]) > maxVal) { p = 1; q = 2; maxVal = Math.abs(M[1][2]); }
+        if (maxVal < 1e-12) break;
+
+        const diff = M[q][q] - M[p][p];
+        const phi = 0.5 * Math.atan2(2 * M[p][q], diff);
+        const c = Math.cos(phi);
+        const s = Math.sin(phi);
+
+        const mpp = M[p][p], mqq = M[q][q], mpq = M[p][q];
+        M[p][p] = c * c * mpp - 2 * s * c * mpq + s * s * mqq;
+        M[q][q] = s * s * mpp + 2 * s * c * mpq + c * c * mqq;
+        M[p][q] = M[q][p] = 0;
+
+        for (let r = 0; r < 3; r++) {
+          if (r !== p && r !== q) {
+            const mrp = M[r][p], mrq = M[r][q];
+            M[r][p] = M[p][r] = c * mrp - s * mrq;
+            M[r][q] = M[q][r] = s * mrp + c * mrq;
+          }
+          const vrp = V[r][p], vrq = V[r][q];
+          V[r][p] = c * vrp - s * vrq;
+          V[r][q] = s * vrp + c * vrq;
+        }
+      }
+      const pairs = [
+        { val: M[0][0], vec: normalizeVec([V[0][0], V[1][0], V[2][0]]) },
+        { val: M[1][1], vec: normalizeVec([V[0][1], V[1][1], V[2][1]]) },
+        { val: M[2][2], vec: normalizeVec([V[0][2], V[1][2], V[2][2]]) }
+      ];
+      pairs.sort((a, b) => a.val - b.val);
+      return pairs;
+    }
+
+    function parseFocalMechanismInput(rawInput) {
+      const str = rawInput.trim();
+      if (!str) return null;
+
+      // Format A: 6-component Moment Tensor
+      const hasMTKeys = /m(rr|tt|pp|rt|rp|tp|xx|yy|zz|xy|xz|yz)/i.test(str);
+      const nums = str.match(/[+-]?\d+(\.\d+)?([eE][+-]?\d+)?/g)?.map(Number) || [];
+
+      if (hasMTKeys || nums.length === 6) {
+        let mrr, mtt, mpp, mrt, mrp, mtp;
+        const extractKey = (regex) => {
+          const m = str.match(regex);
+          return m ? parseFloat(m[1]) : null;
+        };
+
+        if (/m_?rr/i.test(str)) {
+          mrr = extractKey(/m_?rr\s*[:=]?\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/i) ?? 0;
+          mtt = extractKey(/m_?tt\s*[:=]?\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/i) ?? 0;
+          mpp = extractKey(/m_?pp\s*[:=]?\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/i) ?? 0;
+          mrt = extractKey(/m_?rt\s*[:=]?\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/i) ?? 0;
+          mrp = extractKey(/m_?rp\s*[:=]?\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/i) ?? 0;
+          mtp = extractKey(/m_?tp\s*[:=]?\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/i) ?? 0;
+        } else if (/m_?xx/i.test(str)) {
+          const mxx = extractKey(/m_?xx\s*[:=]?\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/i) ?? 0;
+          const myy = extractKey(/m_?yy\s*[:=]?\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/i) ?? 0;
+          const mzz = extractKey(/m_?zz\s*[:=]?\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/i) ?? 0;
+          const mxy = extractKey(/m_?xy\s*[:=]?\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/i) ?? 0;
+          const mxz = extractKey(/m_?xz\s*[:=]?\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/i) ?? 0;
+          const myz = extractKey(/m_?yz\s*[:=]?\s*([+-]?\d*\.?\d+(?:[eE][+-]?\d+)?)/i) ?? 0;
+          mrr = mzz; mtt = mxx; mpp = myy; mrt = mxz; mrp = -myz; mtp = -mxy;
+        } else if (nums.length === 6) {
+          [mrr, mtt, mpp, mrt, mrp, mtp] = nums;
+        }
+
+        if (mrr !== undefined) {
+          const M_ned = [
+            [ mtt, -mtp,  mrt],
+            [-mtp,  mpp, -mrp],
+            [ mrt, -mrp,  mrr]
+          ];
+          const eig = eigenSymmetric3x3(M_ned);
+          const pVec = eig[0].vec;
+          const tVec = eig[2].vec;
+          const nVec = normalizeVec([tVec[0] + pVec[0], tVec[1] + pVec[1], tVec[2] + pVec[2]]);
+          const dVec = normalizeVec([tVec[0] - pVec[0], tVec[1] - pVec[1], tVec[2] - pVec[2]]);
+          const sdr = normalSlipToSDR(nVec, dVec);
+          return { ...sdr, formatKey: 'mt' };
+        }
+      }
+
+      // Format B: P-Axis & T-Axis Trend/Plunge
+      if (/P\s*[:=(]/i.test(str) && /T\s*[:=(]/i.test(str)) {
+        const pMatch = str.match(/P\s*[:=(]\s*([+-]?\d+(?:\.\d+)?)\s*[/,\s]\s*([+-]?\d+(?:\.\d+)?)/i);
+        const tMatch = str.match(/T\s*[:=(]\s*([+-]?\d+(?:\.\d+)?)\s*[/,\s]\s*([+-]?\d+(?:\.\d+)?)/i);
+        if (pMatch && tMatch) {
+          const pVec = trendPlungeToNed(parseFloat(pMatch[1]), parseFloat(pMatch[2]));
+          let tVec = trendPlungeToNed(parseFloat(tMatch[1]), parseFloat(tMatch[2]));
+          const dotPT = dotVec(pVec, tVec);
+          tVec = normalizeVec([tVec[0] - dotPT * pVec[0], tVec[1] - dotPT * pVec[1], tVec[2] - dotPT * pVec[2]]);
+          const nVec = normalizeVec([tVec[0] + pVec[0], tVec[1] + pVec[1], tVec[2] + pVec[2]]);
+          const dVec = normalizeVec([tVec[0] - pVec[0], tVec[1] - pVec[1], tVec[2] - pVec[2]]);
+          const sdr = normalSlipToSDR(nVec, dVec);
+          return { ...sdr, formatKey: 'pt' };
+        }
+      }
+
+      // Format C: Key-Value / USGS NP1 / Strike-Dip-Rake
+      const isNP = /np1|strike|dip|rake/i.test(str);
+      let s, d, r;
+      if (/strike/i.test(str) && /dip/i.test(str) && /rake/i.test(str)) {
+        const sm = str.match(/strike\s*[:=]\s*([+-]?\d+(?:\.\d+)?)/i);
+        const dm = str.match(/dip\s*[:=]\s*([+-]?\d+(?:\.\d+)?)/i);
+        const rm = str.match(/rake\s*[:=]\s*([+-]?\d+(?:\.\d+)?)/i);
+        if (sm && dm && rm) {
+          s = parseFloat(sm[1]);
+          d = parseFloat(dm[1]);
+          r = parseFloat(rm[1]);
+        }
+      }
+
+      if (s === undefined && nums.length >= 3) {
+        const offset = /^np[12]/i.test(str) ? 1 : 0;
+        if (nums.length >= 3 + offset) {
+          s = nums[offset];
+          d = nums[offset + 1];
+          r = nums[offset + 2];
+        }
+      }
+
+      if (s !== undefined && d !== undefined && r !== undefined) {
+        let strike = ((s % 360) + 360) % 360;
+        const dip = Math.min(90, Math.max(0, d));
+        const rake = Math.min(180, Math.max(-180, r));
+        return {
+          strike: Math.round(strike * 100) / 100,
+          dip: Math.round(dip * 100) / 100,
+          rake: Math.round(rake * 100) / 100,
+          formatKey: isNP ? 'np' : 'sdr'
+        };
+      }
+
+      return null;
+    }
+
+    function getRegimeKey(dipDeg, rakeDeg) {
+      const r = rakeDeg;
+      if (Math.abs(r - 90) <= 30) {
+        return dipDeg <= 35 ? 'low_thrust' : 'thrust';
+      } else if (Math.abs(r + 90) <= 30) {
+        return 'normal';
+      } else if (Math.abs(r) <= 25 || Math.abs(Math.abs(r) - 180) <= 25) {
+        return 'strike_slip';
+      }
+      return 'oblique';
+    }
+
+    function getViewBasis(mode, profileAzDeg) {
+      if (mode === 'map') {
+        return {
+          right: [0, 1, 0],     // East
+          down:  [-1, 0, 0],    // South (top = North)
+          into:  [0, 0, 1]      // Down (Lower Hemisphere)
+        };
+      } else {
+        const az = profileAzDeg * DEG2RAD;
+        const right = [Math.cos(az), Math.sin(az), 0]; // A -> A'
+        const down = [0, 0, 1];                         // Depth downward
+        const into = normalizeVec(crossVec(right, down)); // Back Hemisphere normal
+        return { right, down, into };
+      }
+    }
+
+    function projectHemispherePt(xRight, yDown, zInto) {
+      const zc = Math.min(1, Math.max(0, zInto));
+      const hLen = Math.hypot(xRight, yDown);
+      if (hLen < 1e-7) return { nx: 0, ny: 0 };
+      const r = Math.sqrt(Math.max(0, 1 - zc));
+      return {
+        nx: (xRight / hLen) * r,
+        ny: (yDown / hLen) * r
+      };
+    }
+
+    // NED (North, East, Down) -> Three.js (X=East, Y=Up, Z=-North)
+    function nedToThree(v) {
+      return new THREE.Vector3(v[1], -v[2], -v[0]);
+    }
+
+    function makeSpriteLabel(text, colorStr, scale = 0.34) {
+      const c = document.createElement('canvas');
+      c.width = 280;
+      c.height = 64;
+      const ctx = c.getContext('2d');
+      ctx.font = 'bold 26px Inter, sans-serif';
+      ctx.fillStyle = colorStr;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, 140, 32);
+      const tex = new THREE.CanvasTexture(c);
+      const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+      const sp = new THREE.Sprite(mat);
+      sp.scale.set(scale * 4.0, scale, 1);
+      return sp;
+    }
+
+    // =========================================================================
+    // 2. WebGL1/WebGL2-Safe Analytical Zero-Aliasing GLSL Shaders
+    //    (Using un-mirrored world-space unit vector vWorldDir so Col 02 & 03
+    //     bowls match the 3D green NP1 & violet NP2 curves 100% identically!)
+    // =========================================================================
+    function createBowlGLSLMaterial() {
+      return new THREE.ShaderMaterial({
+        side: THREE.DoubleSide,
+        uniforms: {
+          uNormal:      { value: new THREE.Vector3(0, 1, 0) },
+          uSlip:        { value: new THREE.Vector3(1, 0, 0) },
+          uRight:       { value: new THREE.Vector3(1, 0, 0) },
+          uDown:        { value: new THREE.Vector3(0, 0, 1) },
+          uInto:        { value: new THREE.Vector3(0, -1, 0) },
+          uStressScale: { value: 1.2 },
+          uLightDir:    { value: new THREE.Vector3(0.48, 0.72, 0.50).normalize() },
+          uCompDeep:    { value: new THREE.Color('#0e7490') },
+          uCompBright:  { value: new THREE.Color('#06b6d4') },
+          uDilatColor:  { value: new THREE.Color('#f8fafc') }
+        },
+        vertexShader: `
+          varying vec3 vWorldDir;
+          varying vec3 vWorldPos;
+          void main() {
+            vec4 worldPos = modelMatrix * vec4(position, 1.0);
+            vWorldPos = worldPos.xyz;
+            vWorldDir = normalize(worldPos.xyz);
+            gl_Position = projectionMatrix * viewMatrix * worldPos;
+          }
+        `,
+        fragmentShader: `
+          precision highp float;
+
+          uniform vec3 uNormal;
+          uniform vec3 uSlip;
+          uniform vec3 uRight;
+          uniform vec3 uDown;
+          uniform vec3 uInto;
+          uniform float uStressScale;
+          uniform vec3 uLightDir;
+          uniform vec3 uCompDeep;
+          uniform vec3 uCompBright;
+          uniform vec3 uDilatColor;
+
+          varying vec3 vWorldDir;
+          varying vec3 vWorldPos;
+
+          void main() {
+            vec3 u = normalize(vWorldDir);
+            vec3 n = normalize(uNormal);
+            vec3 s = normalize(uSlip);
+
+            float un = dot(u, n);
+            float us = dot(u, s);
+            float A = un * us;
+
+            vec3 grad3D = us * n + un * s;
+            vec3 gradSurf = grad3D - dot(grad3D, u) * u;
+            float aaWidth = max(length(gradSurf), 0.15) * 0.0085;
+            float mask = smoothstep(-aaWidth, aaWidth, A);
+
+            float ampGain = clamp(abs(A) * 2.1 * (0.75 + 0.25 * uStressScale), 0.0, 1.0);
+            vec3 compCol = mix(uCompDeep, uCompBright, ampGain * 0.65 + 0.15);
+            vec3 baseColor = mix(uDilatColor, compCol, mask);
+
+            float zInto = clamp(dot(u, normalize(uInto)), 0.0, 1.0);
+            float xR = dot(u, normalize(uRight));
+            float yD = dot(u, normalize(uDown));
+            float thetaDeg = acos(zInto) * 57.2957795;
+            float azDeg = atan(yD, xR) * 57.2957795;
+
+            float latDist = min(abs(thetaDeg - 30.0), abs(thetaDeg - 60.0));
+            float latLine = 1.0 - smoothstep(0.28, 0.68, latDist);
+
+            float lonMod = abs(mod(azDeg + 15.0, 30.0) - 15.0);
+            float lonLine = (1.0 - smoothstep(0.32, 0.78, lonMod)) * smoothstep(4.0, 12.0, thetaDeg);
+
+            float gridFactor = clamp(max(latLine, lonLine) * 0.22, 0.0, 0.25);
+            baseColor = mix(baseColor, vec3(0.35, 0.45, 0.58), gridFactor);
+
+            vec3 geomN = gl_FrontFacing ? u : -u;
+            vec3 V = normalize(cameraPosition - vWorldPos);
+            vec3 L = normalize(uLightDir);
+            vec3 H = normalize(L + V);
+
+            float ndotl = max(dot(geomN, L), 0.0);
+            float rim = 1.0 - max(dot(geomN, V), 0.0);
+            float spec = pow(max(dot(geomN, H), 0.0), 36.0) * 0.22;
+
+            float bowlAO = mix(1.0, 0.85, zInto * 0.72);
+            float lighting = (0.60 + 0.44 * ndotl + 0.10 * pow(rim, 2.0)) * bowlAO;
+
+            vec3 finalColor = baseColor * lighting + vec3(spec);
+            gl_FragColor = vec4(finalColor, 1.0);
+          }
+        `
+      });
+    }
+
+    function createProjectionDiscGLSLMaterial() {
+      return new THREE.ShaderMaterial({
+        transparent: true,
+        side: THREE.DoubleSide,
+        uniforms: {
+          uNormal:      { value: new THREE.Vector3(0, 1, 0) },
+          uSlip:        { value: new THREE.Vector3(1, 0, 0) },
+          uRight:       { value: new THREE.Vector3(1, 0, 0) },
+          uDown:        { value: new THREE.Vector3(0, 0, 1) },
+          uInto:        { value: new THREE.Vector3(0, -1, 0) },
+          uStressScale: { value: 1.2 },
+          uRimColor:    { value: new THREE.Color('#38bdf8') },
+          uCompDeep:    { value: new THREE.Color('#0e7490') },
+          uCompBright:  { value: new THREE.Color('#06b6d4') },
+          uDilatColor:  { value: new THREE.Color('#f8fafc') }
+        },
+        vertexShader: `
+          varying vec2 vLocalPos;
+          void main() {
+            vLocalPos = position.xy;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          precision highp float;
+
+          uniform vec3 uNormal;
+          uniform vec3 uSlip;
+          uniform vec3 uRight;
+          uniform vec3 uDown;
+          uniform vec3 uInto;
+          uniform float uStressScale;
+          uniform vec3 uRimColor;
+          uniform vec3 uCompDeep;
+          uniform vec3 uCompBright;
+          uniform vec3 uDilatColor;
+
+          varying vec2 vLocalPos;
+
+          void main() {
+            float r = length(vLocalPos);
+            float circleAlpha = 1.0 - smoothstep(0.992, 1.004, r);
+            if (circleAlpha <= 0.001) discard;
+
+            float nx = vLocalPos.x;
+            float ny = -vLocalPos.y;
+            float rClamped = min(r, 1.0);
+            float r2 = rClamped * rClamped;
+            float zInto = 1.0 - r2;
+            float sinTheta = sqrt(max(0.0, 1.0 - zInto * zInto));
+            vec2 horiz = (rClamped > 1e-6) ? (vec2(nx, ny) / rClamped) * sinTheta : vec2(0.0);
+
+            vec3 u = normalize(horiz.x * normalize(uRight) + horiz.y * normalize(uDown) + zInto * normalize(uInto));
+            vec3 n = normalize(uNormal);
+            vec3 s = normalize(uSlip);
+
+            float un = dot(u, n);
+            float us = dot(u, s);
+            float A = un * us;
+
+            vec3 grad3D = us * n + un * s;
+            vec3 gradSurf = grad3D - dot(grad3D, u) * u;
+            float aaWidth = max(length(gradSurf), 0.15) * 0.0085;
+            float mask = smoothstep(-aaWidth, aaWidth, A);
+
+            float ampGain = clamp(abs(A) * 2.1 * (0.75 + 0.25 * uStressScale), 0.0, 1.0);
+            vec3 compCol = mix(uCompDeep, uCompBright, ampGain * 0.65 + 0.15);
+            vec3 col = mix(uDilatColor, compCol, mask);
+
+            float r30 = sqrt(1.0 - cos(radians(30.0)));
+            float r60 = sqrt(1.0 - cos(radians(60.0)));
+            float ringDist = min(abs(rClamped - r30), abs(rClamped - r60));
+            float ringLine = 1.0 - smoothstep(0.003, 0.008, ringDist);
+
+            float angDeg = atan(ny, nx) * 57.2957795;
+            float spokeMod = abs(mod(angDeg + 15.0, 30.0) - 15.0);
+            float spokeLine = (1.0 - smoothstep(0.35, 0.85, spokeMod)) * smoothstep(0.05, 0.14, rClamped);
+
+            float gridAlpha = clamp(max(ringLine, spokeLine) * 0.24, 0.0, 0.26);
+            col = mix(col, vec3(0.36, 0.46, 0.60), gridAlpha);
+
+            float rimMask = smoothstep(0.970, 0.978, rClamped);
+            col = mix(col, uRimColor, rimMask * 0.94);
+
+            gl_FragColor = vec4(col, circleAlpha);
+          }
+        `
+      });
+    }
+
+    function createAnnotationRingTexture(mode, profileAzDeg, lang = 'en') {
+      const c = document.createElement('canvas');
+      c.width = 1024;
+      c.height = 1024;
+      const ctx = c.getContext('2d');
+      const cx = 512;
+      const cy = 512;
+      const R = 415;
+
+      ctx.clearRect(0, 0, 1024, 1024);
+      ctx.font = 'bold 28px Inter, "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      if (mode === 'map') {
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillText('N', cx, cy - R - 42);
+        ctx.fillText('S', cx, cy + R + 42);
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText('W', cx - R - 40, cy);
+        ctx.fillText('E', cx + R + 40, cy);
+
+        const secRad = (profileAzDeg - 90) * DEG2RAD;
+        ctx.save();
+        ctx.strokeStyle = 'rgba(245, 158, 11, 0.88)';
+        ctx.lineWidth = 4;
+        ctx.setLineDash([14, 9]);
+        ctx.beginPath();
+        ctx.moveTo(cx - Math.cos(secRad) * (R + 14), cy - Math.sin(secRad) * (R + 14));
+        ctx.lineTo(cx + Math.cos(secRad) * (R + 14), cy + Math.sin(secRad) * (R + 14));
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.fillStyle = '#fcd34d';
+        ctx.font = 'bold 26px Inter, sans-serif';
+        ctx.fillText('A', cx - Math.cos(secRad) * (R + 42), cy - Math.sin(secRad) * (R + 42));
+        ctx.fillText("A'", cx + Math.cos(secRad) * (R + 42), cy + Math.sin(secRad) * (R + 42));
+      } else {
+        const dict = I18N[lang] || I18N.en;
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText(dict.secSurface, cx, cy - R - 40);
+        ctx.fillText(dict.secDepth, cx, cy + R + 40);
+        ctx.fillStyle = '#fcd34d';
+        ctx.fillText('A', cx - R - 38, cy);
+        ctx.fillText("A'", cx + R - 38, cy);
+      }
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.anisotropy = 8;
+      return tex;
+    }
+
+    // =========================================================================
+    // 3. Application State & Lossless Conjugate Involution Pair
+    // =========================================================================
+    const state = {
+      lang: 'en',
+      strike: 135,
+      dip: 60,
+      rake: 40,
+      profileAz: 45,
+      stressMag: 1.20,
+      autoSweep: false,
+      activePresetKey: 'oblique',
+      lastStatusType: 'default',
+      lastStatusArgs: [],
+      // Exact lossless pair { np1: {strike, dip, rake}, np2: {strike, dip, rake} }
+      conjugatePair: buildConjugatePair(135, 60, 40)
+    };
+
+    const PRESETS = {
+      strike_slip: { strike: 45,  dip: 88, rake: 0,   profileAz: 135, stressMag: 1.20, label: '45 / 88 / 0' },
+      normal:      { strike: 180, dip: 55, rake: -90, profileAz: 90,  stressMag: 1.20, label: '180 / 55 / -90' },
+      thrust:      { strike: 210, dip: 32, rake: 90,  profileAz: 120, stressMag: 1.25, label: '210 / 32 / 90' },
+      oblique:     { strike: 135, dip: 60, rake: 40,  profileAz: 45,  stressMag: 1.20, label: '135 / 60 / 40' }
+    };
+
+    const PRESET_BTN_BASE_CLASS = 'preset-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition';
+    const PRESET_BTN_ACTIVE_CLASS = 'preset-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/60 shadow-sm shadow-amber-500/10 transition';
+
+    function updatePresetButtonHighlights() {
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        if (btn.dataset.preset === state.activePresetKey) {
+          btn.className = PRESET_BTN_ACTIVE_CLASS;
+        } else {
+          btn.className = PRESET_BTN_BASE_CLASS;
+        }
+      });
+    }
+
+    function detectMatchingPresetKey(strike, dip, rake) {
+      for (const [key, p] of Object.entries(PRESETS)) {
+        if (Math.abs(p.strike - strike) < 0.5 && Math.abs(p.dip - dip) < 0.5 && Math.abs(p.rake - rake) < 0.5) {
+          return key;
+        }
+      }
+      return null;
+    }
+
+    // =========================================================================
+    // 4. COLUMN 01: 3D Fault Kinematics & Nodal Planes Stage
+    // =========================================================================
+    const col1Container = document.getElementById('col1Container');
+    const scene1 = new THREE.Scene();
+    scene1.background = new THREE.Color(0x060913);
+
+    const camera1 = new THREE.PerspectiveCamera(40, col1Container.clientWidth / col1Container.clientHeight, 0.1, 100);
+    const DEFAULT_CAM1 = new THREE.Vector3(4.9, 2.9, 5.3);
+    camera1.position.copy(DEFAULT_CAM1);
+
+    const renderer1 = new THREE.WebGLRenderer({ antialias: true });
+    renderer1.setSize(col1Container.clientWidth, col1Container.clientHeight);
+    renderer1.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    col1Container.appendChild(renderer1.domElement);
+
+    const controls1 = new THREE.OrbitControls(camera1, renderer1.domElement);
+    controls1.enableDamping = true;
+    controls1.dampingFactor = 0.07;
+
+    scene1.add(new THREE.AmbientLight(0xffffff, 0.78));
+    const dirLight1 = new THREE.DirectionalLight(0xffffff, 0.88);
+    dirLight1.position.set(5, 8, 6);
+    scene1.add(dirLight1);
+
+    const grid1 = new THREE.GridHelper(6.6, 14, 0x1e293b, 0x0f172a);
+    grid1.position.y = -2.05;
+    scene1.add(grid1);
+
+    const lblN1 = makeSpriteLabel('N', '#cbd5e1', 0.34);
+    lblN1.position.set(0, -1.95, -3.15);
+    const lblS1 = makeSpriteLabel('S', '#64748b', 0.30);
+    lblS1.position.set(0, -1.95, 3.15);
+    const lblE1 = makeSpriteLabel('E', '#94a3b8', 0.32);
+    lblE1.position.set(3.15, -1.95, 0);
+    const lblW1 = makeSpriteLabel('W', '#64748b', 0.30);
+    lblW1.position.set(-3.15, -1.95, 0);
+    scene1.add(lblN1, lblS1, lblE1, lblW1);
+
+    const faultGroup1 = new THREE.Group();
+    scene1.add(faultGroup1);
+    const R1 = 1.65;
+
+    const sphereCage1 = new THREE.Mesh(
+      new THREE.SphereGeometry(R1, 28, 18),
+      new THREE.MeshBasicMaterial({ color: 0x334155, wireframe: true, transparent: true, opacity: 0.14 })
+    );
+    faultGroup1.add(sphereCage1);
+
+    const eqRing1 = new THREE.Mesh(
+      new THREE.RingGeometry(R1 - 0.02, R1 + 0.025, 96),
+      new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide })
+    );
+    eqRing1.rotation.x = Math.PI / 2;
+
+    const secPlaneGroup1 = new THREE.Group();
+    const secRing1 = new THREE.Mesh(
+      new THREE.RingGeometry(R1 - 0.02, R1 + 0.025, 96),
+      new THREE.MeshBasicMaterial({ color: 0xf59e0b, side: THREE.DoubleSide })
+    );
+    const secBar1 = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.02, 0.02, 4.1, 8),
+      new THREE.MeshBasicMaterial({ color: 0xf59e0b })
+    );
+    secBar1.rotation.z = Math.PI / 2;
+    secBar1.position.y = -2.02;
+    const lblA1 = makeSpriteLabel('A', '#fcd34d', 0.34);
+    lblA1.position.set(-2.25, -1.85, 0);
+    const lblApr1 = makeSpriteLabel("A'", '#fcd34d', 0.34);
+    lblApr1.position.set(2.25, -1.85, 0);
+    secPlaneGroup1.add(secRing1, secBar1, lblA1, lblApr1);
+    faultGroup1.add(eqRing1, secPlaneGroup1);
+
+    const fDisk1 = new THREE.Mesh(
+      new THREE.CircleGeometry(R1, 96),
+      new THREE.MeshPhongMaterial({ color: 0x10b981, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false })
+    );
+    fDisk1.add(new THREE.Mesh(new THREE.RingGeometry(R1 - 0.025, R1 + 0.025, 96), new THREE.MeshBasicMaterial({ color: 0x34d399, side: THREE.DoubleSide })));
+    faultGroup1.add(fDisk1);
+
+    const aDisk1 = new THREE.Mesh(
+      new THREE.CircleGeometry(R1, 96),
+      new THREE.MeshPhongMaterial({ color: 0xa855f7, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false })
+    );
+    aDisk1.add(new THREE.Mesh(new THREE.RingGeometry(R1 - 0.025, R1 + 0.025, 96), new THREE.MeshBasicMaterial({ color: 0xc084fc, side: THREE.DoubleSide })));
+    faultGroup1.add(aDisk1);
+
+    const blockGeo1 = new THREE.BoxGeometry(1.36, 0.68, 0.54);
+    const hwMat1 = new THREE.MeshPhongMaterial({ color: 0x3b4d6b, transparent: true, opacity: 0.62 });
+    const fwMat1 = new THREE.MeshPhongMaterial({ color: 0x1e293b, transparent: true, opacity: 0.55 });
+    const hwMesh1 = new THREE.Mesh(blockGeo1, hwMat1);
+    const fwMesh1 = new THREE.Mesh(blockGeo1, fwMat1);
+    faultGroup1.add(hwMesh1, fwMesh1);
+
+    function create3DStressPair(colorHex, inward) {
+      const group = new THREE.Group();
+      const mat = new THREE.MeshPhongMaterial({ color: colorHex, emissive: colorHex, emissiveIntensity: 0.38 });
+      [-1, 1].forEach(side => {
+        const sub = new THREE.Group();
+        const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.68, 14), mat);
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.24, 18), mat);
+        if (inward) {
+          shaft.position.y = side * 1.38;
+          cone.position.y = side * 0.94;
+          cone.rotation.z = side === 1 ? Math.PI : 0;
+        } else {
+          shaft.position.y = side * 1.24;
+          cone.position.y = side * 1.68;
+          cone.rotation.z = side === 1 ? 0 : Math.PI;
+        }
+        sub.add(shaft, cone);
+        group.add(sub);
+      });
+      return group;
+    }
+
+    const pArrow1 = create3DStressPair(0xf43f5e, true);
+    const tArrow1 = create3DStressPair(0x38bdf8, false);
+    faultGroup1.add(pArrow1, tArrow1);
+
+    const slipGroup1 = new THREE.Group();
+    const sMat1 = new THREE.MeshPhongMaterial({ color: 0xfbbf24, emissive: 0xd97706, emissiveIntensity: 0.45 });
+    const sShaft1 = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.80, 14), sMat1);
+    sShaft1.position.y = 0.40;
+    const sCone1 = new THREE.Mesh(new THREE.ConeGeometry(0.095, 0.25, 18), sMat1);
+    sCone1.position.y = 0.90;
+    slipGroup1.add(sShaft1, sCone1);
+    faultGroup1.add(slipGroup1);
+
+    // =========================================================================
+    // 5. ZERO-ALIASING CUTAWAY HEMISPHERE STAGE BUILDER (Columns 02 & 03)
+    // =========================================================================
+    function createCutawayStage(containerEl, mode) {
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x060913);
+
+      const camera = new THREE.PerspectiveCamera(40, containerEl.clientWidth / containerEl.clientHeight, 0.1, 100);
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(containerEl.clientWidth, containerEl.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      containerEl.appendChild(renderer.domElement);
+
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.07;
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+      const keyLight = new THREE.DirectionalLight(0xffffff, 0.92);
+      keyLight.position.set(5, 8, 6);
+      scene.add(keyLight);
+
+      const R = 1.62;
+      const PROJ_OFFSET = 2.40;
+
+      const grid = new THREE.GridHelper(6.4, 14, 0x1e293b, 0x0f172a);
+      grid.position.y = -2.45;
+      scene.add(grid);
+
+      const rootGroup = new THREE.Group();
+      scene.add(rootGroup);
+
+      const bowlGeo = new THREE.SphereGeometry(R, 96, 48, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
+      const bowlMat = createBowlGLSLMaterial();
+      const bowlMesh = new THREE.Mesh(bowlGeo, bowlMat);
+      rootGroup.add(bowlMesh);
+
+      const rimGroup = new THREE.Group();
+      const cutRim = new THREE.Mesh(
+        new THREE.RingGeometry(R - 0.025, R + 0.032, 96),
+        new THREE.MeshBasicMaterial({ color: mode === 'map' ? 0x38bdf8 : 0xf59e0b, side: THREE.DoubleSide })
+      );
+      const cutFill = new THREE.Mesh(
+        new THREE.CircleGeometry(R, 96),
+        new THREE.MeshBasicMaterial({
+          color: mode === 'map' ? 0x38bdf8 : 0xf59e0b,
+          transparent: true,
+          opacity: 0.05,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        })
+      );
+      rimGroup.add(cutRim, cutFill);
+      rootGroup.add(rimGroup);
+
+      const faultArc = new THREE.Line(
+        new THREE.BufferGeometry(),
+        new THREE.LineBasicMaterial({ color: 0x10b981 })
+      );
+      const auxArc = new THREE.Line(
+        new THREE.BufferGeometry(),
+        new THREE.LineBasicMaterial({ color: 0xa855f7 })
+      );
+      rootGroup.add(faultArc, auxArc);
+
+      function makeMainBowlArrow(colorHex, inward) {
+        const g = new THREE.Group();
+        const mat = new THREE.MeshPhongMaterial({ color: colorHex, emissive: colorHex, emissiveIntensity: 0.42 });
+        const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.038, 0.78, 16), mat);
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.105, 0.25, 20), mat);
+        if (inward) {
+          cone.position.y = R + 0.13;
+          cone.rotation.z = Math.PI;
+          shaft.position.y = R + 0.62;
+        } else {
+          shaft.position.y = R + 0.39;
+          cone.position.y = R + 0.89;
+        }
+        g.add(shaft, cone);
+        return g;
+      }
+
+      const mainPArrow = makeMainBowlArrow(0xf43f5e, true);
+      const mainTArrow = makeMainBowlArrow(0x38bdf8, false);
+      const pLabel = makeSpriteLabel('P', '#fda4af', 0.34);
+      const tLabel = makeSpriteLabel('T', '#7dd3fc', 0.34);
+      rootGroup.add(mainPArrow, mainTArrow, pLabel, tLabel);
+
+      const fieldGroup = new THREE.Group();
+      const fieldPool = [];
+      const cMat = new THREE.MeshPhongMaterial({ color: 0xf43f5e, emissive: 0xe11d48, emissiveIntensity: 0.35 });
+      const tMat = new THREE.MeshPhongMaterial({ color: 0x38bdf8, emissive: 0x0284c7, emissiveIntensity: 0.35 });
+
+      const sampleLocalDirs = [];
+      [26, 52, 74].forEach((thetaDeg, rIdx) => {
+        const th = thetaDeg * DEG2RAD;
+        const cnt = rIdx === 0 ? 6 : (rIdx === 1 ? 10 : 12);
+        for (let k = 0; k < cnt; k++) {
+          const az = (k / cnt) * Math.PI * 2 + rIdx * 0.25;
+          sampleLocalDirs.push([
+            Math.cos(az) * Math.sin(th),
+            Math.sin(az) * Math.sin(th),
+            Math.cos(th)
+          ]);
+        }
+      });
+
+      sampleLocalDirs.forEach(localDir => {
+        const obj = new THREE.Group();
+        const sM = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.25, 8), cMat);
+        const cM = new THREE.Mesh(new THREE.ConeGeometry(0.040, 0.095, 12), cMat);
+        obj.add(sM, cM);
+        obj.userData = { localDir, sM, cM };
+        fieldGroup.add(obj);
+        fieldPool.push(obj);
+      });
+      rootGroup.add(fieldGroup);
+
+      const projGroup = new THREE.Group();
+      const discMat = createProjectionDiscGLSLMaterial();
+      discMat.uniforms.uRimColor.value = new THREE.Color(mode === 'map' ? '#38bdf8' : '#f59e0b');
+      const discMesh = new THREE.Mesh(new THREE.CircleGeometry(1.0, 128), discMat);
+      const discR = R * 1.02;
+      discMesh.scale.set(discR, discR, 1);
+      projGroup.add(discMesh);
+
+      const labelRingMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(R * 2.52, R * 2.52),
+        new THREE.MeshBasicMaterial({
+          map: createAnnotationRingTexture(mode, state.profileAz, state.lang),
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        })
+      );
+      labelRingMesh.position.z = 0.005;
+      projGroup.add(labelRingMesh);
+
+      const pDotMesh = new THREE.Mesh(
+        new THREE.CircleGeometry(0.055, 32),
+        new THREE.MeshBasicMaterial({ color: 0xf43f5e, side: THREE.DoubleSide })
+      );
+      pDotMesh.add(new THREE.Mesh(new THREE.RingGeometry(0.055, 0.072, 32), new THREE.MeshBasicMaterial({ color: 0x060913, side: THREE.DoubleSide })));
+      const pDiscLbl = makeSpriteLabel('P', '#ffffff', 0.28);
+
+      const tDotMesh = new THREE.Mesh(
+        new THREE.CircleGeometry(0.055, 32),
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide })
+      );
+      tDotMesh.add(new THREE.Mesh(new THREE.RingGeometry(0.055, 0.072, 32), new THREE.MeshBasicMaterial({ color: 0x060913, side: THREE.DoubleSide })));
+      const tDiscLbl = makeSpriteLabel('T', '#ffffff', 0.28);
+
+      projGroup.add(pDotMesh, pDiscLbl, tDotMesh, tDiscLbl);
+      rootGroup.add(projGroup);
+
+      const projRays = new THREE.LineSegments(
+        new THREE.BufferGeometry(),
+        new THREE.LineBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.44 })
+      );
+      const pRayLine = new THREE.Line(
+        new THREE.BufferGeometry(),
+        new THREE.LineDashedMaterial({ color: 0xf43f5e, dashSize: 0.1, gapSize: 0.05 })
+      );
+      const tRayLine = new THREE.Line(
+        new THREE.BufferGeometry(),
+        new THREE.LineDashedMaterial({ color: 0x38bdf8, dashSize: 0.1, gapSize: 0.05 })
+      );
+      rootGroup.add(projRays, pRayLine, tRayLine);
+
+      let lastRenderedKey = '';
+
+      function resetCamera(presetView = 'oblique', profileAzDeg = state.profileAz) {
+        if (mode === 'map') {
+          if (presetView === 'top') {
+            camera.position.set(0, 6.9, 0.001);
+            controls.target.set(0, -1.15, 0);
+          } else {
+            camera.position.set(4.1, 3.3, 4.6);
+            controls.target.set(0, -1.15, 0);
+          }
+        } else {
+          const azRad = profileAzDeg * DEG2RAD;
+          const right = [Math.cos(azRad), Math.sin(azRad), 0];
+          const into = normalizeVec(crossVec(right, [0, 0, 1]));
+          const r3 = nedToThree(right);
+          const i3 = nedToThree(into);
+          if (presetView === 'front') {
+            camera.position.copy(i3).multiplyScalar(-5.4);
+            controls.target.copy(i3).multiplyScalar(0.95);
+          } else {
+            camera.position.copy(i3).multiplyScalar(-4.5).addScaledVector(r3, -2.5).add(new THREE.Vector3(0, 2.1, 0));
+            controls.target.copy(i3).multiplyScalar(0.9);
+          }
+        }
+        controls.update();
+      }
+
+      resetCamera('oblique', state.profileAz);
+
+      function update(fm, profileAzDeg, stressMag, showField, showRays, lang) {
+        const basis = getViewBasis(mode, profileAzDeg);
+        const right3 = nedToThree(basis.right).normalize();
+        const down3  = nedToThree(basis.down).normalize();
+        const into3  = nedToThree(basis.into).normalize();
+
+        bowlMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), into3);
+        rimGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), into3);
+
+        const n3 = nedToThree(fm.n).normalize();
+        const d3 = nedToThree(fm.d).normalize();
+
+        bowlMat.uniforms.uNormal.value.copy(n3);
+        bowlMat.uniforms.uSlip.value.copy(d3);
+        bowlMat.uniforms.uRight.value.copy(right3);
+        bowlMat.uniforms.uDown.value.copy(down3);
+        bowlMat.uniforms.uInto.value.copy(into3);
+        bowlMat.uniforms.uStressScale.value = stressMag;
+
+        discMat.uniforms.uNormal.value.copy(n3);
+        discMat.uniforms.uSlip.value.copy(d3);
+        discMat.uniforms.uRight.value.copy(right3);
+        discMat.uniforms.uDown.value.copy(down3);
+        discMat.uniforms.uInto.value.copy(into3);
+        discMat.uniforms.uStressScale.value = stressMag;
+
+        const ringKey = `${profileAzDeg}_${lang}`;
+        if (lastRenderedKey !== ringKey) {
+          lastRenderedKey = ringKey;
+          if (labelRingMesh.material.map) labelRingMesh.material.map.dispose();
+          labelRingMesh.material.map = createAnnotationRingTexture(mode, profileAzDeg, lang);
+          labelRingMesh.material.needsUpdate = true;
+        }
+
+        const buildBowlArc = (planeNormal) => {
+          const ref = Math.abs(planeNormal[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0];
+          const u = normalizeVec(crossVec(planeNormal, ref));
+          const v = normalizeVec(crossVec(planeNormal, u));
+          const pts = [];
+          for (let i = 0; i <= 180; i++) {
+            const th = (i / 180) * Math.PI * 2;
+            const ptNed = [
+              u[0] * Math.cos(th) + v[0] * Math.sin(th),
+              u[1] * Math.cos(th) + v[1] * Math.sin(th),
+              u[2] * Math.cos(th) + v[2] * Math.sin(th)
+            ];
+            if (dotVec(ptNed, basis.into) >= 0) {
+              pts.push(nedToThree(ptNed).multiplyScalar(R * 1.005));
+            }
+          }
+          if (pts.length > 2) {
+            const center = new THREE.Vector3();
+            pts.forEach(p => center.add(p));
+            center.divideScalar(pts.length);
+            const nThree = nedToThree(planeNormal).normalize();
+            const refDir = pts[0].clone().sub(center).normalize();
+            const perpDir = new THREE.Vector3().crossVectors(nThree, refDir).normalize();
+            pts.sort((a, b) => {
+              const va = a.clone().sub(center);
+              const vb = b.clone().sub(center);
+              return Math.atan2(va.dot(perpDir), va.dot(refDir)) - Math.atan2(vb.dot(perpDir), vb.dot(refDir));
+            });
+          }
+          return pts;
+        };
+
+        const fPts = buildBowlArc(fm.n);
+        const aPts = buildBowlArc(fm.d);
+        faultArc.geometry.setFromPoints(fPts);
+        auxArc.geometry.setFromPoints(aPts);
+
+        const getBowlDir3 = (vecNed) => {
+          let v = [...vecNed];
+          if (dotVec(v, basis.into) < 0) v = [-v[0], -v[1], -v[2]];
+          return nedToThree(v).normalize();
+        };
+
+        const pDir3 = getBowlDir3(fm.P);
+        const tDir3 = getBowlDir3(fm.T);
+        const upY = new THREE.Vector3(0, 1, 0);
+
+        mainPArrow.quaternion.setFromUnitVectors(upY, pDir3);
+        mainTArrow.quaternion.setFromUnitVectors(upY, tDir3);
+
+        const aScale = 0.72 + 0.42 * stressMag;
+        mainPArrow.children.forEach(ch => ch.scale.set(0.85 + 0.25 * stressMag, aScale, 0.85 + 0.25 * stressMag));
+        mainTArrow.children.forEach(ch => ch.scale.set(0.85 + 0.25 * stressMag, aScale, 0.85 + 0.25 * stressMag));
+
+        pLabel.position.copy(pDir3).multiplyScalar(R + 0.88 * aScale + 0.22);
+        tLabel.position.copy(tDir3).multiplyScalar(R + 0.88 * aScale + 0.22);
+
+        fieldGroup.visible = showField;
+        fieldPool.forEach(obj => {
+          const { localDir, sM, cM } = obj.userData;
+          const [xR, yD, zI] = localDir;
+          const dirNed = [
+            xR * basis.right[0] + yD * basis.down[0] + zI * basis.into[0],
+            xR * basis.right[1] + yD * basis.down[1] + zI * basis.into[1],
+            xR * basis.right[2] + yD * basis.down[2] + zI * basis.into[2]
+          ];
+          const amp = 2 * dotVec(fm.n, dirNed) * dotVec(fm.d, dirNed);
+          const mag = Math.abs(amp) * stressMag;
+          if (mag < 0.08) {
+            obj.visible = false;
+            return;
+          }
+          obj.visible = true;
+          const surfPos = nedToThree(dirNed).multiplyScalar(R);
+          const outDir = surfPos.clone().normalize();
+          obj.position.copy(surfPos);
+          obj.quaternion.setFromUnitVectors(upY, outDir);
+
+          const lScale = 0.42 + mag * 0.90;
+          if (amp >= 0) {
+            sM.material = tMat;
+            cM.material = tMat;
+            sM.position.y = 0.125 * lScale;
+            sM.scale.set(1, lScale, 1);
+            cM.position.y = 0.28 * lScale;
+            cM.rotation.z = 0;
+          } else {
+            sM.material = cMat;
+            cM.material = cMat;
+            cM.position.y = 0.05;
+            cM.rotation.z = Math.PI;
+            sM.position.y = 0.05 + 0.125 * lScale;
+            sM.scale.set(1, lScale, 1);
+          }
+        });
+
+        projGroup.position.copy(into3).multiplyScalar(PROJ_OFFSET);
+        const rotMat = new THREE.Matrix4().makeBasis(right3, down3.clone().negate(), into3.clone().negate());
+        projGroup.quaternion.setFromRotationMatrix(rotMat);
+
+        const placeDiscMarker = (vecNed, dotMesh, lblSprite) => {
+          let v = [...vecNed];
+          if (dotVec(v, basis.into) < 0) v = [-v[0], -v[1], -v[2]];
+          const xR = dotVec(v, basis.right);
+          const yD = dotVec(v, basis.down);
+          const zI = dotVec(v, basis.into);
+          const proj = projectHemispherePt(xR, yD, zI);
+          dotMesh.position.set(proj.nx * discR, -proj.ny * discR, 0.008);
+          lblSprite.position.set(proj.nx * discR + 0.14, -proj.ny * discR - 0.06, 0.012);
+        };
+        placeDiscMarker(fm.P, pDotMesh, pDiscLbl);
+        placeDiscMarker(fm.T, tDotMesh, tDiscLbl);
+
+        projRays.visible = showRays;
+        pRayLine.visible = showRays;
+        tRayLine.visible = showRays;
+
+        if (showRays) {
+          const rayVerts = [];
+          fPts.forEach((pt3, i) => {
+            if (i % 3 !== 0) return;
+            const vNed = [-pt3.z / R, pt3.x / R, -pt3.y / R];
+            const xR = dotVec(vNed, basis.right);
+            const yD = dotVec(vNed, basis.down);
+            const zI = Math.max(0, dotVec(vNed, basis.into));
+            const proj = projectHemispherePt(xR, yD, zI);
+
+            const targetPt = new THREE.Vector3()
+              .addScaledVector(right3, proj.nx * discR)
+              .addScaledVector(down3, proj.ny * discR)
+              .addScaledVector(into3, PROJ_OFFSET - 0.01);
+
+            rayVerts.push(pt3.x, pt3.y, pt3.z, targetPt.x, targetPt.y, targetPt.z);
+          });
+          projRays.geometry.setAttribute('position', new THREE.Float32BufferAttribute(rayVerts, 3));
+
+          const updateAxisRay = (vecNed, lineObj) => {
+            let v = [...vecNed];
+            if (dotVec(v, basis.into) < 0) v = [-v[0], -v[1], -v[2]];
+            const start3 = nedToThree(v).multiplyScalar(R);
+            const xR = dotVec(v, basis.right);
+            const yD = dotVec(v, basis.down);
+            const zI = dotVec(v, basis.into);
+            const proj = projectHemispherePt(xR, yD, zI);
+
+            const end3 = new THREE.Vector3()
+              .addScaledVector(right3, proj.nx * discR)
+              .addScaledVector(down3, proj.ny * discR)
+              .addScaledVector(into3, PROJ_OFFSET - 0.01);
+
+            lineObj.geometry.setFromPoints([start3, end3]);
+            lineObj.computeLineDistances();
+          };
+          updateAxisRay(fm.P, pRayLine);
+          updateAxisRay(fm.T, tRayLine);
+        }
+      }
+
+      return { scene, camera, renderer, controls, update, resetCamera };
+    }
+
+    const stage2 = createCutawayStage(document.getElementById('col2Container'), 'map');
+    const stage3 = createCutawayStage(document.getElementById('col3Container'), 'section');
+
+    // =========================================================================
+    // 6. Bilingual Localization Engine & Master Update Loop
+    // =========================================================================
+    let currentFM = null;
+
+    function applyLanguage(lang) {
+      state.lang = lang;
+      const d = I18N[lang];
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+      document.title = d.docTitle;
+
+      const btnEN = document.getElementById('btnLangEN');
+      const btnZH = document.getElementById('btnLangZH');
+      if (lang === 'en') {
+        btnEN.className = 'px-2.5 py-1 rounded-md text-xs font-bold bg-sky-600 text-white shadow transition';
+        btnZH.className = 'px-2.5 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-white transition';
+      } else {
+        btnZH.className = 'px-2.5 py-1 rounded-md text-xs font-bold bg-sky-600 text-white shadow transition';
+        btnEN.className = 'px-2.5 py-1 rounded-md text-xs font-bold text-slate-400 hover:text-white transition';
+      }
+
+      document.getElementById('uiTitle').textContent = d.uiTitle;
+      document.getElementById('uiBadgeTheory').textContent = d.uiBadgeTheory;
+      document.getElementById('uiSubtitle').textContent = d.uiSubtitle;
+      document.getElementById('uiRegimesLabel').textContent = d.uiRegimesLabel;
+      document.getElementById('btnPresetSS').textContent = d.btnPresetSS;
+      document.getElementById('btnPresetNorm').textContent = d.btnPresetNorm;
+      document.getElementById('btnPresetThrust').textContent = d.btnPresetThrust;
+      document.getElementById('btnPresetOblique').textContent = d.btnPresetOblique;
+      document.getElementById('autoSweepText').textContent = state.autoSweep ? d.autoSweepPause : d.autoSweepStart;
+      document.getElementById('btnResetAllViews').textContent = d.btnResetAllViews;
+
+      document.getElementById('uiQueryLabel').textContent = d.uiQueryLabel;
+      document.getElementById('inputQuery').placeholder = d.inputPlaceholder;
+      document.getElementById('btnParseQuery').textContent = d.btnParseQuery;
+      document.getElementById('btnSwapNodal').textContent = d.btnSwapNodal;
+      document.getElementById('uiFormatsLabel').textContent = d.uiFormatsLabel;
+
+      document.getElementById('lblSliderStrike').textContent = d.lblSliderStrike;
+      document.getElementById('lblSliderDip').textContent = d.lblSliderDip;
+      document.getElementById('lblSliderRake').textContent = d.lblSliderRake;
+      document.getElementById('lblSliderProfile').textContent = d.lblSliderProfile;
+      document.getElementById('btnAlignParallel').textContent = d.btnAlignParallel;
+      document.getElementById('btnAlignPerp').textContent = d.btnAlignPerp;
+      document.getElementById('lblSliderStress').textContent = d.lblSliderStress;
+
+      document.getElementById('col1Title').textContent = d.col1Title;
+      document.getElementById('col1Sub').textContent = d.col1Sub;
+      document.getElementById('lblSlipReset').textContent = d.lblSlipReset;
+      document.getElementById('legFaultPlane').textContent = d.legFaultPlane;
+      document.getElementById('legAuxPlane').textContent = d.legAuxPlane;
+      document.getElementById('legSlipVec').textContent = d.legSlipVec;
+      document.getElementById('legPAxis').textContent = d.legPAxis;
+      document.getElementById('legTAxis').textContent = d.legTAxis;
+      document.getElementById('legBlueRing').textContent = d.legBlueRing;
+      document.getElementById('legYellowRing').textContent = d.legYellowRing;
+      document.getElementById('btnCam1Reset').textContent = d.btnCam1Reset;
+
+      document.getElementById('col2Title').textContent = d.col2Title;
+      document.getElementById('col2Sub').textContent = d.col2Sub;
+      document.getElementById('btn2Oblique').textContent = d.btn2Oblique;
+      document.getElementById('btn2Top').textContent = d.btn2Top;
+      document.getElementById('legLowerTitle').textContent = d.legLowerTitle;
+      document.getElementById('legComp').textContent = d.legComp;
+      document.getElementById('legDilat').textContent = d.legDilat;
+      document.getElementById('lbl2Vec').textContent = d.lblVec;
+      document.getElementById('lbl2Rays').textContent = d.lblRays;
+
+      document.getElementById('col3Title').textContent = d.col3Title;
+      document.getElementById('col3Sub').innerHTML = `${d.col3SubPrefix} <span id="lblSecAz" class="text-amber-300 font-semibold">A–A' (${Math.round(state.profileAz)}°)</span> ${d.col3SubSuffix}`;
+      document.getElementById('btn3Oblique').textContent = d.btn3Oblique;
+      document.getElementById('btn3Front').textContent = d.btn3Front;
+      document.getElementById('legBackTitle').textContent = d.legBackTitle;
+      document.getElementById('legBackAxes').textContent = d.legBackAxes;
+      document.getElementById('legBackNote').textContent = d.legBackNote;
+      document.getElementById('lbl3Vec').textContent = d.lblVec;
+      document.getElementById('lbl3Rays').textContent = d.lblRays;
+
+      refreshStatusText();
+      updateAll();
+    }
+
+    function refreshStatusText() {
+      const d = I18N[state.lang];
+      const statusEl = document.getElementById('parseStatus');
+      if (state.lastStatusType === 'parsed') {
+        const [fmtKey, s, dip, r] = state.lastStatusArgs;
+        statusEl.textContent = d.statusParsed(d.formats[fmtKey], formatAngle(s).replace('°', ''), formatAngle(dip).replace('°', ''), formatAngle(r).replace('°', ''));
+        statusEl.className = 'font-mono text-[11px] text-emerald-400';
+      } else if (state.lastStatusType === 'preset') {
+        statusEl.textContent = d.statusPreset(state.lastStatusArgs[0]);
+        statusEl.className = 'font-mono text-[11px] text-emerald-400';
+      } else if (state.lastStatusType === 'swapped') {
+        const [np1Str, np2Str] = state.lastStatusArgs;
+        statusEl.textContent = d.statusSwapped(np1Str, np2Str);
+        statusEl.className = 'font-mono text-[11px] text-purple-300';
+      } else if (state.lastStatusType === 'error') {
+        statusEl.textContent = d.statusError;
+        statusEl.className = 'font-mono text-[11px] text-rose-400';
+      } else {
+        statusEl.textContent = d.statusDefault;
+        statusEl.className = 'font-mono text-[11px] text-emerald-400';
+      }
+    }
+
+    function setPrimarySDR(strike, dip, rake, rebuildPair = true) {
+      state.strike = strike;
+      state.dip = dip;
+      state.rake = rake;
+      if (rebuildPair) {
+        state.conjugatePair = buildConjugatePair(strike, dip, rake);
+      }
+    }
+
+    function updateAll() {
+      const explicitAux = state.conjugatePair ? state.conjugatePair.np2 : null;
+      const fm = computeFocalMechanism(state.strike, state.dip, state.rake, explicitAux);
+      currentFM = fm;
+      const d = I18N[state.lang];
+
+      state.activePresetKey = detectMatchingPresetKey(state.strike, state.dip, state.rake);
+      updatePresetButtonHighlights();
+
+      document.getElementById('sliderStrike').value = Math.round(state.strike);
+      document.getElementById('sliderDip').value = Math.round(state.dip);
+      document.getElementById('sliderRake').value = Math.round(state.rake);
+      document.getElementById('sliderProfileAz').value = Math.round(state.profileAz);
+      document.getElementById('sliderStress').value = state.stressMag;
+
+      document.getElementById('valStrike').textContent = formatAngle(state.strike);
+      document.getElementById('valDip').textContent = formatAngle(state.dip);
+      document.getElementById('valRake').textContent = formatAngle(state.rake);
+      document.getElementById('valProfileAz').textContent = `${Math.round(state.profileAz)}°`;
+      document.getElementById('valStress').textContent = `${state.stressMag.toFixed(2)}×`;
+      const lblSecAz = document.getElementById('lblSecAz');
+      if (lblSecAz) lblSecAz.textContent = `A–A' (${Math.round(state.profileAz)}°)`;
+
+      const regimeKey = getRegimeKey(state.dip, state.rake);
+      const pTP = vecToTrendPlunge(fm.P);
+      const tTP = vecToTrendPlunge(fm.T);
+
+      document.getElementById('badgeRegime').textContent = d.regimes[regimeKey];
+      document.getElementById('readNP1').textContent = formatSDRTriplet(state.conjugatePair.np1);
+      document.getElementById('readNP2').textContent = formatSDRTriplet(state.conjugatePair.np2);
+      document.getElementById('readP').textContent = `${pTP.trend}° / ${pTP.plunge}°`;
+      document.getElementById('readT').textContent = `${tTP.trend}° / ${tTP.plunge}°`;
+
+      const n3 = nedToThree(fm.n).normalize();
+      const d3 = nedToThree(fm.d).normalize();
+      const p3 = nedToThree(fm.P).normalize();
+      const t3 = nedToThree(fm.T).normalize();
+
+      fDisk1.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), n3);
+      aDisk1.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), d3);
+      hwMesh1.quaternion.copy(fDisk1.quaternion);
+      fwMesh1.quaternion.copy(fDisk1.quaternion);
+
+      const upY = new THREE.Vector3(0, 1, 0);
+      pArrow1.quaternion.setFromUnitVectors(upY, p3);
+      tArrow1.quaternion.setFromUnitVectors(upY, t3);
+      const sScale1 = 0.78 + 0.35 * state.stressMag;
+      pArrow1.children.forEach(c => c.scale.set(1, sScale1, 1));
+      tArrow1.children.forEach(c => c.scale.set(1, sScale1, 1));
+      slipGroup1.quaternion.setFromUnitVectors(upY, d3);
+
+      secPlaneGroup1.rotation.y = -(state.profileAz - 90) * DEG2RAD;
+
+      stage2.update(
+        fm,
+        state.profileAz,
+        state.stressMag,
+        document.getElementById('chk2Field').checked,
+        document.getElementById('chk2Rays').checked,
+        state.lang
+      );
+      stage3.update(
+        fm,
+        state.profileAz,
+        state.stressMag,
+        document.getElementById('chk3Field').checked,
+        document.getElementById('chk3Rays').checked,
+        state.lang
+      );
+    }
+
+    function formatQueryInputString(sdr) {
+      const s = Math.abs(sdr.strike - Math.round(sdr.strike)) < 0.05 ? Math.round(sdr.strike) : sdr.strike.toFixed(1);
+      const d = Math.abs(sdr.dip - Math.round(sdr.dip)) < 0.05 ? Math.round(sdr.dip) : sdr.dip.toFixed(1);
+      const r = Math.abs(sdr.rake - Math.round(sdr.rake)) < 0.05 ? Math.round(sdr.rake) : sdr.rake.toFixed(1);
+      return `${s} / ${d} / ${r}`;
+    }
+
+    function executeQuery() {
+      stopAutoSweep();
+      const raw = document.getElementById('inputQuery').value;
+      const parsed = parseFocalMechanismInput(raw);
+
+      if (parsed) {
+        setPrimarySDR(parsed.strike, parsed.dip, parsed.rake, true);
+        state.lastStatusType = 'parsed';
+        state.lastStatusArgs = [parsed.formatKey, parsed.strike, parsed.dip, parsed.rake];
+        refreshStatusText();
+        updateAll();
+      } else {
+        state.lastStatusType = 'error';
+        state.lastStatusArgs = [];
+        refreshStatusText();
+      }
+    }
+
+    document.getElementById('btnLangEN').addEventListener('click', () => applyLanguage('en'));
+    document.getElementById('btnLangZH').addEventListener('click', () => applyLanguage('zh'));
+
+    document.getElementById('btnParseQuery').addEventListener('click', executeQuery);
+    document.getElementById('inputQuery').addEventListener('keydown', e => {
+      if (e.key === 'Enter') executeQuery();
+    });
+
+    document.querySelectorAll('.sample-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.getElementById('inputQuery').value = chip.dataset.sample;
+        executeQuery();
+      });
+    });
+
+    function stopAutoSweep() {
+      if (state.autoSweep) {
+        state.autoSweep = false;
+        document.getElementById('autoSweepIcon').textContent = '▶';
+        document.getElementById('autoSweepText').textContent = I18N[state.lang].autoSweepStart;
+      }
+    }
+
+    document.getElementById('sliderStrike').addEventListener('input', e => {
+      stopAutoSweep();
+      setPrimarySDR(parseInt(e.target.value, 10), state.dip, state.rake, true);
+      document.getElementById('inputQuery').value = formatQueryInputString(state.conjugatePair.np1);
+      state.lastStatusType = 'default';
+      refreshStatusText();
+      updateAll();
+    });
+    document.getElementById('sliderDip').addEventListener('input', e => {
+      stopAutoSweep();
+      setPrimarySDR(state.strike, parseInt(e.target.value, 10), state.rake, true);
+      document.getElementById('inputQuery').value = formatQueryInputString(state.conjugatePair.np1);
+      state.lastStatusType = 'default';
+      refreshStatusText();
+      updateAll();
+    });
+    document.getElementById('sliderRake').addEventListener('input', e => {
+      stopAutoSweep();
+      setPrimarySDR(state.strike, state.dip, parseInt(e.target.value, 10), true);
+      document.getElementById('inputQuery').value = formatQueryInputString(state.conjugatePair.np1);
+      state.lastStatusType = 'default';
+      refreshStatusText();
+      updateAll();
+    });
+    document.getElementById('sliderProfileAz').addEventListener('input', e => {
+      state.profileAz = parseInt(e.target.value, 10);
+      updateAll();
+    });
+    document.getElementById('sliderStress').addEventListener('input', e => {
+      state.stressMag = parseFloat(e.target.value);
+      updateAll();
+    });
+
+    document.getElementById('btnAlignParallel').addEventListener('click', () => {
+      state.profileAz = Math.round(state.strike) % 360;
+      updateAll();
+    });
+    document.getElementById('btnAlignPerp').addEventListener('click', () => {
+      state.profileAz = (Math.round(state.strike) + 90) % 360;
+      updateAll();
+    });
+
+    // Exact Lossless 2-State Involution Toggle (NP1 <-> NP2, Zero Drift)
+    document.getElementById('btnSwapNodal').addEventListener('click', () => {
+      stopAutoSweep();
+      const prevNP1 = { ...state.conjugatePair.np1 };
+      const prevNP2 = { ...state.conjugatePair.np2 };
+
+      // Swap the stored exact conjugate pair directly (A <-> B)
+      state.conjugatePair = {
+        np1: prevNP2,
+        np2: prevNP1
+      };
+      setPrimarySDR(prevNP2.strike, prevNP2.dip, prevNP2.rake, false);
+
+      document.getElementById('inputQuery').value = formatQueryInputString(prevNP2);
+      state.lastStatusType = 'swapped';
+      state.lastStatusArgs = [formatSDRTriplet(prevNP2), formatSDRTriplet(prevNP1)];
+      refreshStatusText();
+      updateAll();
+    });
+
+    document.getElementById('btnAutoSweep').addEventListener('click', () => {
+      state.autoSweep = !state.autoSweep;
+      document.getElementById('autoSweepIcon').textContent = state.autoSweep ? '⏸' : '▶';
+      document.getElementById('autoSweepText').textContent = state.autoSweep
+        ? I18N[state.lang].autoSweepPause
+        : I18N[state.lang].autoSweepStart;
+    });
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        stopAutoSweep();
+        const presetKey = btn.dataset.preset;
+        const p = PRESETS[presetKey];
+        if (!p) return;
+        setPrimarySDR(p.strike, p.dip, p.rake, true);
+        state.profileAz = p.profileAz;
+        state.stressMag = p.stressMag;
+        state.activePresetKey = presetKey;
+        document.getElementById('inputQuery').value = p.label;
+        state.lastStatusType = 'preset';
+        state.lastStatusArgs = [p.label];
+        refreshStatusText();
+        updateAll();
+      });
+    });
+
+    document.getElementById('btnCam1Reset').addEventListener('click', () => {
+      camera1.position.copy(DEFAULT_CAM1);
+      controls1.target.set(0, 0, 0);
+      controls1.update();
+    });
+    document.getElementById('btn2Oblique').addEventListener('click', () => stage2.resetCamera('oblique'));
+    document.getElementById('btn2Top').addEventListener('click', () => stage2.resetCamera('top'));
+    document.getElementById('btn3Oblique').addEventListener('click', () => stage3.resetCamera('oblique', state.profileAz));
+    document.getElementById('btn3Front').addEventListener('click', () => stage3.resetCamera('front', state.profileAz));
+
+    document.getElementById('btnResetAllViews').addEventListener('click', () => {
+      camera1.position.copy(DEFAULT_CAM1);
+      controls1.target.set(0, 0, 0);
+      controls1.update();
+      stage2.resetCamera('oblique');
+      stage3.resetCamera('oblique', state.profileAz);
+    });
+
+    document.getElementById('chk2Field').addEventListener('change', updateAll);
+    document.getElementById('chk2Rays').addEventListener('change', updateAll);
+    document.getElementById('chk3Field').addEventListener('change', updateAll);
+    document.getElementById('chk3Rays').addEventListener('change', updateAll);
+
+    const resizeObserver = new ResizeObserver(() => {
+      const views = [
+        { el: col1Container, cam: camera1, ren: renderer1 },
+        { el: document.getElementById('col2Container'), cam: stage2.camera, ren: stage2.renderer },
+        { el: document.getElementById('col3Container'), cam: stage3.camera, ren: stage3.renderer }
+      ];
+      views.forEach(({ el, cam, ren }) => {
+        if (!el.clientWidth || !el.clientHeight) return;
+        cam.aspect = el.clientWidth / el.clientHeight;
+        cam.updateProjectionMatrix();
+        ren.setSize(el.clientWidth, el.clientHeight);
+      });
+    });
+    resizeObserver.observe(col1Container);
+    resizeObserver.observe(document.getElementById('col2Container'));
+    resizeObserver.observe(document.getElementById('col3Container'));
+
+    // =========================================================================
+    // 7. Main Animation Loop
+    // =========================================================================
+    let lastTime = performance.now();
+    let sweepAccum = 0;
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+      const t = now / 1000;
+
+      if (state.autoSweep) {
+        sweepAccum += dt;
+        const s = Math.round((state.strike + dt * 6.5) % 360);
+        const d = Math.round(45 + Math.sin(sweepAccum * 0.35) * 32);
+        const r = Math.round(Math.sin(sweepAccum * 0.22) * 155);
+        setPrimarySDR(s, d, r, true);
+        document.getElementById('inputQuery').value = formatQueryInputString(state.conjugatePair.np1);
+        updateAll();
+      }
+
+      if (currentFM) {
+        const n3 = nedToThree(currentFM.n).normalize();
+        const d3 = nedToThree(currentFM.d).normalize();
+        const slipEnabled = document.getElementById('chkSlipMotion').checked;
+
+        let offset = 0.08;
+        let blockOpacity = 0.62;
+
+        if (slipEnabled) {
+          const cyclePeriod = 2.6;
+          const phase = t % cyclePeriod;
+          if (phase < 1.9) {
+            const u = phase / 1.9;
+            const eased = 1 - Math.pow(1 - u, 2.2);
+            offset = eased * 0.24;
+            blockOpacity = Math.min(0.62, u * 4.0 * 0.62);
+          } else if (phase < 2.3) {
+            offset = 0.24;
+            blockOpacity = 0.62;
+          } else {
+            const fade = 1 - (phase - 2.3) / 0.3;
+            offset = 0.24;
+            blockOpacity = Math.max(0.05, fade * 0.62);
+          }
+        }
+
+        hwMat1.opacity = blockOpacity;
+        fwMat1.opacity = blockOpacity * 0.9;
+
+        hwMesh1.position.copy(n3).multiplyScalar(0.34).addScaledVector(d3, offset);
+        fwMesh1.position.copy(n3).multiplyScalar(-0.34).addScaledVector(d3, -offset);
+        slipGroup1.position.copy(n3).multiplyScalar(0.22).addScaledVector(d3, offset * 0.65);
+      }
+
+      controls1.update();
+      stage2.controls.update();
+      stage3.controls.update();
+
+      renderer1.render(scene1, camera1);
+      stage2.renderer.render(stage2.scene, stage2.camera);
+      stage3.renderer.render(stage3.scene, stage3.camera);
+    }
+
+    window.onload = function () {
+      applyLanguage('en');
+      requestAnimationFrame(animate);
+    };
+  </script>
+</body>
+</html>
