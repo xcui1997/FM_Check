@@ -1,6 +1,8 @@
 # FM_Check — 3D Focal Mechanism & Stereographic Projection Lab
 # FM_Check — 三维震源机制与赤平投影交互可视化实验室
 
+**在线演示 / Live Demo** · [xcui1997.github.io/FM_Check](https://xcui1997.github.io/FM_Check/)
+
 [![GitHub Pages](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-0ea5e9?style=flat-square)](https://xcui1997.github.io/FM_Check/)
 [![Bilingual](https://img.shields.io/badge/Language-EN%20%2F%20%E4%B8%AD%E6%96%87-10b981?style=flat-square)](#)
 
