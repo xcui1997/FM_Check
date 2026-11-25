@@ -1,0 +1,2944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Section 9.1: Green's Functions &amp; The Moment Tensor | Interactive Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', '"Noto Sans SC"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F8FAFC;
+      color: #0F172A;
+      font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    }
+    .math-serif {
+      font-family: 'Times New Roman', Georgia, serif;
+    }
+    .math-var {
+      font-family: 'Times New Roman', Georgia, serif;
+      font-style: italic;
+    }
+    .math-vec {
+      font-family: 'Times New Roman', Georgia, serif;
+      font-weight: bold;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: #E2E8F0;
+      height: 6px;
+      border-radius: 999px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #0F172A;
+      cursor: pointer;
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+      transition: transform 0.12s ease, background-color 0.12s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.18);
+      background: #2563EB;
+    }
+    canvas {
+      display: block;
+      touch-action: none;
+    }
+    .card-academic {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    }
+    .mat-cell {
+      transition: all 0.15s ease;
+      cursor: pointer;
+    }
+    .mat-cell:hover {
+      transform: translateY(-1px);
+      border-color: #3B82F6;
+      background-color: #EFF6FF;
+    }
+    .mat-cell.selected {
+      border-color: #2563EB;
+      background-color: #DBEAFE;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+    }
+    @keyframes sliderFlash {
+      0% { background-color: #FEF08A; box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.4); }
+      100% { background-color: transparent; box-shadow: none; }
+    }
+    .slider-updated {
+      animation: sliderFlash 1.2s ease-out;
+      border-radius: 0.5rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-blue-100 selection:text-blue-900">
+
+  <!-- ==================== Top Academic Header & Language Switcher ==================== -->
+  <header class="bg-white/95 border-b border-slate-200 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      <div>
+        <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+          <span class="px-2.5 py-0.5 rounded-full bg-slate-900 text-white tracking-wide">
+            Peter M. Shearer · Introduction to Seismology (2nd Ed.)
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200" data-en="Section 9.1 · Visual Seismology Lab" data-zh="第 9.1 节 · 互动教学图解实验室">
+            Section 9.1 · Visual Seismology Lab
+          </span>
+        </div>
+        <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 mt-1 tracking-tight" data-en="Green's Functions &amp; The Moment Tensor" data-zh="格林函数与地震矩张量 (Green's Functions &amp; The Moment Tensor)">
+          Green's Functions &amp; The Moment Tensor
+        </h1>
+      </div>
+
+      <!-- Right: Representation Theorem Formula + English / 中文 Switcher -->
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-1.5 flex items-center gap-3">
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline" data-en="Representation Theorem" data-zh="点源表示定理">
+            Representation Theorem
+          </span>
+          <div class="text-sm sm:text-base text-slate-900 math-serif flex items-center gap-1">
+            <span><span class="math-var">u</span><sub><span class="math-var">i</span></sub>(<span class="math-vec">x</span>, <span class="math-var">t</span>)</span>
+            <span>=</span>
+            <span class="inline-flex flex-col items-center text-[10px] leading-none mx-0.5">
+              <span>3</span>
+              <span class="text-sm leading-none font-bold text-slate-800">∑</span>
+              <span><span class="math-var">j,k</span>=1</span>
+            </span>
+            <span class="text-red-600 font-bold"><span class="math-var">M</span><sub><span class="math-var">jk</span></sub>(<span class="math-var">t</span>)</span>
+            <span>*</span>
+            <span class="inline-flex flex-col items-center leading-tight text-blue-700 font-semibold">
+              <span class="border-b border-blue-400 px-1 text-xs">∂<span class="math-var">G</span><sub><span class="math-var">ij</span></sub>(<span class="math-vec">x</span>, <span class="math-var">t</span>; <span class="math-vec">ξ</span>)</span>
+              <span class="text-xs">∂<span class="math-var">ξ</span><sub><span class="math-var">k</span></sub></span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Clean Two-State Language Switcher: English (Default) | 中文 -->
+        <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 shadow-inner" role="group" aria-label="Language Switcher" id="lang-switcher-group">
+          <button type="button" data-lang="en" id="btn-lang-en" aria-pressed="true" class="lang-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white shadow-sm transition cursor-pointer">
+            English
+          </button>
+          <button type="button" data-lang="zh" id="btn-lang-zh" aria-pressed="false" class="lang-btn px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer">
+            中文
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <nav id="lab-navigation" aria-label="Interactive labs" class="max-w-7xl mx-auto px-4 sm:px-6 pb-2 flex flex-wrap items-center gap-2 text-xs font-semibold">
+      <a href="./index.html" class="rounded-lg px-2.5 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600" data-en="Focal Mechanisms" data-zh="三维震源机制">Focal Mechanisms</a>
+      <span aria-current="page" class="rounded-lg px-2.5 py-1.5 bg-blue-100 text-blue-800" data-en="Green’s Functions &amp; Moment Tensor" data-zh="格林函数与地震矩张量">Green’s Functions &amp; Moment Tensor</span>
+    </nav>
+
+    <!-- 4-Module Navigation Tabs -->
+    <nav id="section-navigation" aria-label="Lab sections" class="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1.5 overflow-x-auto pt-2 border-t border-slate-100">
+      <button type="button" onclick="switchTab('tab-intuition')" id="btn-tab-intuition"
+        class="tab-btn px-3.5 py-2 rounded-t-xl text-xs sm:text-sm font-bold border-b-2 border-blue-600 text-blue-700 bg-blue-50/70 transition whitespace-nowrap flex items-center gap-2">
+        <span class="w-5 h-5 rounded-md bg-blue-600 text-white flex items-center justify-center text-xs font-mono">0</span>
+        <span data-en="What is a Green's Function? Visual Guide" data-zh="什么是格林函数？物理直觉与图解">What is a Green's Function? Visual Guide</span>
+      </button>
+      <button type="button" onclick="switchTab('tab-couples')" id="btn-tab-couples"
+        class="tab-btn px-3.5 py-2 rounded-t-xl text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 transition whitespace-nowrap flex items-center gap-2">
+        <span class="w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-mono">1</span>
+        <span data-en="Nine Force Couples &amp; Moment Tensor Mᵢⱼ" data-zh="九个基本力偶与矩张量 Mᵢⱼ">Nine Force Couples &amp; Moment Tensor Mᵢⱼ</span>
+      </button>
+      <button type="button" onclick="switchTab('tab-green')" id="btn-tab-green"
+        class="tab-btn px-3.5 py-2 rounded-t-xl text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 transition whitespace-nowrap flex items-center gap-2">
+        <span class="w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-mono">2</span>
+        <span data-en="Spatial Derivative ∂Gᵢⱼ/∂ξₖ &amp; Wavefield" data-zh="空间导数 ∂Gᵢⱼ/∂ξₖ 与波场演化">Spatial Derivative ∂Gᵢⱼ/∂ξₖ &amp; Wavefield</span>
+      </button>
+      <button type="button" onclick="switchTab('tab-synth')" id="btn-tab-synth"
+        class="tab-btn px-3.5 py-2 rounded-t-xl text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 transition whitespace-nowrap flex items-center gap-2">
+        <span class="w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-mono">3</span>
+        <span data-en="Linear Superposition of Seismograms" data-zh="线性叠加合成地震图">Linear Superposition of Seismograms</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ==================== Main Workspace ==================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+
+    <!-- ========================================================================= -->
+    <!-- MODULE 0: Physical Intuition, 4 Illustrated Diagrams & Convolution Lab    -->
+    <!-- ========================================================================= -->
+    <section id="tab-intuition" class="tab-panel space-y-6">
+
+      <!-- Top Intro Banner -->
+      <div class="card-academic rounded-2xl p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white border-none">
+        <div class="max-w-4xl space-y-2">
+          <div class="text-xs font-bold uppercase tracking-widest text-sky-300" data-en="CONCEPTUAL FOUNDATION · VISUAL INTUITION" data-zh="核心概念破冰 · 物理直觉与图解">
+            CONCEPTUAL FOUNDATION · VISUAL INTUITION
+          </div>
+          <h2 class="text-xl sm:text-2xl font-extrabold" data-en="Why Do Seismologists Need Green's Functions &amp; Moment Tensors?" data-zh="为什么地震学家需要“格林函数”与“地震矩张量”？">
+            Why Do Seismologists Need Green's Functions &amp; Moment Tensors?
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-200 leading-relaxed" data-en="A seismogram uᵢ(x, t) couples two distinct physics: (1) how the fault ruptures (source Mⱼₖ), and (2) how seismic waves propagate, refract, and reflect through Earth's structure (path impulse response Gᵢⱼ). Green's functions decouple path effects from source physics!" data-zh="一条地震波记录 uᵢ(x, t) 混杂了两个物理过程：(1) 断层是怎么破裂的（震源特征 Mⱼₖ）；(2) 地震波在地球内部是如何传播、折射与反射的（介质路径响应 Gᵢⱼ）。格林函数正是将“地球路径效应”与“震源机制”解耦的数学钥匙！">
+            A seismogram uᵢ(x, t) couples two distinct physics: (1) how the fault ruptures (source Mⱼₖ), and (2) how seismic waves propagate, refract, and reflect through Earth's structure (path impulse response Gᵢⱼ). Green's functions decouple path effects from source physics!
+          </p>
+        </div>
+      </div>
+
+      <!-- Diagrams 1 & 2 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Diagram 1: Impulse Response G_ij -->
+        <div class="card-academic rounded-2xl p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="px-2.5 py-0.5 rounded-md bg-blue-100 text-blue-800 text-xs font-bold" data-en="Diagram 1 · Subscript Geometry" data-zh="图解 1 · 下标几何意义">Diagram 1 · Subscript Geometry</span>
+              <div class="flex items-center gap-1.5 text-xs">
+                <span class="text-slate-500 font-medium" data-en="Force direction j:" data-zh="切换施力方向 j:">Force direction j:</span>
+                <button type="button" onclick="setDiag1Force('x')" id="d1-btn-x" class="px-2 py-1 rounded bg-red-600 text-white font-mono font-bold">j = x</button>
+                <button type="button" onclick="setDiag1Force('y')" id="d1-btn-y" class="px-2 py-1 rounded bg-slate-100 text-slate-700 font-mono font-bold hover:bg-slate-200">j = y</button>
+                <button type="button" onclick="setDiag1Force('z')" id="d1-btn-z" class="px-2 py-1 rounded bg-slate-100 text-slate-700 font-mono font-bold hover:bg-slate-200">j = z</button>
+              </div>
+            </div>
+            <h3 class="text-base font-bold text-slate-900 mt-2" data-en="What Do Subscripts i and j Represent in Gᵢⱼ(x, t; ξ)?" data-zh="Gᵢⱼ(x, t; ξ) 中的下标 i 与 j 分别代表什么？">
+              What Do Subscripts i and j Represent in Gᵢⱼ(x, t; ξ)?
+            </h3>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed" data-en="Rule of thumb: First subscript i is the receiver displacement component; second subscript j is the unit impulse force direction at the source (cause on right, effect on left)." data-zh="记忆口诀：第一个下标 i 是接收台站观测位移方向，第二个下标 j 是震源处施加单位脉冲力的方向（即“因在右，果在左”）。">
+              Rule of thumb: First subscript i is the receiver displacement component; second subscript j is the unit impulse force direction at the source (cause on right, effect on left).
+            </p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+            <svg id="svg-diag1" viewBox="0 0 540 230" class="w-full h-auto">
+              <defs>
+                <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#DC2626"/>
+                </marker>
+                <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563EB"/>
+                </marker>
+                <marker id="arrow-gray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748B"/>
+                </marker>
+              </defs>
+
+              <rect x="10" y="10" width="520" height="210" rx="12" fill="#F1F5F9" stroke="#CBD5E1" stroke-dasharray="4 4"/>
+              <text x="270" y="30" text-anchor="middle" fill="#64748B" font-size="11" font-weight="600">
+                Elastic Earth Medium · P &amp; S Wave Propagation
+              </text>
+
+              <path d="M 115 125 Q 245 65 385 110" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-gray)"/>
+              <path d="M 115 125 Q 250 175 385 115" fill="none" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="3 3"/>
+              <text x="248" y="82" text-anchor="middle" fill="#475569" font-size="11" font-style="italic" font-family="Times New Roman">
+                Green's Function G<tspan dy="3" font-size="9">ij</tspan><tspan dy="-3">(x, t; ξ, 0)</tspan>
+              </text>
+
+              <circle cx="105" cy="125" r="34" fill="#FEE2E2" stroke="#FCA5A5" stroke-width="1.5"/>
+              <circle cx="105" cy="125" r="5" fill="#DC2626"/>
+              <text x="105" y="176" text-anchor="middle" fill="#991B1B" font-size="12" font-weight="bold">
+                Source Position ξ
+              </text>
+              <line x1="55" y1="125" x2="155" y2="125" stroke="#94A3B8" stroke-width="1"/>
+              <line x1="105" y1="75" x2="105" y2="162" stroke="#94A3B8" stroke-width="1"/>
+              <text x="158" y="128" fill="#64748B" font-size="10" font-family="monospace">x</text>
+              <text x="108" y="74" fill="#64748B" font-size="10" font-family="monospace">z</text>
+
+              <line id="svg1-force-arrow" x1="105" y1="125" x2="152" y2="125" stroke="#DC2626" stroke-width="3.5" marker-end="url(#arrow-red)"/>
+              <text id="svg1-force-text" x="122" y="113" fill="#DC2626" font-size="11" font-weight="bold" font-family="Times New Roman">
+                Impulse Force f<tspan dy="3" font-size="8">x</tspan><tspan dy="-3">(t)=δ(t)</tspan>
+              </text>
+
+              <polygon points="395,105 385,123 405,123" fill="#0F172A"/>
+              <text x="395" y="138" text-anchor="middle" fill="#0F172A" font-size="11" font-weight="bold">
+                Receiver Station x
+              </text>
+              <text x="395" y="151" text-anchor="middle" fill="#2563EB" font-size="10" font-weight="bold" font-family="Times New Roman">
+                Displacement u<tspan dy="2" font-size="8">i</tspan>
+              </text>
+
+              <g transform="translate(418, 45)">
+                <text x="0" y="12" fill="#2563EB" font-size="11" font-weight="bold" font-family="Times New Roman" id="svg1-g-x">G<tspan dy="2" font-size="8">xx</tspan></text>
+                <path id="svg1-wave-x" d="M 24 10 L 42 10 L 47 1 L 53 19 L 59 5 L 65 13 L 72 10 L 105 10" fill="none" stroke="#2563EB" stroke-width="2"/>
+
+                <text x="0" y="65" fill="#2563EB" font-size="11" font-weight="bold" font-family="Times New Roman" id="svg1-g-y">G<tspan dy="2" font-size="8">yx</tspan></text>
+                <path id="svg1-wave-y" d="M 24 63 L 50 63 L 55 57 L 61 69 L 67 61 L 73 63 L 105 63" fill="none" stroke="#3B82F6" stroke-width="1.8"/>
+
+                <text x="0" y="118" fill="#2563EB" font-size="11" font-weight="bold" font-family="Times New Roman" id="svg1-g-z">G<tspan dy="2" font-size="8">zx</tspan></text>
+                <path id="svg1-wave-z" d="M 24 116 L 44 116 L 49 124 L 55 106 L 62 121 L 68 116 L 105 116" fill="none" stroke="#1D4ED8" stroke-width="2"/>
+              </g>
+            </svg>
+          </div>
+
+          <div id="diag1-caption" class="bg-blue-50/80 border border-blue-200 rounded-xl p-3 text-xs text-slate-700 leading-relaxed">
+            Current: Unit impulse force along <b class="text-red-600">x-axis</b> (<i>f<sub>x</sub></i>) produces 3-component Green's responses <b>G<sub>xx</sub>, G<sub>yx</sub>, G<sub>zx</sub></b> at station <b>x</b>.
+          </div>
+        </div>
+
+        <!-- Diagram 2: Spatial Derivative & Force Couple -->
+        <div class="card-academic rounded-2xl p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="px-2.5 py-0.5 rounded-md bg-red-100 text-red-800 text-xs font-bold" data-en="Diagram 2 · Force Couples &amp; Spatial Derivative" data-zh="图解 2 · 力偶与空间偏导数">Diagram 2 · Force Couples &amp; Spatial Derivative</span>
+              <span class="text-xs font-mono text-slate-500">M<sub>jk</sub> · ∂G<sub>ij</sub>/∂ξ<sub>k</sub></span>
+            </div>
+            <h3 class="text-base font-bold text-slate-900 mt-2" data-en="Why Does a Force Couple Produce a Spatial Derivative of Gᵢⱼ?" data-zh="为什么力偶的响应是格林函数的“空间偏导数”？">
+              Why Does a Force Couple Produce a Spatial Derivative of Gᵢⱼ?
+            </h3>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed" data-en="Fault slip is driven by internal opposing forces (+fⱼ and -fⱼ) separated by an infinitesimal lever arm δξₖ along direction k." data-zh="断层错动属于内力，由成对反向力偶组成：一对大小相等、方向相反（+fⱼ 与 -fⱼ），且沿 k 方向相距微小力臂 δξₖ 的力。">
+              Fault slip is driven by internal opposing forces (+fⱼ and -fⱼ) separated by an infinitesimal lever arm δξₖ along direction k.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+            <svg viewBox="0 0 540 230" class="w-full h-auto">
+              <rect x="10" y="10" width="520" height="210" rx="12" fill="#F8FAFC" stroke="#CBD5E1"/>
+
+              <g transform="translate(30, 32)">
+                <rect x="0" y="0" width="215" height="72" rx="8" fill="#FEF2F2" stroke="#FECACA"/>
+                <text x="12" y="20" fill="#991B1B" font-size="11" font-weight="bold">① Force +fⱼ at (ξ + δξₖêₖ)</text>
+                <line x1="25" y1="45" x2="75" y2="45" stroke="#DC2626" stroke-width="3" marker-end="url(#arrow-red)"/>
+                <text x="85" y="49" fill="#0F172A" font-size="11" font-family="Times New Roman">
+                  u<tspan dy="2" font-size="8">i</tspan><tspan dy="-2">(+) = f</tspan><tspan dy="2" font-size="8">j</tspan><tspan dy="-2"> · G</tspan><tspan dy="2" font-size="8">ij</tspan><tspan dy="-2">(ξ + δξ</tspan><tspan dy="2" font-size="8">k</tspan><tspan dy="-2">ê</tspan><tspan dy="2" font-size="8">k</tspan><tspan dy="-2">)</tspan>
+                </text>
+              </g>
+
+              <g transform="translate(30, 122)">
+                <rect x="0" y="0" width="215" height="72" rx="8" fill="#EFF6FF" stroke="#BFDBFE"/>
+                <text x="12" y="20" fill="#1E40AF" font-size="11" font-weight="bold">② Force -fⱼ at (ξ)</text>
+                <line x1="75" y1="45" x2="25" y2="45" stroke="#2563EB" stroke-width="3" marker-end="url(#arrow-blue)"/>
+                <text x="85" y="49" fill="#0F172A" font-size="11" font-family="Times New Roman">
+                  u<tspan dy="2" font-size="8">i</tspan><tspan dy="-2">(-) = -f</tspan><tspan dy="2" font-size="8">j</tspan><tspan dy="-2"> · G</tspan><tspan dy="2" font-size="8">ij</tspan><tspan dy="-2">(ξ)</tspan>
+                </text>
+              </g>
+
+              <path d="M 255 68 L 275 68 L 275 158 L 255 158" fill="none" stroke="#64748B" stroke-width="1.8"/>
+              <line x1="275" y1="113" x2="296" y2="113" stroke="#64748B" stroke-width="1.8" marker-end="url(#arrow-gray)"/>
+
+              <g transform="translate(302, 26)">
+                <rect x="0" y="0" width="212" height="176" rx="10" fill="#FFFBEB" stroke="#FDE68A" stroke-width="1.5"/>
+                <text x="106" y="22" text-anchor="middle" fill="#92400E" font-size="11" font-weight="bold">③ Point-Source Limit (δξₖ → 0)</text>
+
+                <line x1="106" y1="46" x2="106" y2="96" stroke="#D97706" stroke-width="2" stroke-dasharray="3 2"/>
+                <text x="113" y="75" fill="#B45309" font-size="10" font-weight="bold">Arm δξₖ (ΣF = 0)</text>
+
+                <line x1="106" y1="46" x2="156" y2="46" stroke="#DC2626" stroke-width="2.8" marker-end="url(#arrow-red)"/>
+                <text x="162" y="49" fill="#DC2626" font-size="10" font-weight="bold">Force +fⱼ</text>
+
+                <line x1="106" y1="96" x2="56" y2="96" stroke="#2563EB" stroke-width="2.8" marker-end="url(#arrow-blue)"/>
+                <text x="14" y="99" fill="#2563EB" font-size="10" font-weight="bold">Force -fⱼ</text>
+
+                <rect x="10" y="114" width="192" height="50" rx="6" fill="#FFFFFF" stroke="#FCD34D"/>
+                <text x="106" y="133" text-anchor="middle" fill="#0F172A" font-size="11" font-family="Times New Roman">
+                  u<tspan dy="2" font-size="8">i</tspan><tspan dy="-2"> ≈ (f</tspan><tspan dy="2" font-size="8">j</tspan><tspan dy="-2">·δξ</tspan><tspan dy="2" font-size="8">k</tspan><tspan dy="-2">) · (∂G</tspan><tspan dy="2" font-size="8">ij</tspan><tspan dy="-2"> / ∂ξ</tspan><tspan dy="2" font-size="8">k</tspan><tspan dy="-2">)</tspan>
+                </text>
+                <text x="106" y="153" text-anchor="middle" fill="#B45309" font-size="11" font-weight="bold" font-family="Times New Roman">
+                  Moment M<tspan dy="2" font-size="8">jk</tspan><tspan dy="-2"> = f</tspan><tspan dy="2" font-size="8">j</tspan><tspan dy="-2"> · δξ</tspan><tspan dy="2" font-size="8">k</tspan>
+                </text>
+              </g>
+            </svg>
+          </div>
+
+          <div class="bg-amber-50/90 border border-amber-200 rounded-xl p-3 text-xs text-slate-700 leading-relaxed" data-en="Key Intuition: Taking the point-source limit δξₖ → 0 while keeping Mⱼₖ = fⱼ δξₖ finite turns the opposing force pair into the spatial partial derivative ∂/∂ξₖ!" data-zh="关键直觉：当力臂 δξₖ → 0 同时力 fⱼ → ∞ 保持乘积 Mⱼₖ = fⱼ δξₖ 有限时，一对反向力就浓缩成了数学上的空间偏导算子 ∂/∂ξₖ！">
+            Key Intuition: Taking the point-source limit δξₖ → 0 while keeping Mⱼₖ = fⱼ δξₖ finite turns the opposing force pair into the spatial partial derivative ∂/∂ξₖ!
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Diagrams 3 & 4: Angular Momentum Conservation + Interactive Convolution Lab -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Diagram 3: Angular Momentum Conservation (5 cols) -->
+        <div class="lg:col-span-5 card-academic rounded-2xl p-5 flex flex-col justify-between space-y-4">
+          <div>
+            <span class="px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-xs font-bold" data-en="Diagram 3 · Conservation of Angular Momentum" data-zh="图解 3 · 角动量守恒律">Diagram 3 · Conservation of Angular Momentum</span>
+            <h3 class="text-base font-bold text-slate-900 mt-2" data-en="Why Must Earthquakes Be Double Couples Instead of Single Couples?" data-zh="为什么地震不能是“单力偶”，而必须是“双力偶”？">
+              Why Must Earthquakes Be Double Couples Instead of Single Couples?
+            </h3>
+            <p class="text-xs text-slate-600 mt-1 leading-relaxed" data-en="Internal faulting cannot exert a net external torque on the Earth; otherwise angular momentum conservation would be violated." data-zh="地球内部的断层破裂属于内力作用，不能产生净旋转力矩（否则地球自转角动量会凭空改变）。">
+              Internal faulting cannot exert a net external torque on the Earth; otherwise angular momentum conservation would be violated.
+            </p>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+            <svg viewBox="0 0 420 205" class="w-full h-auto">
+              <g transform="translate(15, 15)">
+                <rect x="0" y="0" width="180" height="175" rx="10" fill="#FEF2F2" stroke="#FECACA"/>
+                <text x="90" y="22" text-anchor="middle" fill="#991B1B" font-size="10.5" font-weight="bold">✗ Single Couple (Torque ≠ 0)</text>
+
+                <path d="M 65 92 A 25 25 0 1 1 115 92" fill="none" stroke="#DC2626" stroke-width="2" stroke-dasharray="3 2" marker-end="url(#arrow-red)"/>
+                <text x="90" y="96" text-anchor="middle" fill="#DC2626" font-size="10" font-weight="bold">Net Torque τ ≠ 0</text>
+
+                <line x1="55" y1="62" x2="125" y2="62" stroke="#DC2626" stroke-width="3" marker-end="url(#arrow-red)"/>
+                <line x1="125" y1="122" x2="55" y2="122" stroke="#DC2626" stroke-width="3" marker-end="url(#arrow-red)"/>
+
+                <text x="90" y="152" text-anchor="middle" fill="#7F1D1D" font-size="10">M₁₂ ≠ 0, M₂₁ = 0 (Unbalanced)</text>
+              </g>
+
+              <g transform="translate(215, 15)">
+                <rect x="0" y="0" width="190" height="175" rx="10" fill="#ECFDF5" stroke="#A7F3D0"/>
+                <text x="95" y="22" text-anchor="middle" fill="#065F46" font-size="10.5" font-weight="bold">✓ Double Couple (M₁₂ = M₂₁)</text>
+
+                <line x1="60" y1="60" x2="130" y2="60" stroke="#DC2626" stroke-width="2.8" marker-end="url(#arrow-red)"/>
+                <line x1="130" y1="124" x2="60" y2="124" stroke="#DC2626" stroke-width="2.8" marker-end="url(#arrow-red)"/>
+
+                <line x1="60" y1="124" x2="60" y2="60" stroke="#2563EB" stroke-width="2.8" marker-end="url(#arrow-blue)"/>
+                <line x1="130" y1="60" x2="130" y2="124" stroke="#2563EB" stroke-width="2.8" marker-end="url(#arrow-blue)"/>
+
+                <circle cx="95" cy="92" r="18" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+                <text x="95" y="96" text-anchor="middle" fill="#047857" font-size="10" font-weight="bold">Torque = 0</text>
+
+                <text x="95" y="152" text-anchor="middle" fill="#064E3B" font-size="10">Balanced Shear (Mⱼₖ = Mₖⱼ)</text>
+              </g>
+            </svg>
+          </div>
+
+          <div class="text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-xl p-3 leading-relaxed" data-en="Consequently, symmetry (Mⱼₖ = Mₖⱼ) reduces the 9 components of the 3×3 moment tensor to only 6 independent components!" data-zh="因此，3×3 矩张量虽然有 9 个矩阵元素，但因对称性 M₁₂=M₂₁, M₁₃=M₃₁, M₂₃=M₃₂，实际上只有 6 个独立分量！">
+            Consequently, symmetry (Mⱼₖ = Mₖⱼ) reduces the 9 components of the 3×3 moment tensor to only 6 independent components!
+          </div>
+        </div>
+
+        <!-- Diagram 4: Interactive Temporal Convolution Lab (7 cols) -->
+        <div class="lg:col-span-7 card-academic rounded-2xl p-5 flex flex-col justify-between space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <span class="px-2.5 py-0.5 rounded-md bg-purple-100 text-purple-800 text-xs font-bold" data-en="Interactive Lab · Temporal Convolution" data-zh="互动实验 · 褶积(卷积)物理过程">Interactive Lab · Temporal Convolution</span>
+              <h3 class="text-base font-bold text-slate-900 mt-1.5" data-en="How Does Convolution of Source Time Function &amp; Green's Function Form a Seismogram?" data-zh="观测地震图如何由“震源时间函数”与“格林函数”卷积生成？">
+                How Does Convolution of Source Time Function &amp; Green's Function Form a Seismogram?
+              </h3>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 text-xs">
+              <span class="text-slate-500 font-medium" data-en="Source s(t):" data-zh="震源函数:">Source s(t):</span>
+              <button type="button" onclick="setConvSTF('impulse')" id="conv-btn-impulse" class="conv-btn px-2 py-1 rounded-lg bg-slate-900 text-white font-semibold" data-en="Gaussian Impulse" data-zh="δ(t) 脉冲">Gaussian Impulse</button>
+              <button type="button" onclick="setConvSTF('boxcar')" id="conv-btn-boxcar" class="conv-btn px-2 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold" data-en="Boxcar" data-zh="矩形破裂">Boxcar</button>
+              <button type="button" onclick="setConvSTF('brune')" id="conv-btn-brune" class="conv-btn px-2 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold" data-en="Brune Pulse" data-zh="Brune 脉冲">Brune Pulse</button>
+              <button type="button" onclick="setConvSTF('ricker')" id="conv-btn-ricker" class="conv-btn px-2 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold" data-en="Ricker Wavelet" data-zh="Ricker 子波">Ricker Wavelet</button>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs">
+            <span class="font-semibold text-slate-700" data-en="Fault Rise Time / Pulse Width τᵣ:" data-zh="断层上升时间 / 脉冲宽度 τᵣ:">Fault Rise Time / Pulse Width τᵣ:</span>
+            <div class="flex items-center gap-2.5 flex-1 max-w-xs">
+              <input type="range" id="conv-tau" min="0.2" max="2.2" step="0.1" value="0.8" class="w-full" oninput="updateConvTau(this.value)">
+              <span id="conv-tau-val" class="font-mono font-bold text-red-600 w-11 text-right">0.8 s</span>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-600 leading-relaxed" data-en="Green's function G(t) is Earth's impulse echo train (direct P, crustal reflection PmP, direct S). Convolving G(t) with a finite-duration source time function f(t) produces the observed seismogram u(t) = f(t) * G(t)!" data-zh="格林函数 G(t) 是地球对瞬时单位脉冲的“回声序列”（含直达 P 波、地壳反射 PmP 波、直达 S 波）。当断层持续破裂产生有限宽度的震源函数 f(t) 时，两者做线性时间卷积 u(t) = f(t) * G(t)，即得到台站记录到的真实地震图！">
+            Green's function G(t) is Earth's impulse echo train (direct P, crustal reflection PmP, direct S). Convolving G(t) with a finite-duration source time function f(t) produces the observed seismogram u(t) = f(t) * G(t)!
+          </p>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex-1 min-h-[245px]">
+            <canvas id="canvas-convolution" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- MODULE 1: 9 Force Couples, 3x3 Moment Tensor, Diagnostics & Repair        -->
+    <!-- ========================================================================= -->
+    <section id="tab-couples" class="tab-panel hidden space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        <!-- Left 7 Cols: 3D Rotatable Couple Diagram + Beachball -->
+        <div class="lg:col-span-7 card-academic rounded-2xl p-4 flex flex-col">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span>
+                <span data-en="3D Geometry of 9 Elementary Force Couples &amp; Principal Axes" data-zh="九个基本力偶 (Force Couples) 3D 几何与主应力轴">3D Geometry of 9 Elementary Force Couples &amp; Principal Axes</span>
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5" data-en="Coordinates: x₁=North, x₂=East, x₃=Down. Drag to rotate 3D view; lower-hemisphere beachball updates live." data-zh="坐标系：x₁=北(N), x₂=东(E), x₃=下(Down)。拖拽旋转3D视角，左下角同步投影下半球沙滩球。">
+                Coordinates: x₁=North, x₂=East, x₃=Down. Drag to rotate 3D view; lower-hemisphere beachball updates live.
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="resetCamera3D()" class="px-2.5 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold rounded-lg border border-slate-300 transition" data-en="Reset View" data-zh="重置视角">
+                Reset View
+              </button>
+              <label class="flex items-center gap-1.5 text-xs text-slate-700 bg-slate-100 px-2.5 py-1.5 rounded-lg border border-slate-300 cursor-pointer font-medium">
+                <input type="checkbox" id="toggle-torque-demo" class="accent-red-600" onchange="toggleTorqueMode(this.checked)">
+                <span data-en="Asymmetric Test (M₁₂ ≠ M₂₁)" data-zh="非对称检验 (M₁₂ ≠ M₂₁)">Asymmetric Test (M₁₂ ≠ M₂₁)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="relative flex-1 min-h-[410px] sm:min-h-[450px] bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+            <canvas id="canvas-couples" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+
+            <!-- Top-Left Legend -->
+            <div class="absolute top-3 left-3 bg-white/90 backdrop-blur border border-slate-200 rounded-xl p-2.5 text-xs space-y-1.5 shadow-sm pointer-events-none">
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-1 rounded-full bg-red-600 inline-block"></span>
+                <span class="text-slate-700 font-medium" data-en="+Mⱼₖ: Outward / Positive Couple" data-zh="+Mⱼₖ：向外拉张 / 正向力偶">+Mⱼₖ: Outward / Positive Couple</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-1 rounded-full bg-blue-600 inline-block"></span>
+                <span class="text-slate-700 font-medium" data-en="-Mⱼₖ: Inward / Negative Couple" data-zh="-Mⱼₖ：向内压缩 / 反向力偶">-Mⱼₖ: Inward / Negative Couple</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-0.5 border-b-2 border-dashed border-amber-500 inline-block"></span>
+                <span class="text-slate-600" data-en="Dashed δξₖ: Couple Lever Arm" data-zh="虚线 δξₖ：力偶分离力臂">Dashed δξₖ: Couple Lever Arm</span>
+              </div>
+              <div class="flex items-center gap-2 pt-0.5 border-t border-slate-100">
+                <span class="px-1 rounded bg-red-100 text-red-700 font-bold text-[10px]">T</span>
+                <span class="text-slate-600" data-en="Tension Axis (λ₁)" data-zh="最大拉张轴 (λ₁)">Tension Axis (λ₁)</span>
+                <span class="px-1 rounded bg-blue-100 text-blue-700 font-bold text-[10px] ml-1">P</span>
+                <span class="text-slate-600" data-en="Compression Axis (λ₃)" data-zh="最大压缩轴 (λ₃)">Compression Axis (λ₃)</span>
+              </div>
+            </div>
+
+            <!-- Bottom-Left Beachball -->
+            <div class="absolute bottom-3 left-3 bg-white/95 backdrop-blur border border-slate-200 rounded-xl p-2.5 shadow-md flex flex-col items-center">
+              <div class="text-[10px] font-bold text-slate-600 mb-1" data-en="Lower-Hemisphere Beachball" data-zh="下半球沙滩球投影">Lower-Hemisphere Beachball</div>
+              <canvas id="canvas-beachball" width="96" height="96" class="w-24 h-24"></canvas>
+              <div class="flex items-center gap-2 text-[10px] mt-1 font-medium">
+                <span class="flex items-center gap-1 text-red-700"><span class="w-2 h-2 rounded-full bg-red-600 inline-block"></span><span data-en="Compression (+)" data-zh="P波压缩(+)">Compression (+)</span></span>
+                <span class="flex items-center gap-1 text-slate-600"><span class="w-2 h-2 rounded-full bg-white border border-slate-400 inline-block"></span><span data-en="Dilatation (-)" data-zh="膨胀(-)">Dilatation (-)</span></span>
+              </div>
+            </div>
+
+            <!-- Net Torque Warning Banner -->
+            <div id="torque-warning" class="hidden absolute bottom-3 left-32 right-3 bg-red-50/95 border border-red-300 rounded-xl p-3 text-xs text-red-900 shadow-md backdrop-blur">
+              <div class="font-bold text-red-700" data-en="⚠️ Angular Momentum Violation: Net Torque τ₃ = M₁₂ - M₂₁ ≠ 0" data-zh="⚠️ 角动量不守恒警告：净旋转力矩 τ₃ = M₁₂ - M₂₁ ≠ 0">⚠️ Angular Momentum Violation: Net Torque τ₃ = M₁₂ - M₂₁ ≠ 0</div>
+              <p class="mt-1 text-red-800 leading-relaxed" data-en="Internal seismic sources exert no net external torque. A single couple would spin the source volume; an equal complementary couple is required so Mⱼₖ = Mₖⱼ." data-zh="内部地震震源没有外部力偶矩，单一力偶会导致震源体发生净旋转。必须配对等大反向的互补力偶使 Mⱼₖ = Mₖⱼ（对称张量）。">
+                Internal seismic sources exert no net external torque. A single couple would spin the source volume; an equal complementary couple is required so Mⱼₖ = Mₖⱼ.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right 5 Cols: Presets + 3x3 Matrix + Diagnostics & Repair + Eigenvalues -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+
+          <!-- Presets -->
+          <div class="card-academic rounded-2xl p-4">
+            <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2.5" data-en="Canonical Seismic Source Presets" data-zh="典型震源机制预设 (Presets)">
+              Canonical Seismic Source Presets
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <button type="button" onclick="applyPreset('strikeSlip')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 text-xs text-left transition">
+                <div class="font-bold text-slate-900" data-en="Pure Strike-Slip" data-zh="纯走滑断层">Pure Strike-Slip</div>
+                <div class="text-[11px] text-blue-600 font-mono">Strike-Slip (M₁₂)</div>
+              </button>
+              <button type="button" onclick="applyPreset('normal')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 text-xs text-left transition">
+                <div class="font-bold text-slate-900" data-en="Normal Fault (45°)" data-zh="正断层 (45°)">Normal Fault (45°)</div>
+                <div class="text-[11px] text-blue-600 font-mono">Normal (+M₂₂,-M₃₃)</div>
+              </button>
+              <button type="button" onclick="applyPreset('reverse')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-400 text-xs text-left transition">
+                <div class="font-bold text-slate-900" data-en="Reverse Fault (45°)" data-zh="逆断层 (45°)">Reverse Fault (45°)</div>
+                <div class="text-[11px] text-blue-600 font-mono">Reverse (-M₂₂,+M₃₃)</div>
+              </button>
+              <button type="button" onclick="applyPreset('explosion')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-400 text-xs text-left transition">
+                <div class="font-bold text-red-700" data-en="Isotropic Explosion" data-zh="各向同性爆炸">Isotropic Explosion</div>
+                <div class="text-[11px] text-red-600 font-mono">Explosion (ISO)</div>
+              </button>
+              <button type="button" onclick="applyPreset('clvd')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-400 text-xs text-left transition">
+                <div class="font-bold text-amber-800" data-en="CLVD Source" data-zh="CLVD 震源">CLVD Source</div>
+                <div class="text-[11px] text-amber-600 font-mono">Linear Vector Dipole</div>
+              </button>
+              <button type="button" onclick="applyPreset('singleCouple')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-400 text-xs text-left transition">
+                <div class="font-bold text-slate-700" data-en="Single Couple Demo" data-zh="单力偶对比">Single Couple Demo</div>
+                <div class="text-[11px] text-slate-500 font-mono">M₁₂ ≠ M₂₁</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Clickable 3x3 Moment Tensor Matrix & 6 Sliders -->
+          <div class="card-academic rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-800" data-en="Click any matrix cell to inspect its force couple:" data-zh="点击矩阵单元格查看该分量力偶图解：">Click any matrix cell to inspect its force couple:</span>
+              <span id="symmetry-badge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                Symmetric Mⱼₖ = Mₖⱼ
+              </span>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-center">
+              <div class="flex items-center gap-2 font-mono text-sm">
+                <span class="text-slate-700 math-var text-base font-bold">M =</span>
+                <div class="border-l-2 border-r-2 border-slate-800 rounded-md px-2.5 py-1.5 grid grid-cols-3 gap-2 text-center">
+                  <button type="button" onclick="selectMatrixCell('11')" id="cell-11" class="mat-cell px-2.5 py-1 rounded border border-slate-200 bg-white">
+                    <div class="text-[9px] text-slate-400">M₁₁</div>
+                    <div id="mat-11" class="font-bold text-slate-700">0.00</div>
+                  </button>
+                  <button type="button" onclick="selectMatrixCell('12')" id="cell-12" class="mat-cell selected px-2.5 py-1 rounded border border-slate-200 bg-white">
+                    <div class="text-[9px] text-slate-400">M₁₂</div>
+                    <div id="mat-12" class="font-bold text-red-600">1.00</div>
+                  </button>
+                  <button type="button" onclick="selectMatrixCell('13')" id="cell-13" class="mat-cell px-2.5 py-1 rounded border border-slate-200 bg-white">
+                    <div class="text-[9px] text-slate-400">M₁₃</div>
+                    <div id="mat-13" class="font-bold text-slate-700">0.00</div>
+                  </button>
+
+                  <button type="button" onclick="selectMatrixCell('21')" id="cell-21" class="mat-cell px-2.5 py-1 rounded border border-slate-200 bg-white">
+                    <div class="text-[9px] text-slate-400">M₂₁</div>
+                    <div id="mat-21" class="font-bold text-red-600">1.00</div>
+                  </button>
+                  <button type="button" onclick="selectMatrixCell('22')" id="cell-22" class="mat-cell px-2.5 py-1 rounded border border-slate-200 bg-white">
+                    <div class="text-[9px] text-slate-400">M₂₂</div>
+                    <div id="mat-22" class="font-bold text-slate-700">0.00</div>
+                  </button>
+                  <button type="button" onclick="selectMatrixCell('23')" id="cell-23" class="mat-cell px-2.5 py-1 rounded border border-slate-200 bg-white">
+                    <div class="text-[9px] text-slate-400">M₂₃</div>
+                    <div id="mat-23" class="font-bold text-slate-700">0.00</div>
+                  </button>
+
+                  <button type="button" onclick="selectMatrixCell('31')" id="cell-31" class="mat-cell px-2.5 py-1 rounded border border-slate-200 bg-white">
+                    <div class="text-[9px] text-slate-400">M₃₁</div>
+                    <div id="mat-31" class="font-bold text-slate-700">0.00</div>
+                  </button>
+                  <button type="button" onclick="selectMatrixCell('32')" id="cell-32" class="mat-cell px-2.5 py-1 rounded border border-slate-200 bg-white">
+                    <div class="text-[9px] text-slate-400">M₃₂</div>
+                    <div id="mat-32" class="font-bold text-slate-700">0.00</div>
+                  </button>
+                  <button type="button" onclick="selectMatrixCell('33')" id="cell-33" class="mat-cell px-2.5 py-1 rounded border border-slate-200 bg-white">
+                    <div class="text-[9px] text-slate-400">M₃₃</div>
+                    <div id="mat-33" class="font-bold text-slate-700">0.00</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Selected Component Mini Diagram & Explanation -->
+            <div id="cell-detail-card" class="bg-blue-50/70 border border-blue-200 rounded-xl p-3 flex items-center gap-3">
+              <svg id="svg-mini-couple" viewBox="0 0 76 76" class="w-16 h-16 shrink-0 bg-white rounded-lg border border-blue-200"></svg>
+              <div class="text-xs space-y-1">
+                <div id="cell-detail-title" class="font-bold text-blue-900">M₁₂ (Mₓᵧ): Horizontal Shear Couple (f₁ force, δξ₂ arm)</div>
+                <p id="cell-detail-desc" class="text-slate-700 leading-snug">
+                  Opposing forces ±f₁ along North (x₁) offset along East (x₂). Generates clockwise torque around vertical axis; pairs with M₂₁.
+                </p>
+              </div>
+            </div>
+
+            <!-- 6 Independent Component Sliders -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-xs pt-1">
+              <div id="wrap-m11" class="p-1 -m-1 transition">
+                <div class="flex justify-between mb-1 font-mono">
+                  <span class="text-slate-700 font-semibold">M₁₁ (N-N Dipole)</span>
+                  <span id="val-m11" class="text-slate-900 font-bold">0.00</span>
+                </div>
+                <input type="range" id="slider-m11" min="-1" max="1" step="0.05" value="0" class="w-full" oninput="updateMFromSliders()">
+              </div>
+              <div id="wrap-m12" class="p-1 -m-1 transition">
+                <div class="flex justify-between mb-1 font-mono">
+                  <span class="text-slate-700 font-semibold">M₁₂=M₂₁ (Horiz. Shear)</span>
+                  <span id="val-m12" class="text-red-600 font-bold">+1.00</span>
+                </div>
+                <input type="range" id="slider-m12" min="-1" max="1" step="0.05" value="1" class="w-full" oninput="updateMFromSliders()">
+              </div>
+              <div id="wrap-m22" class="p-1 -m-1 transition">
+                <div class="flex justify-between mb-1 font-mono">
+                  <span class="text-slate-700 font-semibold">M₂₂ (E-E Dipole)</span>
+                  <span id="val-m22" class="text-slate-900 font-bold">0.00</span>
+                </div>
+                <input type="range" id="slider-m22" min="-1" max="1" step="0.05" value="0" class="w-full" oninput="updateMFromSliders()">
+              </div>
+              <div id="wrap-m13" class="p-1 -m-1 transition">
+                <div class="flex justify-between mb-1 font-mono">
+                  <span class="text-slate-700 font-semibold">M₁₃=M₃₁ (N-D Shear)</span>
+                  <span id="val-m13" class="text-slate-900 font-bold">0.00</span>
+                </div>
+                <input type="range" id="slider-m13" min="-1" max="1" step="0.05" value="0" class="w-full" oninput="updateMFromSliders()">
+              </div>
+              <div id="wrap-m33" class="p-1 -m-1 transition">
+                <div class="flex justify-between mb-1 font-mono">
+                  <span class="text-slate-700 font-semibold">M₃₃ (D-D Vert. Dipole)</span>
+                  <span id="val-m33" class="text-slate-900 font-bold">0.00</span>
+                </div>
+                <input type="range" id="slider-m33" min="-1" max="1" step="0.05" value="0" class="w-full" oninput="updateMFromSliders()">
+              </div>
+              <div id="wrap-m23" class="p-1 -m-1 transition">
+                <div class="flex justify-between mb-1 font-mono">
+                  <span class="text-slate-700 font-semibold">M₂₃=M₃₂ (E-D Shear)</span>
+                  <span id="val-m23" class="text-slate-900 font-bold">0.00</span>
+                </div>
+                <input type="range" id="slider-m23" min="-1" max="1" step="0.05" value="0" class="w-full" oninput="updateMFromSliders()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Physical State Diagnostics & One-Click Repair Panel -->
+          <div id="diag-panel-box" class="card-academic rounded-2xl p-4 space-y-3 border-emerald-200 bg-emerald-50/30 transition-colors duration-200">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-extrabold text-slate-900 uppercase tracking-wider" data-en="Real-Time Physics Diagnostics &amp; Repair" data-zh="实时物理诊断与一键修复">
+                  Real-Time Physics Diagnostics &amp; Repair
+                </span>
+                <span id="diag-status-badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  ✓ Pure Double-Couple Fault (DC)
+                </span>
+              </div>
+              <span class="font-mono text-[11px] text-slate-600">
+                M₀ = <span id="val-m0" class="font-bold text-slate-900">1.00</span>
+              </span>
+            </div>
+
+            <p id="diag-status-desc" class="text-xs text-slate-700 leading-relaxed">
+              Balanced tectonic shear source: zero net torque (Mⱼₖ=Mₖⱼ), zero volume change (tr(M)=0), and planar fault slip (CLVD ≈ 0%).
+            </p>
+
+            <!-- Conjugate Nodal Planes (Strike / Dip / Rake) + Best-Fit DC Comparison Beachball -->
+            <div class="bg-white/90 border border-slate-200 rounded-xl p-2.5 flex items-center justify-between gap-3">
+              <div class="space-y-1 text-xs flex-1">
+                <div class="text-[11px] font-bold text-slate-500 flex items-center justify-between">
+                  <span data-en="Best-Fitting Double-Couple Nodal Planes (Strike / Dip / Rake)" data-zh="最佳双力偶断层面解 (走向 Strike / 倾角 Dip / 滑动角 Rake)">Best-Fitting Double-Couple Nodal Planes (Strike / Dip / Rake)</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 font-mono text-[11px] pt-0.5">
+                  <div class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
+                    <span class="text-slate-500 font-sans font-semibold" data-en="Plane 1:" data-zh="节面 1:">Plane 1:</span>
+                    <span id="sdr-plane1" class="font-bold text-slate-900 ml-1">0° / 90° / 0°</span>
+                  </div>
+                  <div class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1">
+                    <span class="text-slate-500 font-sans font-semibold" data-en="Plane 2:" data-zh="节面 2:">Plane 2:</span>
+                    <span id="sdr-plane2" class="font-bold text-slate-900 ml-1">90° / 90° / 180°</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flex flex-col items-center shrink-0">
+                <canvas id="canvas-dc-miniball" width="44" height="44" class="w-11 h-11"></canvas>
+                <span class="text-[9px] font-mono text-slate-500 mt-0.5">Best-Fit DC</span>
+              </div>
+            </div>
+
+            <!-- 3 One-Click Physical Repair Buttons -->
+            <div class="space-y-1.5 pt-0.5">
+              <div class="text-[11px] font-bold text-slate-600" data-en="One-Click Physical Projection Repair:" data-zh="一键物理投影修复 (One-Click Repair)：">One-Click Physical Projection Repair:</div>
+              <div class="grid grid-cols-3 gap-2 text-xs">
+                <button type="button" onclick="repairZeroTrace()" class="px-2 py-2 rounded-xl bg-white hover:bg-blue-50 border border-slate-300 hover:border-blue-400 text-slate-800 font-semibold transition text-center shadow-sm">
+                  <div class="text-blue-700 font-bold" data-en="Remove Volume Change" data-zh="去除体积变化">Remove Volume Change</div>
+                  <div class="text-[10px] text-slate-500 font-mono">tr(M) → 0</div>
+                </button>
+                <button type="button" onclick="repairBestDC()" class="px-2 py-2 rounded-xl bg-white hover:bg-emerald-50 border border-slate-300 hover:border-emerald-400 text-slate-800 font-semibold transition text-center shadow-sm">
+                  <div class="text-emerald-700 font-bold" data-en="Extract Best-Fit DC" data-zh="提取最佳纯断层">Extract Best-Fit DC</div>
+                  <div class="text-[10px] text-slate-500 font-mono">Best-Fit DC</div>
+                </button>
+                <button type="button" onclick="repairNormalizeM0()" class="px-2 py-2 rounded-xl bg-white hover:bg-amber-50 border border-slate-300 hover:border-amber-400 text-slate-800 font-semibold transition text-center shadow-sm">
+                  <div class="text-amber-800 font-bold" data-en="Normalize M₀" data-zh="归一化地震矩">Normalize M₀</div>
+                  <div class="text-[10px] text-slate-500 font-mono">M₀ → 1.00</div>
+                </button>
+              </div>
+            </div>
+
+            <div id="repair-diff-toast" class="hidden bg-amber-50 border border-amber-300 rounded-lg px-2.5 py-1.5 text-[11px] text-amber-900 font-mono leading-snug">
+            </div>
+          </div>
+
+          <!-- Principal Eigenvalues & ISO / DC / CLVD Decomposition -->
+          <div class="card-academic rounded-2xl p-4 space-y-2.5">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-slate-800" data-en="Principal Eigenvalues &amp; Source Decomposition" data-zh="主轴特征值与震源成分分解">Principal Eigenvalues &amp; Source Decomposition</span>
+              <span class="font-mono text-slate-600">tr(M) = <span id="val-trace" class="font-bold text-slate-900">0.00</span></span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center font-mono text-xs">
+              <div class="bg-red-50/70 rounded-lg p-2 border border-red-200">
+                <div class="text-red-700 text-[10px] font-bold">λ₁ (T-Axis)</div>
+                <div id="eig-1" class="text-red-600 font-extrabold text-sm mt-0.5">+1.00</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-2 border border-slate-200">
+                <div class="text-slate-500 text-[10px] font-bold">λ₂ (B-Axis)</div>
+                <div id="eig-2" class="text-slate-800 font-extrabold text-sm mt-0.5">0.00</div>
+              </div>
+              <div class="bg-blue-50/70 rounded-lg p-2 border border-blue-200">
+                <div class="text-blue-700 text-[10px] font-bold">λ₃ (P-Axis)</div>
+                <div id="eig-3" class="text-blue-600 font-extrabold text-sm mt-0.5">-1.00</div>
+              </div>
+            </div>
+            <div class="space-y-1 pt-0.5">
+              <div class="flex justify-between text-[11px] font-bold">
+                <span class="text-red-600">ISO: <span id="pct-iso">0%</span></span>
+                <span class="text-emerald-700">DC: <span id="pct-dc">100%</span></span>
+                <span class="text-amber-600">CLVD: <span id="pct-clvd">0%</span></span>
+              </div>
+              <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden flex border border-slate-200">
+                <div id="bar-iso" class="bg-red-500 transition-all duration-200" style="width: 0%"></div>
+                <div id="bar-dc" class="bg-emerald-500 transition-all duration-200" style="width: 100%"></div>
+                <div id="bar-clvd" class="bg-amber-400 transition-all duration-200" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- MODULE 2: Green's Function Spatial Derivative & Wavefield Evolution        -->
+    <!-- ========================================================================= -->
+    <section id="tab-green" class="tab-panel hidden space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        <!-- Left 7 Cols: 2D Elastic Wavefield & Draggable Virtual Station -->
+        <div class="lg:col-span-7 card-academic rounded-2xl p-4 flex flex-col">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                <span data-en="Wavefield Radiation &amp; Nodal Planes of Gᵢⱼ vs. ∂Gᵢⱼ/∂ξₖ" data-zh="点力 Gᵢⱼ 与空间偏导数 ∂Gᵢⱼ/∂ξₖ 波场辐射与节线图解">Wavefield Radiation &amp; Nodal Planes of Gᵢⱼ vs. ∂Gᵢⱼ/∂ξₖ</span>
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5" data-en="Drag the yellow receiver station (x) around the circle to observe quadrants, nodal planes, and polarity flips." data-zh="拖动轨道上的黄色接收台站 (x)，观察四象限压缩(+)/膨胀(-)分区、节线及波形极性反转。">
+                Drag the yellow receiver station (x) around the circle to observe quadrants, nodal planes, and polarity flips.
+              </p>
+            </div>
+            <button type="button" onclick="triggerWavePulse()" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-blue-700 text-white text-xs font-bold shadow transition flex items-center gap-1.5">
+              <span>▶</span><span data-en="Replay Pulse" data-zh="重新激发脉冲">Replay Pulse</span>
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3 text-xs">
+            <div>
+              <label class="text-slate-600 font-semibold block mb-1" data-en="Source Operator" data-zh="震源算子 (Operator)">Source Operator</label>
+              <select id="green-mode" onchange="updateGreenSimulation()" class="w-full bg-white text-slate-900 font-medium border border-slate-300 rounded-lg px-2 py-1.5 outline-none focus:border-blue-500">
+                <option value="single">1. Single Force Gᵢ₁</option>
+                <option value="dipole">2. Linear Dipole ∂Gᵢ₁/∂ξ₁</option>
+                <option value="couple">3. Single Couple ∂Gᵢ₁/∂ξ₂</option>
+                <option value="doubleCouple" selected>4. Double Couple (DC)</option>
+              </select>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1 font-semibold">
+                <span class="text-slate-600" data-en="Lever Arm δξ" data-zh="力臂微元间距 δξ">Lever Arm δξ</span>
+                <span id="val-delta-xi" class="font-mono text-amber-700">0.25 km</span>
+              </div>
+              <input type="range" id="slider-delta-xi" min="0.05" max="0.85" step="0.05" value="0.25" class="w-full mt-1" oninput="updateGreenSimulation()">
+            </div>
+            <div>
+              <div class="flex justify-between mb-1 font-semibold">
+                <span class="text-slate-600" data-en="Station Azimuth φ" data-zh="台站方位角 φ">Station Azimuth φ</span>
+                <span id="val-station-az" class="font-mono text-blue-700">30°</span>
+              </div>
+              <input type="range" id="slider-station-az" min="0" max="360" step="1" value="30" class="w-full mt-1" oninput="updateAzimuthFromSlider(this.value)">
+            </div>
+          </div>
+
+          <div class="relative flex-1 min-h-[390px] sm:min-h-[430px] bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+            <canvas id="canvas-green-field" class="w-full h-full cursor-pointer"></canvas>
+
+            <div class="absolute bottom-3 left-3 bg-white/95 backdrop-blur border border-slate-200 rounded-xl px-3 py-2 text-[11px] flex flex-wrap gap-x-4 gap-y-1 shadow-sm pointer-events-none">
+              <span class="flex items-center gap-1.5 text-red-700 font-semibold">
+                <span class="w-2.5 h-2.5 rounded-full border-2 border-red-600 inline-block"></span>
+                <span data-en="Outer: P-Wavefront (Speed α)" data-zh="外圈：P波波前 (波速 α)">Outer: P-Wavefront (Speed α)</span>
+              </span>
+              <span class="flex items-center gap-1.5 text-blue-700 font-semibold">
+                <span class="w-2.5 h-2.5 rounded-full border-2 border-blue-600 inline-block"></span>
+                <span data-en="Inner: S-Wavefront (Speed β)" data-zh="内圈：S波波前 (波速 β)">Inner: S-Wavefront (Speed β)</span>
+              </span>
+              <span class="flex items-center gap-1.5 text-slate-600">
+                <span class="w-3 h-0.5 border-b border-dashed border-slate-500 inline-block"></span>
+                <span data-en="Dashed: P-Wave Nodal Lines" data-zh="虚线：P波节线 (Nodal Planes)">Dashed: P-Wave Nodal Lines</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right 5 Cols: 3-Trace Finite-Difference Interference Breakdown -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+
+          <div class="card-academic rounded-2xl p-4 space-y-2 bg-amber-50/40 border-amber-200">
+            <div class="text-xs font-extrabold text-amber-900 uppercase tracking-wider" data-en="Physical Intuition: Why Does f(t) Become Time Derivative Ṁ(t)?" data-zh="核心物理图解：为什么 f(t) 会变成时间导数 Ṁ(t)？">
+              Physical Intuition: Why Does f(t) Become Time Derivative Ṁ(t)?
+            </div>
+            <p class="text-xs text-slate-700 leading-relaxed" data-en="Because the two opposing forces are separated by δξ, their waves arrive with a tiny time lag δt = δξ·cosθ / c. Subtracting two slightly shifted identical pulses produces the first time derivative! Adjust δξ on the left to see this interference." data-zh="因为反向力偶的两个力相距 δξ，它们发出的地震波到达台站存在微小时间差 δt = δξ·cosθ / c。两个时间略微错开、极性相反的相同脉冲相减，在数学上正比于时间一阶导数！调节左侧 δξ 滑块可亲眼观察此干涉过程。">
+              Because the two opposing forces are separated by δξ, their waves arrive with a tiny time lag δt = δξ·cosθ / c. Subtracting two slightly shifted identical pulses produces the first time derivative! Adjust δξ on the left to see this interference.
+            </p>
+          </div>
+
+          <div class="card-academic rounded-2xl p-4 flex-1 flex flex-col">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900" data-en="3-Trace Wave Interference Breakdown at Station x (u_R)" data-zh="台站 x 三行同步波形干涉拆解 (u_R 径向)">3-Trace Wave Interference Breakdown at Station x (u_R)</h3>
+                <p class="text-[11px] text-slate-500" data-en="Trace ① (+f) + Trace ② (-f inverted) = Trace ③ Net Couple Waveform" data-zh="道① +f 贡献 + 道② -f 反相贡献 ＝ 道③ 净偶极波形">Trace ① (+f) + Trace ② (-f inverted) = Trace ③ Net Couple Waveform</p>
+              </div>
+              <span id="amp-ratio-badge" class="text-[11px] font-mono font-bold px-2 py-1 rounded bg-slate-100 text-slate-800 border border-slate-200">
+                P: +0.87 | S: +0.50
+              </span>
+            </div>
+
+            <div class="flex-1 min-h-[290px] bg-slate-50 rounded-xl border border-slate-200 p-2">
+              <canvas id="canvas-green-seismogram" class="w-full h-full"></canvas>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- MODULE 3: Linear Superposition & Synthetic Seismogram Decomposition       -->
+    <!-- ========================================================================= -->
+    <section id="tab-synth" class="tab-panel hidden space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        <!-- Left 4 Cols: Station Geometry & Source Controls -->
+        <div class="lg:col-span-4 card-academic rounded-2xl p-4 flex flex-col justify-between space-y-4">
+          <div class="space-y-4">
+            <div>
+              <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span>
+                <span data-en="Linear Superposition Seismogram Synthesizer" data-zh="线性叠加合成地震图实战">Linear Superposition Seismogram Synthesizer</span>
+              </h2>
+              <p class="text-xs text-slate-600 mt-1 leading-relaxed" data-en="By uᵢ(x,t) = ∑ Mⱼₖ * ∂Gᵢⱼ/∂ξₖ, each trace on the right displays its force-couple icon, illustrating how 6 elementary responses sum linearly." data-zh="根据表示定理 uᵢ(x,t) = ∑ Mⱼₖ * ∂Gᵢⱼ/∂ξₖ，右侧每一道均配有所属力偶的微型几何图标，直观呈现 6 个独立基本力偶如何线性加权合成最终地震图。">
+                By uᵢ(x,t) = ∑ Mⱼₖ * ∂Gᵢⱼ/∂ξₖ, each trace on the right displays its force-couple icon, illustrating how 6 elementary responses sum linearly.
+              </p>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-3 text-xs">
+              <div>
+                <div class="flex justify-between mb-1 font-semibold">
+                  <span class="text-slate-700" data-en="Station Azimuth φ" data-zh="台站方位角 φ">Station Azimuth φ</span>
+                  <span id="syn-val-az" class="font-mono text-blue-700">35°</span>
+                </div>
+                <input type="range" id="syn-az" min="0" max="360" step="1" value="35" class="w-full" oninput="updateSynthesis()">
+              </div>
+              <div>
+                <div class="flex justify-between mb-1 font-semibold">
+                  <span class="text-slate-700" data-en="Takeoff Angle iₕ" data-zh="射线离源角 iₕ">Takeoff Angle iₕ</span>
+                  <span id="syn-val-ih" class="font-mono text-emerald-700">60°</span>
+                </div>
+                <input type="range" id="syn-ih" min="10" max="90" step="1" value="60" class="w-full" oninput="updateSynthesis()">
+              </div>
+              <div>
+                <div class="flex justify-between mb-1 font-semibold">
+                  <span class="text-slate-700" data-en="Source Pulse Width τ" data-zh="震源脉冲特征宽度 τ">Source Pulse Width τ</span>
+                  <span id="syn-val-tau" class="font-mono text-amber-700">0.8 s</span>
+                </div>
+                <input type="range" id="syn-tau" min="0.3" max="1.6" step="0.1" value="0.8" class="w-full" oninput="updateSynthesis()">
+              </div>
+              <div>
+                <label class="text-slate-700 font-semibold block mb-1" data-en="Seismometer Component" data-zh="地震仪观测分量">Seismometer Component</label>
+                <div class="grid grid-cols-3 gap-1.5">
+                  <button type="button" onclick="setSynComponent('Z')" id="syn-comp-Z" class="syn-comp-btn py-1.5 rounded-lg bg-slate-900 text-white font-bold">Vertical u<sub>Z</sub></button>
+                  <button type="button" onclick="setSynComponent('R')" id="syn-comp-R" class="syn-comp-btn py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold">Radial u<sub>R</sub></button>
+                  <button type="button" onclick="setSynComponent('T')" id="syn-comp-T" class="syn-comp-btn py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold">Transverse u<sub>T</sub></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="text-xs font-bold text-slate-500" data-en="Quick Composite Source Presets:" data-zh="快速测试复杂混合震源：">Quick Composite Source Presets:</div>
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <button type="button" onclick="setSynPreset('oblique')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-400 text-left transition">
+                  <div class="font-bold text-emerald-800" data-en="Oblique-Slip Fault" data-zh="斜滑断层 (Oblique)">Oblique-Slip Fault</div>
+                  <div class="text-[10px] text-slate-500">Strike-Slip + Reverse</div>
+                </button>
+                <button type="button" onclick="setSynPreset('volcanic')" class="px-2.5 py-2 rounded-xl bg-slate-50 hover:bg-red-50 border border-slate-200 hover:border-red-400 text-left transition">
+                  <div class="font-bold text-red-800" data-en="Volcanic Tensile + DC" data-zh="火山流体张裂">Volcanic Tensile + DC</div>
+                  <div class="text-[10px] text-slate-500">ISO Expansion + DC</div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-blue-50/80 border border-blue-200 rounded-xl p-3 text-xs text-slate-700 leading-relaxed" data-en="💡 Global CMT Inversion Principle: Forward modeling computes uᵢ(t) from Mⱼₖ; inversion uses observed uᵢ(t) and 6 precomputed Green's derivatives to solve for Mⱼₖ via linear least squares!" data-zh="💡 全球 CMT 反演原理：正演时已知 Mⱼₖ 求 uᵢ(t)；反演时则利用观测台网记录的 uᵢ(t) 和预先算好的 6 条格林函数导数，通过线性最小二乘法直接求解 6 个未知分量 Mⱼₖ！">
+            💡 Global CMT Inversion Principle: Forward modeling computes uᵢ(t) from Mⱼₖ; inversion uses observed uᵢ(t) and 6 precomputed Green's derivatives to solve for Mⱼₖ via linear least squares!
+          </div>
+        </div>
+
+        <!-- Right 8 Cols: 6 Elementary Traces + Total Sum -->
+        <div class="lg:col-span-8 card-academic rounded-2xl p-4 flex flex-col">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <div>
+              <h3 class="text-base font-bold text-slate-900" data-en="6 Weighted Elementary Force-Couple Traces &amp; Total Sum uᵢ(t)" data-zh="6 个基本力偶加权贡献与总合成地震图 uᵢ(t)">
+                6 Weighted Elementary Force-Couple Traces &amp; Total Sum uᵢ(t)
+              </h3>
+              <p class="text-xs text-slate-500" data-en="Left icons show force-couple geometry; right curves show weighted waveforms; bottom bold curve is the total sum." data-zh="左侧图标展示该分量对应的力偶几何，右侧波形为加权贡献，底部粗黑线为六项代数之和。">
+                Left icons show force-couple geometry; right curves show weighted waveforms; bottom bold curve is the total sum.
+              </p>
+            </div>
+            <button type="button" onclick="syncTab3FromTab1()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-xs font-bold text-slate-800 transition" data-en="↻ Sync Weights from Tab 1" data-zh="↻ 同步模块一的 Mⱼₖ 权重">
+              ↻ Sync Weights from Tab 1
+            </button>
+          </div>
+
+          <div class="flex-1 min-h-[460px] bg-slate-50 rounded-xl border border-slate-200 p-2">
+            <canvas id="canvas-synthesis" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== Collapsible Study Notes & Discussion Questions ==================== -->
+    <section class="mt-6 card-academic rounded-2xl overflow-hidden">
+      <button type="button" onclick="togglePedagogyPanel()" class="w-full px-5 py-3.5 flex items-center justify-between text-left hover:bg-slate-50 transition">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-0.5 rounded-md bg-slate-900 text-white text-xs font-bold" data-en="Study Notes" data-zh="学习指南">Study Notes</span>
+          <span class="text-sm font-bold text-slate-900" data-en="Section 9.1 Key Physical Takeaways &amp; Discussion Questions" data-zh="第 9.1 节核心物理概念梳理与课堂思考题">Section 9.1 Key Physical Takeaways &amp; Discussion Questions</span>
+        </div>
+        <span class="text-slate-500 text-xs font-mono">▼ / ▲</span>
+      </button>
+
+      <div id="pedagogy-content" class="px-5 pb-5 pt-3 border-t border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs leading-relaxed">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+          <div class="font-bold text-blue-800 text-sm" data-en="1. Point-Source Approximation Validity" data-zh="1. 点源近似的适用条件">1. Point-Source Approximation Validity</div>
+          <p class="text-slate-700" data-en="Real earthquakes rupture across finite fault areas. A finite fault can be approximated as a point-source moment tensor Mⱼₖ only when the observed seismic wavelength λ ≫ fault dimension L and epicentral distance r ≫ L." data-zh="真实地震发生于有限面积的断层面上。只有当观测地震波的波长 λ 远大于断层破裂尺度 L（λ ≫ L），且震中距 r ≫ L 时，有限断层才能等效为点源矩张量 Mⱼₖ。">
+            Real earthquakes rupture across finite fault areas. A finite fault can be approximated as a point-source moment tensor Mⱼₖ only when the observed seismic wavelength λ ≫ fault dimension L and epicentral distance r ≫ L.
+          </p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+          <div class="font-bold text-emerald-800 text-sm" data-en="2. Nodal Plane Ambiguity" data-zh="2. 节面模糊性 (Nodal Plane Ambiguity)">2. Nodal Plane Ambiguity</div>
+          <p class="text-slate-700" data-en="A pure strike-slip double couple satisfies M₁₂ = M₂₁, meaning left-lateral slip on an E-W fault and right-lateral slip on a N-S fault share the exact same moment tensor! Far-field point-source data alone cannot distinguish the fault plane from the auxiliary plane." data-zh="纯走滑双力偶满足 M₁₂ = M₂₁，这意味着东西向断层左旋滑动与南北向断层右旋滑动具有完全相同的矩张量！因此仅靠点源远场波形无法区分断层面与辅助面。">
+            A pure strike-slip double couple satisfies M₁₂ = M₂₁, meaning left-lateral slip on an E-W fault and right-lateral slip on a N-S fault share the exact same moment tensor! Far-field point-source data alone cannot distinguish the fault plane from the auxiliary plane.
+          </p>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+          <div class="font-bold text-amber-800 text-sm" data-en="3. Discussion Question" data-zh="3. 课堂思考题">3. Discussion Question</div>
+          <p class="text-slate-700" data-en="Question: If an underground pure isotropic explosion occurs (M₁₁ = M₂₂ = M₃₃ = M₀, off-diagonals = 0), what is the far-field S-wave amplitude in a homogeneous infinite medium? (Hint: Test orthogonal dipoles in Tab 2 to see S-wave cancellation!)" data-zh="思考：如果地下发生纯各向同性爆炸（M₁₁ = M₂₂ = M₃₃ = M₀，非对角元全为 0），在均匀无限大介质中远场 S 波振幅是多少？（提示：在模块二选择“线性偶极”观察三个正交偶极叠加后的 S 波相消！）">
+            Question: If an underground pure isotropic explosion occurs (M₁₁ = M₂₂ = M₃₃ = M₀, off-diagonals = 0), what is the far-field S-wave amplitude in a homogeneous infinite medium? (Hint: Test orthogonal dipoles in Tab 2 to see S-wave cancellation!)
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // 0. Global State Initialization (English 'en' default)
+    // =========================================================================
+    const state = {
+      lang: 'en',
+      activeTab: 'tab-intuition',
+      diag1Force: 'x',
+      convSTF: 'impulse',
+      convTau: 0.8,
+      selectedCell: '12',
+      nonSymmetricMode: false,
+      M: {
+        m11: 0.0, m12: 1.0, m13: 0.0,
+        m21: 1.0, m22: 0.0, m23: 0.0,
+        m31: 0.0, m32: 0.0, m33: 0.0
+      },
+      eigenSystem: null,
+      cam: {
+        yaw: -0.62,
+        pitch: 0.42,
+        dragging: false,
+        lastX: 0,
+        lastY: 0
+      },
+      green: {
+        mode: 'doubleCouple',
+        deltaXi: 0.25,
+        stationAzDeg: 30,
+        pulseTime: 0.35,
+        animating: true,
+        draggingStation: false
+      },
+      syn: {
+        azDeg: 35,
+        ihDeg: 60,
+        tau: 0.8,
+        component: 'Z'
+      }
+    };
+
+    // =========================================================================
+    // 1. Bilingual Dictionary for 9 Elementary Force Couple Components
+    // =========================================================================
+    const cellDetails = {
+      '11': {
+        fDir: 'x', armDir: 'x',
+        titleZh: 'M₁₁ (Mₓₓ)：北-南向线性偶极 (N-N Linear Dipole)',
+        descZh: '沿 x₁(北) 方向错开力臂，并沿 x₁(北) 方向施加反向共线力。+M₁₁ 表示南北向拉张，-M₁₁ 表示南北向挤压。',
+        titleEn: 'M₁₁ (Mₓₓ): North-South Linear Dipole',
+        descEn: 'Opposing collinear forces along x₁ (North) separated along x₁. +M₁₁ represents N-S extension; -M₁₁ represents N-S compression.'
+      },
+      '12': {
+        fDir: 'x', armDir: 'y',
+        titleZh: 'M₁₂ (Mₓᵧ)：水平剪切力偶 (x₁-力, x₂-力臂)',
+        descZh: '沿 y 方向(东)错开力臂 δξ₂，施加沿 x 方向(北)的反向力偶 ±f₁。产生绕垂向轴的顺时针剪切趋势，需与 M₂₁ 配对平衡。',
+        titleEn: 'M₁₂ (Mₓᵧ): Horizontal Shear Couple (f₁ force, δξ₂ arm)',
+        descEn: 'Opposing forces ±f₁ along North (x₁) offset along East (x₂). Generates clockwise torque around vertical axis; pairs with M₂₁.'
+      },
+      '13': {
+        fDir: 'x', armDir: 'z',
+        titleZh: 'M₁₃ (Mₓ₂)：北-垂向倾滑剪切力偶 (f₁-力, δξ₃-力臂)',
+        descZh: '沿深度方向 x₃(下)错开力臂 δξ₃，施加南北向水平力 ±f₁。对应水平面上的南北向错动趋势，需与 M₃₁ 配对。',
+        titleEn: 'M₁₃ (Mₓ₂): North-Vertical Dip-Slip Couple (f₁ force, δξ₃ arm)',
+        descEn: 'Opposing N-S forces ±f₁ offset vertically along depth x₃. Represents horizontal shear across a horizontal plane; pairs with M₃₁.'
+      },
+      '21': {
+        fDir: 'y', armDir: 'x',
+        titleZh: 'M₂₁ (Mᵧₓ)：水平互补剪切力偶 (f₂-力, δξ₁-力臂)',
+        descZh: '沿 x 方向(北)错开力臂 δξ₁，施加沿 y 方向(东)的反向力偶 ±f₂。当 M₂₁ = M₁₂ 时，净外力矩为零，构成纯走滑双力偶。',
+        titleEn: 'M₂₁ (Mᵧₓ): Complementary Horizontal Shear Couple (f₂ force, δξ₁ arm)',
+        descEn: 'Opposing East-West forces ±f₂ offset along North (x₁). Balancing M₂₁ = M₁₂ cancels net torque to form a pure strike-slip double couple.'
+      },
+      '22': {
+        fDir: 'y', armDir: 'y',
+        titleZh: 'M₂₂ (Mᵧᵧ)：东-西向线性偶极 (E-E Linear Dipole)',
+        descZh: '沿 x₂(东) 方向错开力臂并施加东西向共线反向力。正断层(+M₂₂, -M₃₃)与逆断层(-M₂₂, +M₃₃)中起主导作用。',
+        titleEn: 'M₂₂ (Mᵧᵧ): East-West Linear Dipole',
+        descEn: 'Opposing collinear forces along x₂ (East) separated along x₂. Plays a primary role in 45°-dipping normal (+M₂₂) and reverse (-M₂₂) faults.'
+      },
+      '23': {
+        fDir: 'y', armDir: 'z',
+        titleZh: 'M₂₃ (Mᵧ₂)：东-垂向倾滑剪切力偶 (f₂-力, δξ₃-力臂)',
+        descZh: '沿深度 x₃(下)错开力臂 δξ₃，施加东西向水平力 ±f₂。与 M₃₂ 配对构成东西向倾滑断层（陡倾正/逆断层）的双力偶。',
+        titleEn: 'M₂₃ (Mᵧ₂): East-Vertical Dip-Slip Couple (f₂ force, δξ₃ arm)',
+        descEn: 'Opposing E-W forces ±f₂ offset vertically along depth x₃. Pairs with M₃₂ to form a steep E-W dip-slip double couple.'
+      },
+      '31': {
+        fDir: 'z', armDir: 'x',
+        titleZh: 'M₃₁ (M₂ₓ)：垂向-北向互补力偶 (f₃-力, δξ₁-力臂)',
+        descZh: '沿 x₁(北) 错开力臂 δξ₁，施加垂向力 ±f₃。与 M₁₃ 相等时抵消绕东西轴的净旋转力矩。',
+        titleEn: 'M₃₁ (M₂ₓ): Vertical-North Complementary Couple (f₃ force, δξ₁ arm)',
+        descEn: 'Opposing vertical forces ±f₃ offset along North (x₁). Equalizing M₃₁ = M₁₃ cancels net torque around the E-W axis.'
+      },
+      '32': {
+        fDir: 'z', armDir: 'y',
+        titleZh: 'M₃₂ (M₂ᵧ)：垂向-东向互补力偶 (f₃-力, δξ₂-力臂)',
+        descZh: '沿 x₂(东) 错开力臂 δξ₂，施加垂向力 ±f₃。与 M₂₃ 相等时抵消绕南北轴的净旋转力矩。',
+        titleEn: 'M₃₂ (M₂ᵧ): Vertical-East Complementary Couple (f₃ force, δξ₂ arm)',
+        descEn: 'Opposing vertical forces ±f₃ offset along East (x₂). Equalizing M₃₂ = M₂₃ cancels net torque around the N-S axis.'
+      },
+      '33': {
+        fDir: 'z', armDir: 'z',
+        titleZh: 'M₃₃ (M₂₂)：垂向线性偶极 (D-D Vertical Dipole)',
+        descZh: '沿 x₃(下) 方向错开力臂并施加垂向共线力。+M₃₃ 表示垂向拉张（如逆断层上盘抬升），-M₃₃ 表示垂向挤压（如正断层塌陷）。',
+        titleEn: 'M₃₃ (M₂₂): Vertical Linear Dipole',
+        descEn: 'Opposing collinear vertical forces along x₃ (Down). +M₃₃ represents vertical extension (reverse faulting); -M₃₃ represents vertical compression (normal faulting).'
+      }
+    };
+
+    // =========================================================================
+    // 2. Language Switcher & Tab Navigation
+    // =========================================================================
+    window.setLanguage = function(lang) {
+      if (lang !== 'en' && lang !== 'zh') lang = 'en';
+      state.lang = lang;
+      document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+      document.getElementById('lab-navigation').setAttribute('aria-label', lang === 'en' ? 'Interactive labs' : '互动实验');
+      document.getElementById('section-navigation').setAttribute('aria-label', lang === 'en' ? 'Lab sections' : '实验模块');
+
+      ['en', 'zh'].forEach(l => {
+        const btn = document.getElementById('btn-lang-' + l);
+        if (!btn) return;
+        if (l === lang) {
+          btn.className = 'lang-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white shadow-sm transition cursor-pointer';
+          btn.setAttribute('aria-pressed', 'true');
+        } else {
+          btn.className = 'lang-btn px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer';
+          btn.setAttribute('aria-pressed', 'false');
+        }
+      });
+
+      document.querySelectorAll('[data-en][data-zh]').forEach(el => {
+        el.textContent = lang === 'en' ? el.getAttribute('data-en') : el.getAttribute('data-zh');
+      });
+
+      setDiag1Force(state.diag1Force);
+      selectMatrixCell(state.selectedCell);
+      updateMomentTensorUI();
+      drawConvolution();
+      drawCouples3D();
+      drawGreenField();
+      drawGreenSeismogram();
+      drawSynthesis();
+    };
+
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      const targetPanel = document.getElementById(tabId);
+      if (targetPanel) targetPanel.classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-blue-600', 'text-blue-700', 'bg-blue-50/70', 'font-bold');
+        btn.classList.add('border-transparent', 'text-slate-600', 'font-semibold');
+        const badge = btn.querySelector('span:first-child');
+        if (badge) {
+          badge.classList.remove('bg-blue-600', 'text-white');
+          badge.classList.add('bg-slate-200', 'text-slate-700');
+        }
+      });
+
+      const activeBtn = document.getElementById('btn-' + tabId);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-transparent', 'text-slate-600', 'font-semibold');
+        activeBtn.classList.add('border-blue-600', 'text-blue-700', 'bg-blue-50/70', 'font-bold');
+        const activeBadge = activeBtn.querySelector('span:first-child');
+        if (activeBadge) {
+          activeBadge.classList.remove('bg-slate-200', 'text-slate-700');
+          activeBadge.classList.add('bg-blue-600', 'text-white');
+        }
+      }
+
+      resizeAllCanvases();
+      if (tabId === 'tab-intuition') drawConvolution();
+      if (tabId === 'tab-couples') { drawCouples3D(); drawBeachball(); }
+      if (tabId === 'tab-green') { drawGreenField(); drawGreenSeismogram(); }
+      if (tabId === 'tab-synth') drawSynthesis();
+    }
+
+    function togglePedagogyPanel() {
+      document.getElementById('pedagogy-content').classList.toggle('hidden');
+    }
+
+    // =========================================================================
+    // 3. Module 0: Diagram 1 Force Selector & Convolution Lab
+    // =========================================================================
+    function setDiag1Force(dir) {
+      state.diag1Force = dir;
+      ['x', 'y', 'z'].forEach(d => {
+        const b = document.getElementById('d1-btn-' + d);
+        if (!b) return;
+        if (d === dir) {
+          b.className = 'px-2 py-1 rounded bg-red-600 text-white font-mono font-bold shadow-sm';
+        } else {
+          b.className = 'px-2 py-1 rounded bg-slate-100 text-slate-700 font-mono font-bold hover:bg-slate-200';
+        }
+      });
+
+      const arrow = document.getElementById('svg1-force-arrow');
+      const fText = document.getElementById('svg1-force-text');
+      const gx = document.getElementById('svg1-g-x');
+      const gy = document.getElementById('svg1-g-y');
+      const gz = document.getElementById('svg1-g-z');
+      const wx = document.getElementById('svg1-wave-x');
+      const wy = document.getElementById('svg1-wave-y');
+      const wz = document.getElementById('svg1-wave-z');
+
+      if (dir === 'x') {
+        arrow.setAttribute('x2', '152'); arrow.setAttribute('y2', '125');
+        fText.setAttribute('x', '122'); fText.setAttribute('y', '113');
+        fText.innerHTML = 'Impulse Force f<tspan dy="3" font-size="8">x</tspan><tspan dy="-3">(t)=δ(t)</tspan>';
+        wx.setAttribute('d', 'M 24 10 L 42 10 L 47 1 L 53 19 L 59 5 L 65 13 L 72 10 L 105 10');
+        wy.setAttribute('d', 'M 24 63 L 50 63 L 55 57 L 61 69 L 67 61 L 73 63 L 105 63');
+        wz.setAttribute('d', 'M 24 116 L 44 116 L 49 124 L 55 106 L 62 121 L 68 116 L 105 116');
+      } else if (dir === 'y') {
+        arrow.setAttribute('x2', '135'); arrow.setAttribute('y2', '152');
+        fText.setAttribute('x', '138'); fText.setAttribute('y', '156');
+        fText.innerHTML = 'Force f<tspan dy="3" font-size="8">y</tspan><tspan dy="-3">(t)=δ(t)</tspan>';
+        wx.setAttribute('d', 'M 24 10 L 48 10 L 53 15 L 59 5 L 65 12 L 72 10 L 105 10');
+        wy.setAttribute('d', 'M 24 63 L 40 63 L 46 48 L 53 78 L 60 53 L 67 67 L 74 63 L 105 63');
+        wz.setAttribute('d', 'M 24 116 L 52 116 L 57 112 L 63 120 L 69 116 L 105 116');
+      } else {
+        arrow.setAttribute('x2', '105'); arrow.setAttribute('y2', '80');
+        fText.setAttribute('x', '114'); fText.setAttribute('y', '86');
+        fText.innerHTML = 'Force f<tspan dy="3" font-size="8">z</tspan><tspan dy="-3">(t)=δ(t)</tspan>';
+        wx.setAttribute('d', 'M 24 10 L 44 10 L 49 18 L 55 2 L 62 15 L 68 10 L 105 10');
+        wy.setAttribute('d', 'M 24 63 L 52 63 L 57 60 L 63 66 L 69 63 L 105 63');
+        wz.setAttribute('d', 'M 24 116 L 40 116 L 46 100 L 53 132 L 60 106 L 67 121 L 74 116 L 105 116');
+      }
+
+      gx.innerHTML = `G<tspan dy="2" font-size="8">x${dir}</tspan>`;
+      gy.innerHTML = `G<tspan dy="2" font-size="8">y${dir}</tspan>`;
+      gz.innerHTML = `G<tspan dy="2" font-size="8">z${dir}</tspan>`;
+
+      const cap = document.getElementById('diag1-caption');
+      if (state.lang === 'en') {
+        cap.innerHTML = `Current: Unit impulse force along <b class="text-red-600">${dir}-axis</b> (<i>f<sub>${dir}</sub></i>) produces 3-component Green's responses <b>G<sub>x${dir}</sub>, G<sub>y${dir}</sub>, G<sub>z${dir}</sub></b> at station <b>x</b>.`;
+      } else {
+        cap.innerHTML = `当前演示：震源处沿 <b class="text-red-600">${dir} 方向</b> 施加单位脉冲力 <i>f<sub>${dir}</sub></i>，台站记录到的三个分量位移响应即为 <b>G<sub>x${dir}</sub>, G<sub>y${dir}</sub>, G<sub>z${dir}</sub></b>（总共 3×3 = 9 个格林函数分量）。`;
+      }
+    }
+
+    function setConvSTF(type) {
+      state.convSTF = type;
+      ['impulse', 'boxcar', 'brune', 'ricker'].forEach(t => {
+        const btn = document.getElementById('conv-btn-' + t);
+        if (!btn) return;
+        if (t === type) {
+          btn.className = 'conv-btn px-2 py-1 rounded-lg bg-slate-900 text-white font-semibold shadow-sm';
+        } else {
+          btn.className = 'conv-btn px-2 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold';
+        }
+      });
+      drawConvolution();
+    }
+
+    function updateConvTau(val) {
+      state.convTau = parseFloat(val);
+      document.getElementById('conv-tau-val').textContent = state.convTau.toFixed(1) + ' s';
+      drawConvolution();
+    }
+
+    function drawConvolution() {
+      const canvas = document.getElementById('canvas-convolution');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const N = 260;
+      const dt = 0.05;
+      const tau = state.convTau;
+      const stf = new Float64Array(N);
+      const gf = new Float64Array(N);
+      const conv = new Float64Array(N);
+
+      for (let i = 0; i < N; i++) {
+        const t = i * dt;
+        const t0 = 1.1;
+        if (state.convSTF === 'impulse') {
+          stf[i] = Math.exp(-Math.pow((t - t0) / (0.18 * tau + 0.06), 2));
+        } else if (state.convSTF === 'boxcar') {
+          stf[i] = (t >= 0.7 && t <= 0.7 + tau * 1.4) ? 0.85 : 0;
+        } else if (state.convSTF === 'brune') {
+          if (t >= 0.7) {
+            const ts = (t - 0.7) / (tau * 0.55);
+            stf[i] = ts * Math.exp(1 - ts);
+          }
+        } else if (state.convSTF === 'ricker') {
+          const u = (t - (0.8 + tau * 0.6)) / (tau * 0.48);
+          stf[i] = (1 - 2 * u * u) * Math.exp(-u * u);
+        }
+      }
+
+      const spikes = [
+        { t0: 2.5, amp: 0.75, w: 0.14 },
+        { t0: 4.3, amp: -0.45, w: 0.16 },
+        { t0: 6.2, amp: 1.00, w: 0.16 },
+        { t0: 8.4, amp: -0.55, w: 0.22 }
+      ];
+      for (let i = 0; i < N; i++) {
+        const t = i * dt;
+        let val = 0;
+        spikes.forEach(s => {
+          val += s.amp * Math.exp(-Math.pow((t - s.t0) / s.w, 2));
+        });
+        gf[i] = val;
+      }
+
+      let maxConv = 0.001;
+      for (let n = 0; n < N; n++) {
+        let sum = 0;
+        for (let k = 0; k <= n; k++) {
+          sum += stf[k] * gf[n - k];
+        }
+        conv[n] = sum;
+        if (Math.abs(sum) > maxConv) maxConv = Math.abs(sum);
+      }
+      for (let n = 0; n < N; n++) conv[n] /= maxConv;
+
+      const tracks = [
+        {
+          data: stf,
+          color: '#DC2626',
+          fill: 'rgba(220, 38, 38, 0.12)',
+          label: '1. Source f(t)',
+          op: '*'
+        },
+        {
+          data: gf,
+          color: '#2563EB',
+          fill: 'rgba(37, 99, 235, 0.10)',
+          label: "2. Green's Function G(t)",
+          op: '='
+        },
+        {
+          data: conv,
+          color: '#0F172A',
+          fill: 'rgba(15, 23, 42, 0.08)',
+          label: '3. Synthetic Displacement u(t) = f(t) * G(t)',
+          op: ''
+        }
+      ];
+
+      const rowH = h / 3;
+      const padL = 12;
+      const padR = 14;
+      const plotW = w - padL - padR;
+
+      tracks.forEach((tr, idx) => {
+        const yMid = rowH * (idx + 0.56);
+        const ampScale = rowH * 0.34;
+
+        ctx.strokeStyle = '#CBD5E1';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padL, yMid);
+        ctx.lineTo(w - padR, yMid);
+        ctx.stroke();
+
+        ctx.fillStyle = tr.color;
+        ctx.font = 'bold 11px "Inter", sans-serif';
+        ctx.fillText(tr.label, padL + 2, rowH * idx + 15);
+
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '9px "JetBrains Mono", monospace';
+        ctx.fillText('Amplitude', w - 62, rowH * idx + 14);
+        if (idx === 2) {
+          ctx.fillText('Time (s) →', w - 64, h - 5);
+        }
+
+        if (idx === 1) {
+          ctx.fillStyle = '#64748B';
+          ctx.font = '10px "JetBrains Mono", monospace';
+          ctx.fillText('P', padL + (2.5 / 13) * plotW - 3, yMid - ampScale - 2);
+          ctx.fillText('PmP', padL + (4.3 / 13) * plotW - 9, yMid + ampScale + 10);
+          ctx.fillText('S', padL + (6.2 / 13) * plotW - 3, yMid - ampScale - 2);
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(padL, yMid);
+        for (let i = 0; i < N; i++) {
+          const x = padL + (i / (N - 1)) * plotW;
+          const y = yMid - tr.data[i] * ampScale;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(padL + plotW, yMid);
+        ctx.closePath();
+        ctx.fillStyle = tr.fill;
+        ctx.fill();
+
+        ctx.beginPath();
+        for (let i = 0; i < N; i++) {
+          const x = padL + (i / (N - 1)) * plotW;
+          const y = yMid - tr.data[i] * ampScale;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = tr.color;
+        ctx.lineWidth = idx === 2 ? 2.2 : 1.8;
+        ctx.stroke();
+
+        if (tr.op) {
+          ctx.fillStyle = '#475569';
+          ctx.font = 'bold 14px monospace';
+          ctx.fillText(tr.op, w - 24, rowH * (idx + 1) + 4);
+        }
+      });
+
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // 4. Module 1: Moment Tensor Matrix, Diagnostics, Repair, 3D & Beachball
+    // =========================================================================
+    function selectMatrixCell(cellKey) {
+      state.selectedCell = cellKey;
+      document.querySelectorAll('.mat-cell').forEach(c => c.classList.remove('selected'));
+      const active = document.getElementById('cell-' + cellKey);
+      if (active) active.classList.add('selected');
+
+      const info = cellDetails[cellKey];
+      if (!info) return;
+
+      const titleEl = document.getElementById('cell-detail-title');
+      const descEl = document.getElementById('cell-detail-desc');
+      if (state.lang === 'en') {
+        titleEl.textContent = info.titleEn;
+        descEl.textContent = info.descEn;
+      } else {
+        titleEl.textContent = info.titleZh;
+        descEl.textContent = info.descZh;
+      }
+
+      drawMiniCoupleSVG(info.fDir, info.armDir);
+    }
+
+    function drawMiniCoupleSVG(fDir, armDir) {
+      const svg = document.getElementById('svg-mini-couple');
+      if (!svg) return;
+      const dirVec = {
+        x: { dx: 0, dy: -20 },
+        y: { dx: 20, dy: 0 },
+        z: { dx: 14, dy: 14 }
+      };
+      const armVec = {
+        x: { ax: 0, ay: -12 },
+        y: { ax: 12, ay: 0 },
+        z: { ax: 9, ay: 9 }
+      };
+      const f = dirVec[fDir];
+      const a = armVec[armDir];
+      const cx = 38, cy = 38;
+
+      if (fDir === armDir) {
+        const ux = f.dx / 20, uy = f.dy / 20;
+        svg.innerHTML = `
+          <circle cx="${cx}" cy="${cy}" r="2.5" fill="#0F172A"/>
+          <line x1="${cx + ux*5}" y1="${cy + uy*5}" x2="${cx + ux*30}" y2="${cy + uy*30}" stroke="#DC2626" stroke-width="2.5"/>
+          <polygon points="${cx + ux*32},${cy + uy*32} ${cx + ux*24 - uy*4},${cy + uy*24 + ux*4} ${cx + ux*24 + uy*4},${cy + uy*24 - ux*4}" fill="#DC2626"/>
+          <line x1="${cx - ux*5}" y1="${cy - uy*5}" x2="${cx - ux*30}" y2="${cy - uy*30}" stroke="#2563EB" stroke-width="2.5"/>
+          <polygon points="${cx - ux*32},${cy - uy*32} ${cx - ux*24 - uy*4},${cy - uy*24 + ux*4} ${cx - ux*24 + uy*4},${cy - uy*24 - ux*4}" fill="#2563EB"/>
+        `;
+      } else {
+        const p1x = cx + a.ax, p1y = cy + a.ay;
+        const p2x = cx - a.ax, p2y = cy - a.ay;
+        const fx = f.dx * 0.95, fy = f.dy * 0.95;
+        const len = Math.hypot(fx, fy);
+        const ux = fx / len, uy = fy / len;
+
+        svg.innerHTML = `
+          <line x1="${p1x}" y1="${p1y}" x2="${p2x}" y2="${p2y}" stroke="#D97706" stroke-width="1.5" stroke-dasharray="2 2"/>
+          <line x1="${p1x - fx*0.5}" y1="${p1y - fy*0.5}" x2="${p1x + fx*0.6}" y2="${p1y + fy*0.6}" stroke="#DC2626" stroke-width="2.5"/>
+          <polygon points="${p1x + fx*0.75},${p1y + fy*0.75} ${p1x + fx*0.4 - uy*4},${p1y + fy*0.4 + ux*4} ${p1x + fx*0.4 + uy*4},${p1y + fy*0.4 - ux*4}" fill="#DC2626"/>
+          <line x1="${p2x + fx*0.5}" y1="${p2y + fy*0.5}" x2="${p2x - fx*0.6}" y2="${p2y - fy*0.6}" stroke="#2563EB" stroke-width="2.5"/>
+          <polygon points="${p2x - fx*0.75},${p2y - fy*0.75} ${p2x - fx*0.4 - uy*4},${p2y - fy*0.4 + ux*4} ${p2x - fx*0.4 + uy*4},${p2y - fy*0.4 - ux*4}" fill="#2563EB"/>
+        `;
+      }
+    }
+
+    function applyPreset(type) {
+      const toggle = document.getElementById('toggle-torque-demo');
+      state.nonSymmetricMode = false;
+      toggle.checked = false;
+
+      if (type === 'strikeSlip') {
+        Object.assign(state.M, { m11: 0, m22: 0, m33: 0, m12: 1, m21: 1, m13: 0, m31: 0, m23: 0, m32: 0 });
+        selectMatrixCell('12');
+      } else if (type === 'normal') {
+        Object.assign(state.M, { m11: 0, m22: 1, m33: -1, m12: 0, m21: 0, m13: 0, m31: 0, m23: 0, m32: 0 });
+        selectMatrixCell('33');
+      } else if (type === 'reverse') {
+        Object.assign(state.M, { m11: 0, m22: -1, m33: 1, m12: 0, m21: 0, m13: 0, m31: 0, m23: 0, m32: 0 });
+        selectMatrixCell('33');
+      } else if (type === 'explosion') {
+        Object.assign(state.M, { m11: 0.85, m22: 0.85, m33: 0.85, m12: 0, m21: 0, m13: 0, m31: 0, m23: 0, m32: 0 });
+        selectMatrixCell('11');
+      } else if (type === 'clvd') {
+        Object.assign(state.M, { m11: -0.5, m22: -0.5, m33: 1.0, m12: 0, m21: 0, m13: 0, m31: 0, m23: 0, m32: 0 });
+        selectMatrixCell('33');
+      } else if (type === 'singleCouple') {
+        state.nonSymmetricMode = true;
+        toggle.checked = true;
+        Object.assign(state.M, { m11: 0, m22: 0, m33: 0, m12: 1.0, m21: 0.0, m13: 0, m31: 0, m23: 0, m32: 0 });
+        selectMatrixCell('12');
+      }
+      syncSlidersWithM();
+      updateMomentTensorUI();
+    }
+
+    function toggleTorqueMode(checked) {
+      state.nonSymmetricMode = checked;
+      if (checked) {
+        if (Math.abs(state.M.m12) < 0.2) state.M.m12 = 1.0;
+        state.M.m21 = 0.0;
+      } else {
+        state.M.m21 = state.M.m12;
+      }
+      syncSlidersWithM();
+      updateMomentTensorUI();
+    }
+
+    function syncSlidersWithM() {
+      document.getElementById('slider-m11').value = state.M.m11;
+      document.getElementById('slider-m22').value = state.M.m22;
+      document.getElementById('slider-m33').value = state.M.m33;
+      document.getElementById('slider-m12').value = state.M.m12;
+      document.getElementById('slider-m13').value = state.M.m13;
+      document.getElementById('slider-m23').value = state.M.m23;
+    }
+
+    function updateMFromSliders() {
+      state.M.m11 = parseFloat(document.getElementById('slider-m11').value);
+      state.M.m22 = parseFloat(document.getElementById('slider-m22').value);
+      state.M.m33 = parseFloat(document.getElementById('slider-m33').value);
+      state.M.m12 = parseFloat(document.getElementById('slider-m12').value);
+      state.M.m13 = parseFloat(document.getElementById('slider-m13').value);
+      state.M.m23 = parseFloat(document.getElementById('slider-m23').value);
+
+      state.M.m21 = state.nonSymmetricMode ? 0.0 : state.M.m12;
+      state.M.m31 = state.M.m13;
+      state.M.m32 = state.M.m23;
+
+      updateMomentTensorUI();
+    }
+
+    function computeEigenSystem(A) {
+      let a = [
+        [A[0][0], A[0][1], A[0][2]],
+        [A[1][0], A[1][1], A[1][2]],
+        [A[2][0], A[2][1], A[2][2]]
+      ];
+      let v = [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+      ];
+      for (let iter = 0; iter < 35; iter++) {
+        let p = 0, q = 1;
+        let maxVal = Math.abs(a[0][1]);
+        if (Math.abs(a[0][2]) > maxVal) { maxVal = Math.abs(a[0][2]); p = 0; q = 2; }
+        if (Math.abs(a[1][2]) > maxVal) { maxVal = Math.abs(a[1][2]); p = 1; q = 2; }
+        if (maxVal < 1e-10) break;
+
+        let diff = a[q][q] - a[p][p];
+        let t;
+        if (Math.abs(diff) < 1e-12) {
+          t = 1.0;
+        } else {
+          let phi = diff / (2.0 * a[p][q]);
+          t = 1.0 / (Math.abs(phi) + Math.sqrt(phi * phi + 1.0));
+          if (phi < 0) t = -t;
+        }
+        let c = 1.0 / Math.sqrt(t * t + 1.0);
+        let s = t * c;
+        let tau = s / (1.0 + c);
+
+        let h = a[p][q];
+        a[p][q] = 0;
+        a[p][p] -= t * h;
+        a[q][q] += t * h;
+
+        for (let r = 0; r < 3; r++) {
+          if (r !== p && r !== q) {
+            let arp = a[r][p], arq = a[r][q];
+            a[r][p] = a[p][r] = arp - s * (arq + tau * arp);
+            a[r][q] = a[q][r] = arq + s * (arp - tau * arq);
+          }
+          let vrp = v[r][p], vrq = v[r][q];
+          v[r][p] = vrp - s * (vrq + tau * vrp);
+          v[r][q] = vrq + s * (vrp - tau * vrq);
+        }
+      }
+
+      return [
+        { val: a[0][0], vec: [v[0][0], v[1][0], v[2][0]] },
+        { val: a[1][1], vec: [v[0][1], v[1][1], v[2][1]] },
+        { val: a[2][2], vec: [v[0][2], v[1][2], v[2][2]] }
+      ].sort((x, y) => y.val - x.val);
+    }
+
+    function updateMomentTensorUI() {
+      const M = state.M;
+      const fmt = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+      const fmtPlain = v => v.toFixed(2);
+
+      document.getElementById('val-m11').textContent = fmt(M.m11);
+      document.getElementById('val-m22').textContent = fmt(M.m22);
+      document.getElementById('val-m33').textContent = fmt(M.m33);
+      document.getElementById('val-m12').textContent = fmt(M.m12);
+      document.getElementById('val-m13').textContent = fmt(M.m13);
+      document.getElementById('val-m23').textContent = fmt(M.m23);
+
+      const cells = [
+        ['mat-11', M.m11], ['mat-12', M.m12], ['mat-13', M.m13],
+        ['mat-21', M.m21], ['mat-22', M.m22], ['mat-23', M.m23],
+        ['mat-31', M.m31], ['mat-32', M.m32], ['mat-33', M.m33]
+      ];
+      cells.forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        el.textContent = fmtPlain(val);
+        el.className = val > 0.01 ? 'font-bold text-red-600' : (val < -0.01 ? 'font-bold text-blue-600' : 'font-bold text-slate-400');
+      });
+
+      const isSym = Math.abs(M.m12 - M.m21) < 1e-6;
+      const badge = document.getElementById('symmetry-badge');
+      const warnBox = document.getElementById('torque-warning');
+      if (isSym) {
+        badge.textContent = state.lang === 'en' ? 'Symmetric Mⱼₖ = Mₖⱼ' : '对称张量 Mⱼₖ = Mₖⱼ';
+        badge.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200';
+        warnBox.classList.add('hidden');
+      } else {
+        badge.textContent = state.lang === 'en' ? '⚠️ Asymmetric Torque' : '⚠️ 非对称 (存在净力矩)';
+        badge.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-red-700 border border-red-200';
+        warnBox.classList.remove('hidden');
+      }
+
+      const symMat = [
+        [M.m11, 0.5 * (M.m12 + M.m21), 0.5 * (M.m13 + M.m31)],
+        [0.5 * (M.m12 + M.m21), M.m22, 0.5 * (M.m23 + M.m32)],
+        [0.5 * (M.m13 + M.m31), 0.5 * (M.m23 + M.m32), M.m33]
+      ];
+      const trace = symMat[0][0] + symMat[1][1] + symMat[2][2];
+      document.getElementById('val-trace').textContent = fmt(trace);
+
+      const eigSys = computeEigenSystem(symMat);
+      state.eigenSystem = eigSys;
+      const eigs = eigSys.map(e => e.val);
+
+      document.getElementById('eig-1').textContent = fmt(eigs[0]);
+      document.getElementById('eig-2').textContent = fmt(eigs[1]);
+      document.getElementById('eig-3').textContent = fmt(eigs[2]);
+
+      const iso = trace / 3.0;
+      const dev = [eigs[0] - iso, eigs[1] - iso, eigs[2] - iso];
+      const maxDev = Math.max(Math.abs(dev[0]), Math.abs(dev[2]));
+      const totalMag = Math.abs(iso) + maxDev;
+
+      let pctIso = 0, pctDc = 100, pctClvd = 0;
+      if (totalMag > 1e-6) {
+        pctIso = Math.round((Math.abs(iso) / totalMag) * 100);
+        const rem = 100 - pctIso;
+        if (maxDev > 1e-6) {
+          const minAbsDev = Math.min(Math.abs(dev[0]), Math.abs(dev[1]), Math.abs(dev[2]));
+          const clvdFrac = Math.min(1, (2 * minAbsDev) / maxDev);
+          pctClvd = Math.round(rem * clvdFrac);
+          pctDc = rem - pctClvd;
+        }
+      }
+
+      document.getElementById('pct-iso').textContent = pctIso + '%';
+      document.getElementById('pct-dc').textContent = pctDc + '%';
+      document.getElementById('pct-clvd').textContent = pctClvd + '%';
+      document.getElementById('bar-iso').style.width = pctIso + '%';
+      document.getElementById('bar-dc').style.width = pctDc + '%';
+      document.getElementById('bar-clvd').style.width = pctClvd + '%';
+
+      let sumSq = 0;
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          sumSq += symMat[r][c] * symMat[r][c];
+        }
+      }
+      const m0 = Math.sqrt(0.5 * sumSq);
+      document.getElementById('val-m0').textContent = m0.toFixed(2);
+
+      updateDiagnosticsAndSDR(isSym, trace, pctIso, pctDc, pctClvd, eigSys, m0);
+
+      drawCouples3D();
+      drawBeachball();
+    }
+
+    function updateDiagnosticsAndSDR(isSym, trace, pctIso, pctDc, pctClvd, eigSys, m0) {
+      const panel = document.getElementById('diag-panel-box');
+      const badge = document.getElementById('diag-status-badge');
+      const desc = document.getElementById('diag-status-desc');
+      const lang = state.lang;
+
+      if (!isSym) {
+        panel.className = 'card-academic rounded-2xl p-4 space-y-3 border-red-300 bg-red-50/50 transition-colors duration-200';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-100 text-red-800 border border-red-300';
+        badge.textContent = lang === 'en' ? '❌ Angular Momentum Violation' : '❌ 角动量不守恒 (存在净力矩)';
+        desc.textContent = lang === 'en'
+          ? 'M₁₂ ≠ M₂₁ creates a net external torque that would spin the Earth. Click "Remove Volume Change" or "Extract Best-Fit DC" below to restore symmetry.'
+          : '当前 M₁₂ ≠ M₂₁ 导致顺时针与逆时针力偶无法抵消，产生净外力矩，在天然内源地震中不可能出现。可点击下方按钮自动恢复对称平衡。';
+      } else if (m0 < 0.03) {
+        panel.className = 'card-academic rounded-2xl p-4 space-y-3 border-slate-200 bg-slate-50/70 transition-colors duration-200';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700';
+        badge.textContent = lang === 'en' ? 'Zero Moment Tensor (M = 0)' : '零震源状态 (M ≈ 0)';
+        desc.textContent = lang === 'en'
+          ? 'All moment tensor components are near zero. Adjust sliders or select a preset above.'
+          : '当前所有矩张量分量接近零，请拖动滑块或选择上方典型震源预设。';
+      } else if (pctIso >= 92) {
+        const isExp = trace > 0;
+        panel.className = 'card-academic rounded-2xl p-4 space-y-3 border-blue-300 bg-blue-50/40 transition-colors duration-200';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-300';
+        badge.textContent = lang === 'en'
+          ? (isExp ? '🔵 Pure Isotropic Explosion' : '🔵 Pure Isotropic Implosion')
+          : (isExp ? '🔵 纯各向同性膨胀源 (爆炸)' : '🔵 纯各向同性内爆源 (塌陷)');
+        desc.textContent = lang === 'en'
+          ? `Volume change dominates (ISO = ${pctIso}%, tr(M) = ${trace.toFixed(2)}). Generates pure P-waves with zero far-field S-waves.`
+          : `体积变化占主导（ISO = ${pctIso}%，tr(M) = ${trace.toFixed(2)}），仅向外辐射各向同性 P 波，均匀介质中远场 S 波为零。`;
+      } else if (Math.abs(trace) < 0.04 && pctClvd <= 5) {
+        panel.className = 'card-academic rounded-2xl p-4 space-y-3 border-emerald-300 bg-emerald-50/40 transition-colors duration-200';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
+        badge.textContent = lang === 'en' ? '✓ Pure Double-Couple Fault (DC)' : '✓ 纯天然构造断层 (Pure DC)';
+        desc.textContent = lang === 'en'
+          ? 'Balanced tectonic shear source: zero net torque (Mⱼₖ=Mₖⱼ), zero volume change (tr(M)=0), and planar fault slip (CLVD ≈ 0%).'
+          : '当前矩张量满足角动量守恒 (Mⱼₖ=Mₖⱼ)，且体积变化 tr(M)=0、CLVD ≈ 0%，对应单一平面上的纯剪切错动断层。';
+      } else {
+        panel.className = 'card-academic rounded-2xl p-4 space-y-3 border-amber-300 bg-amber-50/50 transition-colors duration-200';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300';
+        badge.textContent = lang === 'en'
+          ? `⚠️ Mixed Non-DC Source (ISO ${pctIso}% | CLVD ${pctClvd}%)`
+          : `⚠️ 混合非双力偶震源 (ISO ${pctIso}% | CLVD ${pctClvd}%)`;
+
+        const volHintZh = Math.abs(trace) >= 0.04
+          ? `存在净体积${trace > 0 ? '膨胀' : '收缩'} tr(M)=${trace >= 0 ? '+' : ''}${trace.toFixed(2)} (${pctIso}%)`
+          : '体积变化已平衡 (tr(M)=0)';
+        const clvdHintZh = pctClvd > 5 ? `，且包含 ${pctClvd}% CLVD 复杂偏张量成分` : '';
+        desc.textContent = lang === 'en'
+          ? `Mechanically balanced (Mⱼₖ=Mₖⱼ), but deviates from a pure planar fault: tr(M)=${trace >= 0 ? '+' : ''}${trace.toFixed(2)} (ISO ${pctIso}%), CLVD=${pctClvd}%. Use repair buttons below to extract pure shear.`
+          : `力学力矩已平衡，但偏离单一纯构造断层：${volHintZh}${clvdHintZh}。可点击下方“一键修复”提取纯构造断层。`;
+      }
+
+      const planes = computeNodalPlanesFromPT(eigSys[0].vec, eigSys[2].vec);
+      document.getElementById('sdr-plane1').textContent = `${planes[0].strike}° / ${planes[0].dip}° / ${planes[0].rake}°`;
+      document.getElementById('sdr-plane2').textContent = `${planes[1].strike}° / ${planes[1].dip}° / ${planes[1].rake}°`;
+
+      drawBestDCMiniball(eigSys);
+    }
+
+    function computeNodalPlanesFromPT(tVec, pVec) {
+      const norm = v => {
+        const l = Math.hypot(v[0], v[1], v[2]) || 1;
+        return [v[0]/l, v[1]/l, v[2]/l];
+      };
+      const t = norm(tVec);
+      const p = norm(pVec);
+      const invSqrt2 = 1 / Math.SQRT2;
+
+      const n1 = norm([(t[0] + p[0]) * invSqrt2, (t[1] + p[1]) * invSqrt2, (t[2] + p[2]) * invSqrt2]);
+      const d1 = norm([(t[0] - p[0]) * invSqrt2, (t[1] - p[1]) * invSqrt2, (t[2] - p[2]) * invSqrt2]);
+
+      const vecToSDR = (nIn, dIn) => {
+        let n = [...nIn], d = [...dIn];
+        if (n[2] > 0) {
+          n = [-n[0], -n[1], -n[2]];
+          d = [-d[0], -d[1], -d[2]];
+        }
+        const dipRad = Math.acos(Math.max(-1, Math.min(1, -n[2])));
+        let strikeRad, rakeRad;
+        if (Math.sin(dipRad) < 1e-4) {
+          strikeRad = 0;
+          rakeRad = Math.atan2(-d[1], d[0]);
+        } else {
+          strikeRad = Math.atan2(-n[0], n[1]);
+          const sVec = [Math.cos(strikeRad), Math.sin(strikeRad), 0];
+          const uVec = [-n[2] * sVec[1], n[2] * sVec[0], n[0] * sVec[1] - n[1] * sVec[0]];
+          const cosR = d[0]*sVec[0] + d[1]*sVec[1] + d[2]*sVec[2];
+          const sinR = -(d[0]*uVec[0] + d[1]*uVec[1] + d[2]*uVec[2]);
+          rakeRad = Math.atan2(sinR, cosR);
+        }
+        let strike = Math.round((strikeRad * 180 / Math.PI + 360) % 360);
+        let dip = Math.round(dipRad * 180 / Math.PI);
+        let rake = Math.round(rakeRad * 180 / Math.PI);
+        if (rake > 180) rake -= 360;
+        if (rake <= -180) rake += 360;
+        return { strike, dip, rake };
+      };
+
+      return [vecToSDR(n1, d1), vecToSDR(d1, n1)];
+    }
+
+    function drawBestDCMiniball(eigSys) {
+      const canvas = document.getElementById('canvas-dc-miniball');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      const cx = w / 2, cy = h / 2, R = w * 0.44;
+      ctx.clearRect(0, 0, w, h);
+
+      const e1 = eigSys[0].vec;
+      const e3 = eigSys[2].vec;
+      const dc = [
+        [e1[0]*e1[0] - e3[0]*e3[0], e1[0]*e1[1] - e3[0]*e3[1], e1[0]*e1[2] - e3[0]*e3[2]],
+        [e1[1]*e1[0] - e3[1]*e3[0], e1[1]*e1[1] - e3[1]*e3[1], e1[1]*e1[2] - e3[1]*e3[2]],
+        [e1[2]*e1[0] - e3[2]*e3[0], e1[2]*e1[1] - e3[2]*e3[1], e1[2]*e1[2] - e3[2]*e3[2]]
+      ];
+
+      const img = ctx.createImageData(w, h);
+      const data = img.data;
+      for (let py = 0; py < h; py++) {
+        for (let px = 0; px < w; px++) {
+          const X = (px - cx) / R;
+          const Y = (cy - py) / R;
+          const r2 = X * X + Y * Y;
+          if (r2 <= 1.0) {
+            const r = Math.sqrt(r2);
+            const sinIh = r * Math.sqrt(Math.max(0, 2 - r2));
+            const cosIh = 1 - r2;
+            const az = Math.atan2(X, Y);
+            const g1 = sinIh * Math.cos(az);
+            const g2 = sinIh * Math.sin(az);
+            const g3 = cosIh;
+            const ampP =
+              g1 * (dc[0][0]*g1 + dc[0][1]*g2 + dc[0][2]*g3) +
+              g2 * (dc[1][0]*g1 + dc[1][1]*g2 + dc[1][2]*g3) +
+              g3 * (dc[2][0]*g1 + dc[2][1]*g2 + dc[2][2]*g3);
+            const idx = (py * w + px) * 4;
+            if (ampP > 0.01) {
+              data[idx] = 16; data[idx+1] = 185; data[idx+2] = 129; data[idx+3] = 230;
+            } else {
+              data[idx] = 255; data[idx+1] = 255; data[idx+2] = 255; data[idx+3] = 255;
+            }
+          }
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+      ctx.strokeStyle = '#0F172A';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    function applyRepairedTensor(newM, actionNameZh, actionNameEn) {
+      const oldM = { ...state.M };
+      state.nonSymmetricMode = false;
+      const toggle = document.getElementById('toggle-torque-demo');
+      if (toggle) toggle.checked = false;
+
+      const clampRound = v => Math.max(-1, Math.min(1, Math.round(v * 100) / 100));
+      state.M.m11 = clampRound(newM.m11);
+      state.M.m22 = clampRound(newM.m22);
+      state.M.m33 = clampRound(newM.m33);
+      state.M.m12 = state.M.m21 = clampRound(newM.m12);
+      state.M.m13 = state.M.m31 = clampRound(newM.m13);
+      state.M.m23 = state.M.m32 = clampRound(newM.m23);
+
+      syncSlidersWithM();
+      updateMomentTensorUI();
+      if (state.activeTab === 'tab-synth') drawSynthesis();
+
+      const keys = [
+        ['m11', 'M₁₁'], ['m22', 'M₂₂'], ['m33', 'M₃₃'],
+        ['m12', 'M₁₂'], ['m13', 'M₁₃'], ['m23', 'M₂₃']
+      ];
+      const changes = [];
+      keys.forEach(([k, label]) => {
+        if (Math.abs(oldM[k] - state.M[k]) >= 0.01) {
+          const fmt = v => (v >= 0 ? '+' : '') + v.toFixed(2);
+          changes.push(`${label}: ${fmt(oldM[k])} → ${fmt(state.M[k])}`);
+          const wrap = document.getElementById('wrap-' + k);
+          if (wrap) {
+            wrap.classList.remove('slider-updated');
+            void wrap.offsetWidth;
+            wrap.classList.add('slider-updated');
+          }
+        }
+      });
+
+      const toast = document.getElementById('repair-diff-toast');
+      toast.classList.remove('hidden');
+      const title = state.lang === 'en' ? actionNameEn : actionNameZh;
+      if (changes.length === 0) {
+        toast.textContent = state.lang === 'en'
+          ? `✓ [${title}] Already satisfies this physical constraint (no changes needed).`
+          : `✓ [${title}] 当前参数已满足该物理条件，无需改动。`;
+      } else {
+        const prefix = state.lang === 'en' ? `✓ [${title}] Updated: ` : `✓ [${title}] 已自动修正: `;
+        toast.textContent = prefix + changes.join(' | ');
+      }
+    }
+
+    function repairZeroTrace() {
+      const M = state.M;
+      const m12s = 0.5 * (M.m12 + M.m21);
+      const m13s = 0.5 * (M.m13 + M.m31);
+      const m23s = 0.5 * (M.m23 + M.m32);
+      const iso = (M.m11 + M.m22 + M.m33) / 3.0;
+
+      applyRepairedTensor({
+        m11: M.m11 - iso,
+        m22: M.m22 - iso,
+        m33: M.m33 - iso,
+        m12: m12s,
+        m13: m13s,
+        m23: m23s
+      }, '去除体积变化', 'Remove Volume Change');
+    }
+
+    function repairBestDC() {
+      const M = state.M;
+      const symMat = [
+        [M.m11, 0.5*(M.m12+M.m21), 0.5*(M.m13+M.m31)],
+        [0.5*(M.m12+M.m21), M.m22, 0.5*(M.m23+M.m32)],
+        [0.5*(M.m13+M.m31), 0.5*(M.m23+M.m32), M.m33]
+      ];
+      const eig = computeEigenSystem(symMat);
+      let lamDC = 0.5 * (eig[0].val - eig[2].val);
+      if (lamDC < 0.05) lamDC = 1.0;
+      const e1 = eig[0].vec;
+      const e3 = eig[2].vec;
+
+      const rec = (r, c) => lamDC * (e1[r] * e1[c] - e3[r] * e3[c]);
+      const raw = {
+        m11: rec(0, 0), m22: rec(1, 1), m33: rec(2, 2),
+        m12: rec(0, 1), m13: rec(0, 2), m23: rec(1, 2)
+      };
+      const maxAbs = Math.max(1.0, ...Object.values(raw).map(Math.abs));
+      for (const k in raw) raw[k] /= maxAbs;
+
+      applyRepairedTensor(raw, '提取最佳纯断层', 'Extract Best-Fit DC');
+    }
+
+    function repairNormalizeM0() {
+      const M = state.M;
+      const m12s = 0.5 * (M.m12 + M.m21);
+      const m13s = 0.5 * (M.m13 + M.m31);
+      const m23s = 0.5 * (M.m23 + M.m32);
+      const sumSq = M.m11*M.m11 + M.m22*M.m22 + M.m33*M.m33 + 2*(m12s*m12s + m13s*m13s + m23s*m23s);
+      const m0 = Math.sqrt(0.5 * sumSq);
+      if (m0 < 1e-4) {
+        applyRepairedTensor({ m11: 0, m22: 0, m33: 0, m12: 1, m13: 0, m23: 0 }, '归一化地震矩', 'Normalize M₀');
+        return;
+      }
+      let scale = 1.0 / m0;
+      const maxComp = Math.max(Math.abs(M.m11), Math.abs(M.m22), Math.abs(M.m33), Math.abs(m12s), Math.abs(m13s), Math.abs(m23s));
+      if (maxComp * scale > 1.0) {
+        scale = 1.0 / maxComp;
+      }
+      applyRepairedTensor({
+        m11: M.m11 * scale,
+        m22: M.m22 * scale,
+        m33: M.m33 * scale,
+        m12: m12s * scale,
+        m13: m13s * scale,
+        m23: m23s * scale
+      }, '归一化地震矩', 'Normalize M₀');
+    }
+
+    function project3D(x1, x2, x3, cx, cy, scale) {
+      const wx = x2;
+      const wy = -x3;
+      const wz = x1;
+
+      const cosY = Math.cos(state.cam.yaw), sinY = Math.sin(state.cam.yaw);
+      const cosP = Math.cos(state.cam.pitch), sinP = Math.sin(state.cam.pitch);
+
+      const rx = wx * cosY - wz * sinY;
+      const rz1 = wx * sinY + wz * cosY;
+      const ry = wy * cosP - rz1 * sinP;
+      const rz = wy * sinP + rz1 * cosP;
+
+      const perspective = 4.5 / (4.5 - rz * 0.42);
+      return {
+        x: cx + rx * scale * perspective,
+        y: cy - ry * scale * perspective,
+        z: rz
+      };
+    }
+
+    function drawArrow3D(ctx, p1, p2, color, lineWidth = 2.6, headLen = 9) {
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const len = Math.hypot(dx, dy);
+      if (len < 2) return;
+      const angle = Math.atan2(dy, dx);
+
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(p2.x, p2.y);
+      ctx.lineTo(p2.x - headLen * Math.cos(angle - Math.PI / 6), p2.y - headLen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(p2.x - headLen * Math.cos(angle + Math.PI / 6), p2.y - headLen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawCouples3D() {
+      const canvas = document.getElementById('canvas-couples');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const cx = w * 0.54;
+      const cy = h * 0.48;
+      const scale = Math.min(w, h) * 0.28;
+
+      const b = 0.85;
+      const boxPts = [
+        [-b,-b,-b], [b,-b,-b], [b,b,-b], [-b,b,-b],
+        [-b,-b,b],  [b,-b,b],  [b,b,b],  [-b,b,b]
+      ].map(p => project3D(p[0], p[1], p[2], cx, cy, scale));
+
+      const edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+      ctx.strokeStyle = '#CBD5E1';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      edges.forEach(([i, j]) => {
+        ctx.beginPath();
+        ctx.moveTo(boxPts[i].x, boxPts[i].y);
+        ctx.lineTo(boxPts[j].x, boxPts[j].y);
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+
+      const origin = project3D(0, 0, 0, cx, cy, scale);
+      const ax1 = project3D(1.22, 0, 0, cx, cy, scale);
+      const ax2 = project3D(0, 1.22, 0, cx, cy, scale);
+      const ax3 = project3D(0, 0, 1.22, cx, cy, scale);
+
+      drawArrow3D(ctx, origin, ax1, '#64748B', 1.4, 7);
+      drawArrow3D(ctx, origin, ax2, '#64748B', 1.4, 7);
+      drawArrow3D(ctx, origin, ax3, '#64748B', 1.4, 7);
+
+      ctx.font = 'bold 12px "Inter", sans-serif';
+      ctx.fillStyle = '#334155';
+      ctx.fillText('N (x₁)', ax1.x + 6, ax1.y + 4);
+      ctx.fillText('E (x₂)', ax2.x + 6, ax2.y + 4);
+      ctx.fillText('D (x₃)', ax3.x + 6, ax3.y + 4);
+
+      if (state.eigenSystem) {
+        const tItem = state.eigenSystem[0];
+        const pItem = state.eigenSystem[2];
+        if (tItem.val > 0.1) {
+          const tv = tItem.vec;
+          const tP1 = project3D(tv[0]*1.05, tv[1]*1.05, tv[2]*1.05, cx, cy, scale);
+          const tP2 = project3D(-tv[0]*1.05, -tv[1]*1.05, -tv[2]*1.05, cx, cy, scale);
+          drawArrow3D(ctx, origin, tP1, 'rgba(220, 38, 38, 0.35)', 4, 10);
+          drawArrow3D(ctx, origin, tP2, 'rgba(220, 38, 38, 0.35)', 4, 10);
+          ctx.fillStyle = '#B91C1C';
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText('T-axis (Tension)', tP1.x + 4, tP1.y - 4);
+        }
+        if (pItem.val < -0.1) {
+          const pv = pItem.vec;
+          const pP1 = project3D(pv[0]*1.05, pv[1]*1.05, pv[2]*1.05, cx, cy, scale);
+          const pP2 = project3D(-pv[0]*1.05, -pv[1]*1.05, -pv[2]*1.05, cx, cy, scale);
+          drawArrow3D(ctx, pP1, origin, 'rgba(37, 99, 235, 0.35)', 4, 10);
+          drawArrow3D(ctx, pP2, origin, 'rgba(37, 99, 235, 0.35)', 4, 10);
+          ctx.fillStyle = '#1D4ED8';
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText('P-axis (Compression)', pP1.x + 4, pP1.y - 4);
+        }
+      }
+
+      const mat = [
+        [state.M.m11, state.M.m12, state.M.m13],
+        [state.M.m21, state.M.m22, state.M.m23],
+        [state.M.m31, state.M.m32, state.M.m33]
+      ];
+      const armOffset = 0.34;
+      const basis = [[1,0,0], [0,1,0], [0,0,1]];
+
+      for (let j = 0; j < 3; j++) {
+        for (let k = 0; k < 3; k++) {
+          const val = mat[j][k];
+          if (Math.abs(val) < 0.04) continue;
+
+          const color = val > 0 ? '#DC2626' : '#2563EB';
+          const fLen = Math.abs(val) * 0.62;
+          const sign = val > 0 ? 1 : -1;
+          const ej = basis[j];
+          const ek = basis[k];
+
+          if (j === k) {
+            const start1 = [ej[0]*0.08, ej[1]*0.08, ej[2]*0.08];
+            const end1   = [ej[0]*(0.08 + fLen), ej[1]*(0.08 + fLen), ej[2]*(0.08 + fLen)];
+            const start2 = [-ej[0]*0.08, -ej[1]*0.08, -ej[2]*0.08];
+            const end2   = [-ej[0]*(0.08 + fLen), -ej[1]*(0.08 + fLen), -ej[2]*(0.08 + fLen)];
+
+            const pS1 = project3D(start1[0], start1[1], start1[2], cx, cy, scale);
+            const pE1 = project3D(end1[0], end1[1], end1[2], cx, cy, scale);
+            const pS2 = project3D(start2[0], start2[1], start2[2], cx, cy, scale);
+            const pE2 = project3D(end2[0], end2[1], end2[2], cx, cy, scale);
+
+            if (sign > 0) {
+              drawArrow3D(ctx, pS1, pE1, color, 3.2);
+              drawArrow3D(ctx, pS2, pE2, color, 3.2);
+            } else {
+              drawArrow3D(ctx, pE1, pS1, color, 3.2);
+              drawArrow3D(ctx, pE2, pS2, color, 3.2);
+            }
+
+            ctx.fillStyle = color;
+            ctx.font = 'bold 11px "JetBrains Mono", monospace';
+            ctx.fillText(`M${j+1}${k+1}`, pE1.x + 5, pE1.y - 4);
+          } else {
+            const a1 = [ek[0]*armOffset, ek[1]*armOffset, ek[2]*armOffset];
+            const a2 = [-ek[0]*armOffset, -ek[1]*armOffset, -ek[2]*armOffset];
+
+            const f1Start = [a1[0] - ej[0]*sign*fLen*0.45, a1[1] - ej[1]*sign*fLen*0.45, a1[2] - ej[2]*sign*fLen*0.45];
+            const f1End   = [a1[0] + ej[0]*sign*fLen*0.65, a1[1] + ej[1]*sign*fLen*0.65, a1[2] + ej[2]*sign*fLen*0.65];
+
+            const f2Start = [a2[0] + ej[0]*sign*fLen*0.45, a2[1] + ej[1]*sign*fLen*0.45, a2[2] + ej[2]*sign*fLen*0.45];
+            const f2End   = [a2[0] - ej[0]*sign*fLen*0.65, a2[1] - ej[1]*sign*fLen*0.65, a2[2] - ej[2]*sign*fLen*0.65];
+
+            const pA1 = project3D(a1[0], a1[1], a1[2], cx, cy, scale);
+            const pA2 = project3D(a2[0], a2[1], a2[2], cx, cy, scale);
+            const pF1S = project3D(f1Start[0], f1Start[1], f1Start[2], cx, cy, scale);
+            const pF1E = project3D(f1End[0], f1End[1], f1End[2], cx, cy, scale);
+            const pF2S = project3D(f2Start[0], f2Start[1], f2Start[2], cx, cy, scale);
+            const pF2E = project3D(f2End[0], f2End[1], f2End[2], cx, cy, scale);
+
+            ctx.save();
+            ctx.setLineDash([3, 3]);
+            ctx.strokeStyle = '#D97706';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.moveTo(pA1.x, pA1.y);
+            ctx.lineTo(pA2.x, pA2.y);
+            ctx.stroke();
+            ctx.restore();
+
+            drawArrow3D(ctx, pF1S, pF1E, color, 3.2);
+            drawArrow3D(ctx, pF2S, pF2E, color, 3.2);
+
+            ctx.fillStyle = color;
+            ctx.font = 'bold 11px "JetBrains Mono", monospace';
+            ctx.fillText(`M${j+1}${k+1}`, pF1E.x + 5, pF1E.y - 3);
+          }
+        }
+      }
+
+      ctx.beginPath();
+      ctx.arc(origin.x, origin.y, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#0F172A';
+      ctx.fill();
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawBeachball() {
+      const canvas = document.getElementById('canvas-beachball');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      const cx = w / 2, cy = h / 2, R = w * 0.44;
+      ctx.clearRect(0, 0, w, h);
+
+      const M = state.M;
+      const sym = [
+        [M.m11, 0.5*(M.m12+M.m21), 0.5*(M.m13+M.m31)],
+        [0.5*(M.m12+M.m21), M.m22, 0.5*(M.m23+M.m32)],
+        [0.5*(M.m13+M.m31), 0.5*(M.m23+M.m32), M.m33]
+      ];
+
+      const img = ctx.createImageData(w, h);
+      const data = img.data;
+
+      for (let py = 0; py < h; py++) {
+        for (let px = 0; px < w; px++) {
+          const X = (px - cx) / R;
+          const Y = (cy - py) / R;
+          const r2 = X * X + Y * Y;
+          if (r2 <= 1.0) {
+            const r = Math.sqrt(r2);
+            const sinIh = r * Math.sqrt(Math.max(0, 2 - r2));
+            const cosIh = 1 - r2;
+            const az = Math.atan2(X, Y);
+
+            const g1 = sinIh * Math.cos(az);
+            const g2 = sinIh * Math.sin(az);
+            const g3 = cosIh;
+
+            const ampP =
+              g1 * (sym[0][0]*g1 + sym[0][1]*g2 + sym[0][2]*g3) +
+              g2 * (sym[1][0]*g1 + sym[1][1]*g2 + sym[1][2]*g3) +
+              g3 * (sym[2][0]*g1 + sym[2][1]*g2 + sym[2][2]*g3);
+
+            const idx = (py * w + px) * 4;
+            if (ampP > 0.01) {
+              data[idx] = 220; data[idx+1] = 38; data[idx+2] = 38; data[idx+3] = 235;
+            } else {
+              data[idx] = 255; data[idx+1] = 255; data[idx+2] = 255; data[idx+3] = 255;
+            }
+          }
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+
+      ctx.strokeStyle = '#0F172A';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#0F172A';
+      ctx.font = 'bold 9px sans-serif';
+      ctx.fillText('N', cx - 3, cy - R - 2);
+    }
+
+    function resetCamera3D() {
+      state.cam.yaw = -0.62;
+      state.cam.pitch = 0.42;
+      drawCouples3D();
+    }
+
+    // =========================================================================
+    // 5. Module 2: Green's Function Spatial Derivative Wavefield & Seismograms
+    // =========================================================================
+    function updateGreenSimulation() {
+      state.green.mode = document.getElementById('green-mode').value;
+      state.green.deltaXi = parseFloat(document.getElementById('slider-delta-xi').value);
+      document.getElementById('val-delta-xi').textContent = state.green.deltaXi.toFixed(2) + ' km';
+      drawGreenField();
+      drawGreenSeismogram();
+    }
+
+    function updateAzimuthFromSlider(val) {
+      state.green.stationAzDeg = parseFloat(val);
+      document.getElementById('val-station-az').textContent = Math.round(state.green.stationAzDeg) + '°';
+      drawGreenField();
+      drawGreenSeismogram();
+    }
+
+    function triggerWavePulse() {
+      state.green.pulseTime = 0.08;
+      state.green.animating = true;
+    }
+
+    function drawGreenField() {
+      const canvas = document.getElementById('canvas-green-field');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const cx = w * 0.5;
+      const cy = h * 0.48;
+      const orbitR = Math.min(w, h) * 0.37;
+      const mode = state.green.mode;
+
+      ctx.save();
+      ctx.beginPath();
+      const steps = 180;
+      for (let i = 0; i <= steps; i++) {
+        const phi = (i / steps) * Math.PI * 2;
+        let rP = 0;
+        if (mode === 'single') rP = Math.abs(Math.cos(phi));
+        else if (mode === 'dipole') rP = Math.pow(Math.cos(phi), 2);
+        else if (mode === 'couple') rP = Math.abs(Math.sin(phi) * Math.cos(phi)) * 1.8;
+        else rP = Math.abs(Math.sin(2 * phi));
+
+        const rad = orbitR * 0.78 * rP;
+        const px = cx + rad * Math.sin(phi);
+        const py = cy - rad * Math.cos(phi);
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(220, 38, 38, 0.07)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(220, 38, 38, 0.25)';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.restore();
+
+      // Nodal Planes (dashed lines)
+      ctx.save();
+      ctx.strokeStyle = '#94A3B8';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([5, 5]);
+      if (mode === 'single') {
+        ctx.beginPath();
+        ctx.moveTo(cx - orbitR * 1.12, cy);
+        ctx.lineTo(cx + orbitR * 1.12, cy);
+        ctx.stroke();
+      } else if (mode === 'couple' || mode === 'doubleCouple') {
+        ctx.beginPath();
+        ctx.moveTo(cx - orbitR * 1.12, cy);
+        ctx.lineTo(cx + orbitR * 1.12, cy);
+        ctx.moveTo(cx, cy - orbitR * 1.12);
+        ctx.lineTo(cx, cy + orbitR * 1.12);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Pure English Quadrant Labels
+      ctx.font = 'bold 11px "Inter", sans-serif';
+      if (mode === 'couple' || mode === 'doubleCouple') {
+        const qOff = orbitR * 0.56;
+        ctx.fillStyle = '#DC2626';
+        ctx.fillText('Compression (+)', cx + qOff - 38, cy - qOff);
+        ctx.fillText('Compression (+)', cx - qOff - 38, cy + qOff + 8);
+        ctx.fillStyle = '#2563EB';
+        ctx.fillText('Dilatation (-)', cx - qOff - 32, cy - qOff);
+        ctx.fillText('Dilatation (-)', cx + qOff - 32, cy + qOff + 8);
+      } else if (mode === 'single') {
+        ctx.fillStyle = '#DC2626';
+        ctx.fillText('Compression (+)', cx - 42, cy - orbitR * 0.62);
+        ctx.fillStyle = '#2563EB';
+        ctx.fillText('Dilatation (-)', cx - 36, cy + orbitR * 0.68);
+      } else if (mode === 'dipole') {
+        ctx.fillStyle = '#DC2626';
+        ctx.fillText('Compression (+)', cx - 42, cy - orbitR * 0.62);
+        ctx.fillText('Compression (+)', cx - 42, cy + orbitR * 0.68);
+      }
+
+      if (mode !== 'dipole') {
+        ctx.fillStyle = '#64748B';
+        ctx.font = '10px "Inter", sans-serif';
+        ctx.fillText('Nodal Line', cx + orbitR * 0.72, cy - 5);
+      }
+
+      // Receiver Station Orbit Circle
+      ctx.strokeStyle = '#CBD5E1';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.arc(cx, cy, orbitR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Expanding P and S Wavefronts
+      const maxWaveR = orbitR * 1.25;
+      const pR = (state.green.pulseTime % 1.45) * maxWaveR;
+      const sR = pR * 0.58;
+
+      const drawWaveRing = (rad, color, width) => {
+        if (rad <= 3) return;
+        const alpha = Math.max(0.15, 1 - rad / maxWaveR);
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = alpha;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      };
+
+      drawWaveRing(pR, '#DC2626', 2.8);
+      drawWaveRing(sR, '#2563EB', 2.4);
+
+      // Center Force / Couple Vector Geometry
+      const armPx = 12 + state.green.deltaXi * 34;
+      if (mode === 'single') {
+        drawArrow3D(ctx, { x: cx, y: cy + 16 }, { x: cx, y: cy - 22 }, '#DC2626', 3.5, 10);
+        ctx.fillStyle = '#DC2626';
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText('+f₁', cx + 8, cy - 12);
+      } else if (mode === 'dipole') {
+        drawArrow3D(ctx, { x: cx, y: cy - armPx*0.4 }, { x: cx, y: cy - armPx*0.4 - 22 }, '#DC2626', 3.2, 9);
+        drawArrow3D(ctx, { x: cx, y: cy + armPx*0.4 }, { x: cx, y: cy + armPx*0.4 + 22 }, '#2563EB', 3.2, 9);
+        ctx.fillStyle = '#DC2626'; ctx.font = 'bold 11px monospace'; ctx.fillText('+f₁', cx + 8, cy - armPx*0.4 - 12);
+        ctx.fillStyle = '#2563EB'; ctx.fillText('-f₁', cx + 8, cy + armPx*0.4 + 18);
+      } else if (mode === 'couple') {
+        ctx.save();
+        ctx.setLineDash([3, 2]);
+        ctx.strokeStyle = '#D97706';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.moveTo(cx - armPx, cy); ctx.lineTo(cx + armPx, cy); ctx.stroke();
+        ctx.restore();
+
+        drawArrow3D(ctx, { x: cx + armPx, y: cy + 14 }, { x: cx + armPx, y: cy - 18 }, '#DC2626', 3.2, 9);
+        drawArrow3D(ctx, { x: cx - armPx, y: cy - 14 }, { x: cx - armPx, y: cy + 18 }, '#2563EB', 3.2, 9);
+
+        ctx.fillStyle = '#DC2626'; ctx.font = 'bold 11px monospace'; ctx.fillText('+f₁', cx + armPx + 6, cy - 10);
+        ctx.fillStyle = '#2563EB'; ctx.fillText('-f₁', cx - armPx - 24, cy + 16);
+        ctx.fillStyle = '#B45309'; ctx.fillText('δξ₂', cx - 9, cy - 6);
+      } else {
+        ctx.save();
+        ctx.setLineDash([3, 2]);
+        ctx.strokeStyle = '#D97706';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(cx - armPx, cy); ctx.lineTo(cx + armPx, cy);
+        ctx.moveTo(cx, cy - armPx); ctx.lineTo(cx, cy + armPx);
+        ctx.stroke();
+        ctx.restore();
+
+        drawArrow3D(ctx, { x: cx + armPx, y: cy + 12 }, { x: cx + armPx, y: cy - 16 }, '#DC2626', 2.8, 8);
+        drawArrow3D(ctx, { x: cx - armPx, y: cy - 12 }, { x: cx - armPx, y: cy + 16 }, '#2563EB', 2.8, 8);
+        drawArrow3D(ctx, { x: cx - 12, y: cy - armPx }, { x: cx + 16, y: cy - armPx }, '#DC2626', 2.8, 8);
+        drawArrow3D(ctx, { x: cx + 12, y: cy + armPx }, { x: cx - 16, y: cy + armPx }, '#2563EB', 2.8, 8);
+        ctx.fillStyle = '#B45309'; ctx.font = 'bold 10px monospace'; ctx.fillText('δξ', cx + 4, cy - 4);
+      }
+
+      // Draggable Virtual Station x
+      const azRad = (state.green.stationAzDeg * Math.PI) / 180;
+      const sx = cx + orbitR * Math.sin(azRad);
+      const sy = cy - orbitR * Math.cos(azRad);
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(217, 119, 6, 0.45)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sx, sy); ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.beginPath();
+      ctx.moveTo(0, -10);
+      ctx.lineTo(9, 7);
+      ctx.lineTo(-9, 7);
+      ctx.closePath();
+      ctx.fillStyle = '#F59E0B';
+      ctx.fill();
+      ctx.strokeStyle = '#0F172A';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = '#0F172A';
+      ctx.font = 'bold 11px "Inter", sans-serif';
+      ctx.fillText(`Station x (${Math.round(state.green.stationAzDeg)}°)`, 12, 4);
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    function drawGreenSeismogram() {
+      const canvas = document.getElementById('canvas-green-seismogram');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const az = (state.green.stationAzDeg * Math.PI) / 180;
+      const mode = state.green.mode;
+      const delta = state.green.deltaXi;
+
+      let ampP = 0, ampS = 0;
+      if (mode === 'single') {
+        ampP = Math.cos(az);
+        ampS = -Math.sin(az);
+      } else if (mode === 'dipole') {
+        ampP = Math.pow(Math.cos(az), 2);
+        ampS = -Math.sin(az) * Math.cos(az);
+      } else if (mode === 'couple') {
+        ampP = Math.sin(az) * Math.cos(az) * 1.6;
+        ampS = Math.cos(az) * Math.cos(az) * 1.2;
+      } else {
+        ampP = Math.sin(2 * az);
+        ampS = Math.cos(2 * az);
+      }
+
+      document.getElementById('amp-ratio-badge').textContent =
+        `P: ${(ampP >= 0 ? '+' : '') + ampP.toFixed(2)} | S: ${(ampS >= 0 ? '+' : '') + ampS.toFixed(2)}`;
+
+      const rowH = h / 3;
+      const padL = 12, padR = 12;
+      const plotW = w - padL - padR;
+      const tMax = 10.0;
+      const tP = 2.8;
+      const tS = 5.6;
+      const halfLag = (mode === 'single') ? 0 : delta * 0.45;
+
+      const N = 220;
+      const tr1 = new Float64Array(N);
+      const tr2 = new Float64Array(N);
+      const tr3 = new Float64Array(N);
+
+      for (let i = 0; i < N; i++) {
+        const t = (i / (N - 1)) * tMax;
+        const g1P = Math.exp(-Math.pow((t - (tP - halfLag)) / 0.34, 2));
+        const g1S = Math.exp(-Math.pow((t - (tS - halfLag)) / 0.42, 2));
+
+        const g2P = Math.exp(-Math.pow((t - (tP + halfLag)) / 0.34, 2));
+        const g2S = Math.exp(-Math.pow((t - (tS + halfLag)) / 0.42, 2));
+
+        tr1[i] = ampP * g1P + 0.65 * ampS * g1S;
+        if (mode === 'single') {
+          tr2[i] = 0;
+          tr3[i] = tr1[i];
+        } else {
+          tr2[i] = -(ampP * g2P + 0.65 * ampS * g2S);
+          const norm = 1.0 / Math.max(0.28, delta * 1.35);
+          tr3[i] = (tr1[i] + tr2[i]) * norm;
+        }
+      }
+
+      const trackMeta = [
+        {
+          data: tr1,
+          color: '#DC2626',
+          title: '① Single Force +f (ξ + δξ/2)'
+        },
+        {
+          data: tr2,
+          color: '#2563EB',
+          title: mode === 'single'
+            ? '② Opposing Force: None (Single Force Mode)'
+            : '② Single Force -f (ξ - δξ/2)'
+        },
+        {
+          data: tr3,
+          color: '#0F172A',
+          title: mode === 'single'
+            ? '③ Far-Field Pulse u(t) ∝ f(t)'
+            : '③ Combined Wavefield (∂G/∂ξ) ∝ Ṁ(t)'
+        }
+      ];
+
+      trackMeta.forEach((tr, idx) => {
+        const yMid = rowH * (idx + 0.58);
+        const ampScale = rowH * 0.34;
+
+        [tP, tS].forEach((ta, pIdx) => {
+          const tx = padL + (ta / tMax) * plotW;
+          ctx.save();
+          ctx.setLineDash([2, 3]);
+          ctx.strokeStyle = pIdx === 0 ? 'rgba(220,38,38,0.28)' : 'rgba(37,99,235,0.28)';
+          ctx.beginPath(); ctx.moveTo(tx, rowH*idx + 18); ctx.lineTo(tx, rowH*(idx+1) - 4); ctx.stroke();
+          if (idx === 0) {
+            ctx.fillStyle = pIdx === 0 ? '#DC2626' : '#2563EB';
+            ctx.font = 'bold 10px monospace';
+            ctx.fillText(pIdx === 0 ? 'P-wave' : 'S-wave', tx + 3, rowH*idx + 26);
+          }
+          ctx.restore();
+        });
+
+        ctx.strokeStyle = '#CBD5E1';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(padL, yMid); ctx.lineTo(w - padR, yMid); ctx.stroke();
+
+        ctx.fillStyle = tr.color;
+        ctx.font = 'bold 11px "Inter", sans-serif';
+        ctx.fillText(tr.title, padL, rowH * idx + 14);
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '9px "JetBrains Mono", monospace';
+        ctx.fillText('Amplitude', w - 62, rowH * idx + 14);
+        if (idx === 2) {
+          ctx.fillText('Time (s) →', w - 64, h - 4);
+        }
+
+        ctx.beginPath();
+        for (let i = 0; i < N; i++) {
+          const x = padL + (i / (N - 1)) * plotW;
+          const y = yMid - Math.max(-1.1, Math.min(1.1, tr.data[i])) * ampScale;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = tr.color;
+        ctx.lineWidth = idx === 2 ? 2.3 : 1.7;
+        ctx.stroke();
+      });
+
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // 6. Module 3: Linear Superposition & Synthetic Seismogram Decomposition
+    // =========================================================================
+    function setSynComponent(comp) {
+      state.syn.component = comp;
+      ['Z', 'R', 'T'].forEach(c => {
+        const btn = document.getElementById('syn-comp-' + c);
+        if (c === comp) {
+          btn.className = 'syn-comp-btn py-1.5 rounded-lg bg-slate-900 text-white font-bold shadow-sm';
+        } else {
+          btn.className = 'syn-comp-btn py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold';
+        }
+      });
+      drawSynthesis();
+    }
+
+    function setSynPreset(type) {
+      if (type === 'oblique') {
+        Object.assign(state.M, { m11: 0, m22: -0.7, m33: 0.7, m12: 0.8, m21: 0.8, m13: 0.3, m31: 0.3, m23: 0, m32: 0 });
+      } else if (type === 'volcanic') {
+        Object.assign(state.M, { m11: 0.75, m22: 0.75, m33: 0.75, m12: 0.5, m21: 0.5, m13: 0, m31: 0, m23: 0, m32: 0 });
+      }
+      syncSlidersWithM();
+      updateMomentTensorUI();
+      drawSynthesis();
+    }
+
+    function syncTab3FromTab1() {
+      drawSynthesis();
+    }
+
+    function updateSynthesis() {
+      state.syn.azDeg = parseFloat(document.getElementById('syn-az').value);
+      state.syn.ihDeg = parseFloat(document.getElementById('syn-ih').value);
+      state.syn.tau = parseFloat(document.getElementById('syn-tau').value);
+      document.getElementById('syn-val-az').textContent = Math.round(state.syn.azDeg) + '°';
+      document.getElementById('syn-val-ih').textContent = Math.round(state.syn.ihDeg) + '°';
+      document.getElementById('syn-val-tau').textContent = state.syn.tau.toFixed(1) + ' s';
+      drawSynthesis();
+    }
+
+    function drawMiniCoupleOnCanvas(ctx, cx, cy, fDir, armDir) {
+      ctx.save();
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.roundRect(cx - 16, cy - 16, 32, 32, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      const dirVec = { x: [0, -10], y: [10, 0], z: [7, 7] };
+      const armVec = { x: [0, -6],  y: [6, 0],  z: [4.5, 4.5] };
+      const f = dirVec[fDir], a = armVec[armDir];
+
+      if (fDir === armDir) {
+        drawArrow3D(ctx, { x: cx + a[0]*0.3, y: cy + a[1]*0.3 }, { x: cx + f[0]*1.3, y: cy + f[1]*1.3 }, '#DC2626', 1.8, 5);
+        drawArrow3D(ctx, { x: cx - a[0]*0.3, y: cy - a[1]*0.3 }, { x: cx - f[0]*1.3, y: cy - f[1]*1.3 }, '#2563EB', 1.8, 5);
+      } else {
+        const p1 = { x: cx + a[0], y: cy + a[1] };
+        const p2 = { x: cx - a[0], y: cy - a[1] };
+        ctx.setLineDash([2, 2]);
+        ctx.strokeStyle = '#D97706';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+        ctx.setLineDash([]);
+        drawArrow3D(ctx, { x: p1.x - f[0]*0.5, y: p1.y - f[1]*0.5 }, { x: p1.x + f[0]*0.75, y: p1.y + f[1]*0.75 }, '#DC2626', 1.8, 5);
+        drawArrow3D(ctx, { x: p2.x + f[0]*0.5, y: p2.y + f[1]*0.5 }, { x: p2.x - f[0]*0.75, y: p2.y - f[1]*0.75 }, '#2563EB', 1.8, 5);
+      }
+      ctx.restore();
+    }
+
+    function drawSynthesis() {
+      const canvas = document.getElementById('canvas-synthesis');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr;
+      const h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const az = (state.syn.azDeg * Math.PI) / 180;
+      const ih = (state.syn.ihDeg * Math.PI) / 180;
+      const sinIh = Math.sin(ih), cosIh = Math.cos(ih);
+      const tau = state.syn.tau;
+      const comp = state.syn.component;
+      const M = state.M;
+
+      // Far-field radiation geometric sensitivity factors parameterized by azimuth φ and takeoff angle i_h
+      const g1 = sinIh * Math.cos(az);
+      const g2 = sinIh * Math.sin(az);
+      const g3 = cosIh;
+
+      const items = [
+        { key: 'M₁₁', weight: M.m11, fDir: 'x', armDir: 'x', color: '#DC2626',
+          pGain: comp === 'T' ? 0 : g1 * g1 * (comp === 'Z' ? cosIh : sinIh),
+          sGain: comp === 'T' ? -Math.sin(az)*cosIh : 0.7 * Math.cos(2*az) * sinIh },
+        { key: 'M₂₂', weight: M.m22, fDir: 'y', armDir: 'y', color: '#2563EB',
+          pGain: comp === 'T' ? 0 : g2 * g2 * (comp === 'Z' ? cosIh : sinIh),
+          sGain: comp === 'T' ? Math.cos(az)*cosIh : -0.7 * Math.cos(2*az) * sinIh },
+        { key: 'M₃₃', weight: M.m33, fDir: 'z', armDir: 'z', color: '#059669',
+          pGain: comp === 'T' ? 0 : g3 * g3 * (comp === 'Z' ? cosIh : sinIh),
+          sGain: comp === 'T' ? 0.0 : -0.85 * sinIh * cosIh },
+        { key: '2M₁₂', weight: M.m12, fDir: 'x', armDir: 'y', color: '#D97706',
+          pGain: comp === 'T' ? 0 : 2 * g1 * g2 * (comp === 'Z' ? cosIh : sinIh),
+          sGain: comp === 'T' ? Math.cos(2*az) * sinIh : 0.85 * Math.sin(2*az) * cosIh },
+        { key: '2M₁₃', weight: M.m13, fDir: 'x', armDir: 'z', color: '#7C3AED',
+          pGain: comp === 'T' ? 0 : 2 * g1 * g3 * (comp === 'Z' ? cosIh : sinIh),
+          sGain: comp === 'T' ? -Math.sin(az) * cosIh : Math.cos(az) * Math.cos(2*ih) },
+        { key: '2M₂₃', weight: M.m23, fDir: 'y', armDir: 'z', color: '#DB2777',
+          pGain: comp === 'T' ? 0 : 2 * g2 * g3 * (comp === 'Z' ? cosIh : sinIh),
+          sGain: comp === 'T' ? Math.cos(az) * cosIh : Math.sin(az) * Math.cos(2*ih) }
+      ];
+
+      const totalRows = 7;
+      const rowH = h / totalRows;
+      const padL = 128;
+      const padR = 14;
+      const plotW = w - padL - padR;
+      const N = 260;
+      const tMax = 12.0;
+
+      const ricker = (t, t0, width) => {
+        const u = (t - t0) / (width * 0.45);
+        return -1.65 * u * Math.exp(-u * u);
+      };
+
+      const totalWave = new Float64Array(N);
+
+      items.forEach((it, idx) => {
+        const yMid = rowH * (idx + 0.52);
+        const ampScale = rowH * 0.36;
+
+        drawMiniCoupleOnCanvas(ctx, 24, yMid, it.fDir, it.armDir);
+
+        ctx.fillStyle = '#0F172A';
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.fillText(it.key, 48, yMid - 2);
+
+        ctx.fillStyle = Math.abs(it.weight) > 0.01 ? it.color : '#94A3B8';
+        ctx.font = 'bold 10px "JetBrains Mono", monospace';
+        ctx.fillText(`w = ${(it.weight >= 0 ? '+' : '') + it.weight.toFixed(2)}`, 48, yMid + 11);
+
+        ctx.strokeStyle = '#E2E8F0';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(padL, yMid); ctx.lineTo(w - padR, yMid); ctx.stroke();
+
+        ctx.beginPath();
+        for (let i = 0; i < N; i++) {
+          const t = (i / (N - 1)) * tMax;
+          const pWave = it.pGain * ricker(t, 2.6, tau);
+          const sWave = it.sGain * ricker(t, 5.8, tau * 1.15);
+          const refl  = 0.35 * it.sGain * ricker(t, 8.5, tau * 1.25);
+          const val = it.weight * (pWave + sWave + refl);
+          totalWave[i] += val;
+
+          const x = padL + (i / (N - 1)) * plotW;
+          const y = yMid - Math.max(-1.05, Math.min(1.05, val)) * ampScale;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = Math.abs(it.weight) > 0.01 ? it.color : '#CBD5E1';
+        ctx.lineWidth = Math.abs(it.weight) > 0.01 ? 1.8 : 1.0;
+        ctx.stroke();
+      });
+
+      const sumYMid = rowH * 6.52;
+      const sumScale = rowH * 0.38;
+
+      ctx.fillStyle = '#EFF6FF';
+      ctx.fillRect(4, rowH * 6 + 2, w - 8, rowH - 4);
+      ctx.strokeStyle = '#93C5FD';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(4, rowH * 6 + 2, w - 8, rowH - 4);
+
+      ctx.fillStyle = '#0F172A';
+      ctx.font = 'bold 11px "Inter", sans-serif';
+      ctx.fillText(`Total u_${comp}(t)`, 14, sumYMid - 2);
+      ctx.fillStyle = '#2563EB';
+      ctx.font = 'bold 9.5px monospace';
+      ctx.fillText('Synthetic Sum', 14, sumYMid + 11);
+
+      ctx.fillStyle = '#64748B';
+      ctx.font = '9.5px "JetBrains Mono", monospace';
+      ctx.fillText('P-wave', padL + (2.6 / tMax) * plotW - 14, 12);
+      ctx.fillText('S-wave', padL + (5.8 / tMax) * plotW - 14, 12);
+      ctx.fillText('Amplitude', w - 62, 12);
+      ctx.fillText('Time (s) →', w - 64, h - 6);
+
+      ctx.strokeStyle = '#CBD5E1';
+      ctx.beginPath(); ctx.moveTo(padL, sumYMid); ctx.lineTo(w - padR, sumYMid); ctx.stroke();
+
+      let maxSum = 1.0;
+      for (let i = 0; i < N; i++) if (Math.abs(totalWave[i]) > maxSum) maxSum = Math.abs(totalWave[i]);
+
+      ctx.beginPath();
+      for (let i = 0; i < N; i++) {
+        const x = padL + (i / (N - 1)) * plotW;
+        const y = sumYMid - (totalWave[i] / maxSum) * sumScale;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = '#0F172A';
+      ctx.lineWidth = 2.6;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // 7. Pointer Event Bindings & Animation Loop
+    // =========================================================================
+    function setupInteractions() {
+      const btnEn = document.getElementById('btn-lang-en');
+      const btnZh = document.getElementById('btn-lang-zh');
+      if (btnEn) {
+        btnEn.addEventListener('click', e => {
+          e.preventDefault();
+          window.setLanguage('en');
+        });
+      }
+      if (btnZh) {
+        btnZh.addEventListener('click', e => {
+          e.preventDefault();
+          window.setLanguage('zh');
+        });
+      }
+
+      const c3d = document.getElementById('canvas-couples');
+      const getPos = e => e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+
+      const on3DStart = e => {
+        state.cam.dragging = true;
+        const p = getPos(e);
+        state.cam.lastX = p.x;
+        state.cam.lastY = p.y;
+      };
+      const on3DMove = e => {
+        if (!state.cam.dragging) return;
+        const p = getPos(e);
+        state.cam.yaw += (p.x - state.cam.lastX) * 0.012;
+        state.cam.pitch = Math.max(-1.35, Math.min(1.35, state.cam.pitch + (p.y - state.cam.lastY) * 0.012));
+        state.cam.lastX = p.x;
+        state.cam.lastY = p.y;
+        drawCouples3D();
+      };
+      const on3DEnd = () => { state.cam.dragging = false; };
+
+      c3d.addEventListener('mousedown', on3DStart);
+      window.addEventListener('mousemove', on3DMove);
+      window.addEventListener('mouseup', on3DEnd);
+      c3d.addEventListener('touchstart', on3DStart, { passive: true });
+      window.addEventListener('touchmove', on3DMove, { passive: true });
+      window.addEventListener('touchend', on3DEnd);
+
+      const cGreen = document.getElementById('canvas-green-field');
+      const updateStationByPointer = e => {
+        const rect = cGreen.getBoundingClientRect();
+        const p = getPos(e);
+        const dx = (p.x - rect.left) - rect.width * 0.5;
+        const dy = (p.y - rect.top) - rect.height * 0.48;
+        let deg = (Math.atan2(dx, -dy) * 180) / Math.PI;
+        if (deg < 0) deg += 360;
+        state.green.stationAzDeg = deg;
+        document.getElementById('slider-station-az').value = Math.round(deg);
+        document.getElementById('val-station-az').textContent = Math.round(deg) + '°';
+        drawGreenField();
+        drawGreenSeismogram();
+      };
+
+      cGreen.addEventListener('mousedown', e => { state.green.draggingStation = true; updateStationByPointer(e); });
+      window.addEventListener('mousemove', e => { if (state.green.draggingStation) updateStationByPointer(e); });
+      window.addEventListener('mouseup', () => { state.green.draggingStation = false; });
+      cGreen.addEventListener('touchstart', e => { state.green.draggingStation = true; updateStationByPointer(e); }, { passive: true });
+      window.addEventListener('touchmove', e => { if (state.green.draggingStation) updateStationByPointer(e); }, { passive: true });
+      window.addEventListener('touchend', () => { state.green.draggingStation = false; });
+    }
+
+    function resizeAllCanvases() {
+      const dpr = window.devicePixelRatio || 1;
+      const ids = [
+        'canvas-convolution',
+        'canvas-couples',
+        'canvas-green-field',
+        'canvas-green-seismogram',
+        'canvas-synthesis'
+      ];
+      ids.forEach(id => {
+        const c = document.getElementById(id);
+        if (!c || !c.parentElement) return;
+        const rect = c.parentElement.getBoundingClientRect();
+        if (rect.width > 10 && rect.height > 10) {
+          c.width = rect.width * dpr;
+          c.height = rect.height * dpr;
+        }
+      });
+    }
+
+    let lastTimestamp = 0;
+    function animationLoop(ts) {
+      const dt = lastTimestamp ? (ts - lastTimestamp) / 1000 : 0.016;
+      lastTimestamp = ts;
+
+      if (state.activeTab === 'tab-green' && state.green.animating) {
+        state.green.pulseTime += dt * 0.55;
+        if (state.green.pulseTime > 1.45) state.green.pulseTime = 0.05;
+        drawGreenField();
+      }
+      requestAnimationFrame(animationLoop);
+    }
+
+    window.addEventListener('resize', () => {
+      resizeAllCanvases();
+      if (state.activeTab === 'tab-intuition') drawConvolution();
+      if (state.activeTab === 'tab-couples') { drawCouples3D(); drawBeachball(); }
+      if (state.activeTab === 'tab-green') { drawGreenField(); drawGreenSeismogram(); }
+      if (state.activeTab === 'tab-synth') drawSynthesis();
+    });
+
+    function initApp() {
+      resizeAllCanvases();
+      setupInteractions();
+      window.setLanguage('en');
+      requestAnimationFrame(animationLoop);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
