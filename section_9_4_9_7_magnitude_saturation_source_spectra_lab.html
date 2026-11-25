@@ -1,0 +1,1936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magnitude Saturation &amp; Source Spectra Lab | Shearer Sections 9.4.2, 9.5.1 &amp; 9.7</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-page: #F8FAFC;
+      --bg-card: #FFFFFF;
+      --border-subtle: #E2E8F0;
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --accent-blue: #2563EB;
+      --accent-red: #DC2626;
+      --accent-emerald: #059669;
+      --accent-indigo: #4F46E5;
+      --accent-amber: #D97706;
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .math-serif {
+      font-family: 'Georgia', 'Times New Roman', serif;
+    }
+
+    .math-var {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-style: italic;
+    }
+
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+
+    /* Clean academic range slider */
+    input[type="range"].sci-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 6px;
+      background: #E2E8F0;
+      border-radius: 999px;
+      outline: none;
+    }
+    input[type="range"].sci-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #2563EB;
+      border: 2.5px solid #FFFFFF;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+      cursor: pointer;
+      transition: transform 0.12s ease, background-color 0.12s ease;
+    }
+    input[type="range"].sci-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.12);
+      background: #1D4ED8;
+    }
+    input[type="range"].sci-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #2563EB;
+      border: 2.5px solid #FFFFFF;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.25);
+      cursor: pointer;
+    }
+
+    input[type="range"].sci-slider.amber-slider::-webkit-slider-thumb {
+      background: #D97706;
+    }
+    input[type="range"].sci-slider.amber-slider::-webkit-slider-thumb:hover {
+      background: #B45309;
+    }
+
+    .card-academic {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.02);
+    }
+
+    .tab-btn {
+      position: relative;
+      transition: all 0.15s ease;
+    }
+    .tab-btn.active {
+      color: #1D4ED8;
+      background-color: #EFF6FF;
+      border-color: #BFDBFE;
+    }
+
+    .preset-chip {
+      transition: all 0.14s ease;
+    }
+    .preset-chip.active {
+      background-color: #1E293B;
+      color: #FFFFFF;
+      border-color: #1E293B;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Academic Header -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      <div class="flex items-start sm:items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-mono-code text-sm font-semibold shrink-0 shadow-sm">
+          9.7
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md" data-en="Shearer (2nd Ed.) · Sections 9.4.2, 9.5.1 &amp; 9.7" data-zh="Shearer (第2版) · 第 9.4.2、9.5.1 与 9.7 节">Shearer (2nd Ed.) · Sections 9.4.2, 9.5.1 &amp; 9.7</span>
+            <h1 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight" data-en="Magnitude Saturation &amp; Source Spectra Lab" data-zh="震级饱和与震源谱对比实验室">Magnitude Saturation &amp; Source Spectra Lab</h1>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-600 mt-0.5" data-en="Connecting rupture duration, corner frequency f_c ∝ M₀^(-1/3), and finite-band magnitude saturation (m_b &amp; M_S vs. M_W)" data-zh="打通破裂持续时间、拐角频率 f_c ∝ M₀^(-1/3) 与窄频带震级饱和 (m_b、M_S 与 M_W 对比)">Connecting rupture duration, corner frequency f_c ∝ M₀^(-1/3), and finite-band magnitude saturation (m_b &amp; M_S vs. M_W)</p>
+        </div>
+      </div>
+
+      <!-- Right Controls: Core Equation Pill + Language Toggle + Study Notes -->
+      <div class="flex flex-wrap items-center gap-2.5 self-start lg:self-auto">
+        <div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700">
+          <span class="math-var font-semibold text-indigo-700">M<sub>W</sub></span>
+          <span class="math-serif">= ⅔(log₁₀<span class="math-var">M</span>₀ − 9.1)</span>
+          <span class="text-slate-300">|</span>
+          <span class="math-var font-semibold text-blue-700">A(f)</span>
+          <span class="math-serif">= Ω₀ / [1 + (<span class="math-var">f</span>/<span class="math-var">f<sub>c</sub></span>)²]</span>
+        </div>
+
+        <!-- Language Switcher -->
+        <div class="inline-flex rounded-lg border border-slate-200 bg-slate-100 p-0.5" role="group" aria-label="Language switcher">
+          <button id="btn-lang-en" type="button" onclick="setLanguage('en')" class="px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-slate-900 shadow-sm transition">
+            English
+          </button>
+          <button id="btn-lang-zh" type="button" onclick="setLanguage('zh')" class="px-2.5 py-1 text-xs font-semibold rounded-md text-slate-600 hover:text-slate-900 transition">
+            中文
+          </button>
+        </div>
+
+        <!-- Study Notes Toggle -->
+        <button id="btn-pedagogy" type="button" onclick="togglePedagogyPanel()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 shadow-sm transition">
+          <svg class="w-3.5 h-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+          <span data-en="Study Notes" data-zh="学习笔记">Study Notes</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Cross-Lab Navigation -->
+    <nav id="lab-navigation" aria-label="Interactive labs" class="max-w-7xl mx-auto px-4 sm:px-6 pb-2 flex flex-wrap items-center gap-2 text-xs font-semibold">
+      <a href="./index.html" class="rounded-lg px-2.5 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600" data-en="Focal Mechanisms" data-zh="三维震源机制">Focal Mechanisms</a>
+      <a href="./section_9_1_green_s_functions_the_moment_tensor_interactive_lab.html" class="rounded-lg px-2.5 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600" data-en="Section 9.1: Green’s Functions &amp; Moment Tensor" data-zh="9.1 节：格林函数与地震矩张量">Section 9.1: Green’s Functions &amp; Moment Tensor</a>
+      <a href="./chapter_9_source_theory_interactive_lab.html" class="rounded-lg px-2.5 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600" data-en="Chapter 9: Source Theory" data-zh="第 9 章：震源理论">Chapter 9: Source Theory</a>
+      <span aria-current="page" class="rounded-lg px-2.5 py-1.5 bg-blue-100 text-blue-800" data-en="Sections 9.4.2 &amp; 9.7: Magnitude Saturation &amp; Source Spectra" data-zh="9.4.2 &amp; 9.7 节：震级饱和与震源谱">Sections 9.4.2 &amp; 9.7: Magnitude Saturation &amp; Source Spectra</span>
+    </nav>
+
+    <!-- Section Navigation Bar -->
+    <nav id="section-navigation" class="max-w-7xl mx-auto px-4 sm:px-6 pb-2.5 pt-1 flex items-center gap-2 overflow-x-auto border-t border-slate-100" aria-label="Module Navigation">
+      <button type="button" onclick="switchTab(0)" id="tab-btn-0" class="tab-btn active shrink-0 px-3 py-1.5 rounded-lg border border-transparent text-xs font-semibold flex items-center gap-2">
+        <span class="w-5 h-5 rounded-md bg-blue-600 text-white flex items-center justify-center text-[11px] font-mono-code">1</span>
+        <span data-en="Dual-Plot Saturation Lab (Spectrum &amp; M Curves)" data-zh="双图联动实验室（震源谱与震级对比）">Dual-Plot Saturation Lab (Spectrum &amp; M Curves)</span>
+      </button>
+      <button type="button" onclick="switchTab(1)" id="tab-btn-1" class="tab-btn shrink-0 px-3 py-1.5 rounded-lg border border-transparent text-xs font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-2">
+        <span class="w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center text-[11px] font-mono-code">2</span>
+        <span data-en="Self-Similarity &amp; Time-Domain Scaling (9.4.2 &amp; 9.5)" data-zh="自相似律与时域脉冲标度（9.4.2 &amp; 9.5 节）">Self-Similarity &amp; Time-Domain Scaling (9.4.2 &amp; 9.5)</span>
+      </button>
+      <button type="button" onclick="switchTab(2)" id="tab-btn-2" class="tab-btn shrink-0 px-3 py-1.5 rounded-lg border border-transparent text-xs font-semibold text-slate-600 hover:bg-slate-100 flex items-center gap-2">
+        <span class="w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center text-[11px] font-mono-code">3</span>
+        <span data-en="Classic Earthquakes &amp; Physical Derivation (Table 9.1)" data-zh="经典大震案例与公式推导（表 9.1）">Classic Earthquakes &amp; Physical Derivation (Table 9.1)</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- Collapsible Study Notes Drawer -->
+  <div id="pedagogy-panel" class="hidden bg-blue-50/70 border-b border-blue-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-700">
+      <div class="bg-white rounded-lg p-3.5 border border-blue-100 shadow-sm">
+        <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-red-600"></span>
+          <span data-en="Why Does m_b Saturate Near 6.5?" data-zh="为什么 m_b 在 6.5 级左右饱和？">Why Does m_b Saturate Near 6.5?</span>
+        </h3>
+        <p class="leading-relaxed" data-en="m_b samples vertical P waves around T = 1 s (f = 1 Hz) in the first few wave cycles. Once M_W exceeds ~4.5–5.5, corner frequency f_c drops below 1 Hz, placing 1 Hz on the ω⁻² rolloff where A(1 Hz) ∝ M₀^(1/3) instead of M₀¹. Furthermore, great earthquakes rupture for tens to hundreds of seconds, so a few-second window misses most of the seismic moment." data-zh="体波震级 m_b 测量 P 波前几个周期、周期约 1 s (f = 1 Hz) 的振幅。当 M_W > 4.5–5.5 后，拐角频率 f_c 降到 1 Hz 左侧，1 Hz 处落入 ω⁻² 衰减段，振幅仅按 M₀^(1/3) 增长；同时特大地震破裂长达数十至数百秒，前数秒窗口无法记录全部矩释放，导致 m_b 难以超过 6.5–7.0。">m_b samples vertical P waves around T = 1 s (f = 1 Hz) in the first few wave cycles. Once M_W exceeds ~4.5–5.5, corner frequency f_c drops below 1 Hz, placing 1 Hz on the ω⁻² rolloff where A(1 Hz) ∝ M₀^(1/3) instead of M₀¹. Furthermore, great earthquakes rupture for tens to hundreds of seconds, so a few-second window misses most of the seismic moment.</p>
+      </div>
+      <div class="bg-white rounded-lg p-3.5 border border-blue-100 shadow-sm">
+        <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+          <span data-en="Why Does M_S Saturate Near 8.0?" data-zh="为什么 M_S 在 8.0 级左右饱和？">Why Does M_S Saturate Near 8.0?</span>
+        </h3>
+        <p class="leading-relaxed" data-en="M_S measures 20 s Rayleigh waves (f = 0.05 Hz). Because 0.05 Hz is 20× lower than 1 Hz, M_S remains accurate longer—matching M_W closely between M 6.5 and 7.8. However, for M_W ≥ 8.0, rupture duration exceeds 20 s (f_c < 0.05 Hz), and 20 s wavelengths (~70 km) interfere destructively across 200–1300 km fault ruptures, capping M_S around 8.3–8.5." data-zh="面波震级 M_S 测量周期 20 s (f = 0.05 Hz) 的瑞利波。由于测量频率比 m_b 低 20 倍，M_S 在 6.5–7.8 级间与 M_W 吻合较好。但当 M_W ≥ 8.0 时，拐角频率 f_c 移至 0.05 Hz 左侧（破裂时长超过 20 s），且约 70 km 波长的面波在数百公里断层上相消干涉，使 M_S 饱和在 8.3–8.5 左右。">M_S measures 20 s Rayleigh waves (f = 0.05 Hz). Because 0.05 Hz is 20× lower than 1 Hz, M_S remains accurate longer—matching M_W closely between M 6.5 and 7.8. However, for M_W ≥ 8.0, rupture duration exceeds 20 s (f_c &lt; 0.05 Hz), and 20 s wavelengths (~70 km) interfere destructively across 200–1300 km fault ruptures, capping M_S around 8.3–8.5.</p>
+      </div>
+      <div class="bg-white rounded-lg p-3.5 border border-blue-100 shadow-sm">
+        <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+          <span data-en="Why Does M_W Never Saturate?" data-zh="为什么矩震级 M_W 永不饱和？">Why Does M_W Never Saturate?</span>
+        </h3>
+        <p class="leading-relaxed" data-en="M_W is defined directly from the static scalar seismic moment M₀ = μ D̄ A (Kanamori 1977; Hanks &amp; Kanamori 1979), inferred from ultra-long-period waves (T ≫ τ_d, f ≪ f_c) on the flat low-frequency plateau Ω₀ ∝ M₀, or from static GPS/InSAR fault slip models. Every unit increase in M_W faithfully represents 10^1.5 ≈ 31.6× more seismic moment." data-zh="矩震级 M_W 直接由静态标量地震矩 M₀ = μ D̄ A 定义，它通过周期远大于破裂持续时间 (f ≪ f_c) 的超长周期地震波平台 Ω₀ ∝ M₀ 或大地测量反演确定。由于不依赖任何固定短周期，M_W 永远不会饱和，每升高 1 级严格对应 10^1.5 ≈ 31.6 倍地震矩。">M_W is defined directly from the static scalar seismic moment M₀ = μ D̄ A (Kanamori 1977; Hanks &amp; Kanamori 1979), inferred from ultra-long-period waves (T ≫ τ_d, f ≪ f_c) on the flat low-frequency plateau Ω₀ ∝ M₀, or from static GPS/InSAR fault slip models. Every unit increase in M_W faithfully represents 10^1.5 ≈ 31.6× more seismic moment.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 space-y-5">
+
+    <!-- ==================== TAB 0: DUAL-PLOT SATURATION LAB ==================== -->
+    <section id="tab-0" class="space-y-5">
+
+      <!-- Control Deck & Telemetry -->
+      <div class="card-academic p-4 sm:p-5 space-y-4">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          <!-- Left: Primary Mw / M0 Slider -->
+          <div class="flex-1 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <label for="slider-mw" class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                <span data-en="Moment Magnitude (M_W) &amp; Seismic Moment (M₀)" data-zh="矩震级 (M_W) 与标量地震矩 (M₀) 连续调节">Moment Magnitude (M_W) &amp; Seismic Moment (M₀)</span>
+              </label>
+              <div class="flex items-center gap-2">
+                <span id="badge-mw-main" class="font-mono-code text-sm font-bold px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200">M_W 7.00</span>
+                <span id="badge-m0-main" class="font-mono-code text-xs font-semibold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">M₀ = 3.98 × 10¹⁹ N·m</span>
+                <button id="btn-sweep-mw" type="button" onclick="toggleSweepMw()" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition">
+                  <span id="sweep-icon">▶</span>
+                  <span id="sweep-label" data-en="Sweep 4.0→9.5" data-zh="自动扫描 4.0→9.5">Sweep 4.0→9.5</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <span class="font-mono-code text-xs font-semibold text-slate-500 w-8">4.0</span>
+              <input id="slider-mw" type="range" min="4.0" max="9.5" step="0.05" value="7.0" class="sci-slider w-full" />
+              <span class="font-mono-code text-xs font-semibold text-slate-500 w-8 text-right">9.5</span>
+            </div>
+
+            <!-- Landmark Tick Hints under Slider -->
+            <div class="flex justify-between text-[11px] text-slate-500 px-1 font-mono-code">
+              <span>M4.0 (10¹⁵·¹)</span>
+              <span class="text-red-600 font-semibold" data-en="m_b bends (~5.5–6.5)" data-zh="m_b 拐弯 (~5.5–6.5)">m_b bends (~5.5–6.5)</span>
+              <span class="text-emerald-700 font-semibold" data-en="M_S bends (~8.0)" data-zh="M_S 拐弯 (~8.0)">M_S bends (~8.0)</span>
+              <span>M9.5 (10²³·³⁵)</span>
+            </div>
+          </div>
+
+          <!-- Right: Stress Drop & Model Options -->
+          <div class="xl:w-[440px] shrink-0 grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 xl:pt-0 xl:border-l xl:border-slate-200 xl:pl-4">
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-semibold text-slate-700" data-en="Stress Drop Δσ" data-zh="应力降 Δσ">Stress Drop Δσ</span>
+                <span id="val-stress-drop" class="font-mono-code font-bold text-amber-700">3.0 MPa</span>
+              </div>
+              <input id="slider-stress" type="range" min="0.5" max="10.0" step="0.5" value="3.0" class="sci-slider amber-slider w-full" />
+              <div class="flex justify-between text-[10px] text-slate-400 font-mono-code">
+                <span>0.5 MPa</span>
+                <span data-en="3 MPa (avg)" data-zh="3 MPa (均值)">3 MPa (avg)</span>
+                <span>10 MPa</span>
+              </div>
+            </div>
+
+            <div class="space-y-1.5">
+              <span class="block text-xs font-semibold text-slate-700" data-en="Spectral Corner Model" data-zh="震源谱拐角模型">Spectral Corner Model</span>
+              <div class="grid grid-cols-2 gap-1.5">
+                <button id="btn-model-brune" type="button" onclick="setSpectralModel('brune')" class="px-2 py-1 rounded-md text-[11px] font-semibold border border-blue-600 bg-blue-50 text-blue-800 transition" data-en="Brune (γ=1)" data-zh="Brune (γ=1)">Brune (γ=1)</button>
+                <button id="btn-model-boatwright" type="button" onclick="setSpectralModel('boatwright')" class="px-2 py-1 rounded-md text-[11px] font-semibold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition" data-en="Boatwright (γ=2)" data-zh="Boatwright (γ=2)">Boatwright (γ=2)</button>
+              </div>
+              <div class="flex items-center justify-between gap-2 text-[11px] text-slate-600 pt-0.5">
+                <label class="inline-flex items-center gap-1 cursor-pointer">
+                  <input id="chk-empirical" type="checkbox" checked onchange="renderAll()" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                  <span data-en="Empirical cap" data-zh="经验饱和线">Empirical cap</span>
+                </label>
+                <label class="inline-flex items-center gap-1 cursor-pointer">
+                  <input id="chk-table91" type="checkbox" checked onchange="renderAll()" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+                  <span data-en="Table 9.1 events" data-zh="教材经典震例">Table 9.1 events</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Classic Earthquake Presets Row -->
+        <div class="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100">
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mr-1" data-en="Presets:" data-zh="典型震级/震例：">Presets:</span>
+          <button type="button" onclick="applyPresetMw(4.5, 'small')" id="preset-small" class="preset-chip px-2.5 py-1 rounded-full text-xs font-medium border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100" data-en="M_W 4.5 (Small, f_c &gt; 1 Hz)" data-zh="M_W 4.5（小震, f_c &gt; 1 Hz）">M_W 4.5 (Small, f_c &gt; 1 Hz)</button>
+          <button type="button" onclick="applyPresetMw(5.5, 'm55')" id="preset-m55" class="preset-chip px-2.5 py-1 rounded-full text-xs font-medium border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100" data-en="M_W 5.5 (m_b transition)" data-zh="M_W 5.5（m_b 开始偏折）">M_W 5.5 (m_b transition)</button>
+          <button type="button" onclick="applyPresetMw(7.0, 'm70')" id="preset-m70" class="preset-chip active px-2.5 py-1 rounded-full text-xs font-medium border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100" data-en="M_W 7.0 (f_c ≈ 0.06 Hz)" data-zh="M_W 7.0（f_c ≈ 0.06 Hz）">M_W 7.0 (f_c ≈ 0.06 Hz)</button>
+          <button type="button" onclick="applyPresetMw(7.5, 'landers')" id="preset-landers" class="preset-chip px-2.5 py-1 rounded-full text-xs font-medium border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100" data-en="1992 Landers (M_W 7.5)" data-zh="1992 兰德斯 (M_W 7.5)">1992 Landers (M_W 7.5)</button>
+          <button type="button" onclick="applyPresetMw(7.9, 'wenchuan')" class="preset-chip px-2.5 py-1 rounded-full text-xs font-medium border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100" data-en="2008 Wenchuan (M_W 7.9)" data-zh="2008 汶川 (M_W 7.9)">2008 Wenchuan (M_W 7.9)</button>
+          <button type="button" onclick="applyPresetMw(9.1, 'sumatra')" class="preset-chip px-2.5 py-1 rounded-full text-xs font-medium border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100" data-en="2004 Sumatra (M_W 9.1)" data-zh="2004 苏门答腊 (M_W 9.1)">2004 Sumatra (M_W 9.1)</button>
+          <button type="button" onclick="applyPresetMw(9.5, 'chile')" class="preset-chip px-2.5 py-1 rounded-full text-xs font-medium border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100" data-en="1960 Chile (M_W 9.5)" data-zh="1960 智利 (M_W 9.5)">1960 Chile (M_W 9.5)</button>
+        </div>
+
+        <!-- 5-Card Telemetry Strip -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-1">
+          <!-- Card 1: Moment & Scale -->
+          <div class="rounded-lg border border-indigo-200 bg-indigo-50/50 p-2.5">
+            <div class="text-[11px] font-semibold text-indigo-800 flex items-center justify-between">
+              <span data-en="Moment M₀ / M_W" data-zh="地震矩 M₀ 与 M_W">Moment M₀ / M_W</span>
+              <span class="font-mono-code text-[10px] bg-indigo-100 px-1.5 rounded">Eq. 9.73</span>
+            </div>
+            <div id="kpi-m0" class="font-mono-code text-sm font-bold text-slate-900 mt-1">3.98 × 10¹⁹ N·m</div>
+            <div id="kpi-m0-rel" class="text-[11px] text-indigo-700 mt-0.5">1,000× vs M_W 5.0</div>
+          </div>
+
+          <!-- Card 2: Source Dimensions -->
+          <div class="rounded-lg border border-slate-200 bg-slate-50/80 p-2.5">
+            <div class="text-[11px] font-semibold text-slate-700 flex items-center justify-between">
+              <span data-en="Fault Radius &amp; Slip" data-zh="圆形断层尺度与位错">Fault Radius &amp; Slip</span>
+              <span class="font-mono-code text-[10px] bg-slate-200 px-1.5 rounded">Eq. 9.40</span>
+            </div>
+            <div id="kpi-radius" class="font-mono-code text-sm font-bold text-slate-900 mt-1">r = 18.0 km</div>
+            <div id="kpi-slip-dur" class="text-[11px] text-slate-600 mt-0.5">D̄ = 1.31 m · τ_d ≈ 11.4 s</div>
+          </div>
+
+          <!-- Card 3: Corner Frequency -->
+          <div class="rounded-lg border border-blue-200 bg-blue-50/50 p-2.5">
+            <div class="text-[11px] font-semibold text-blue-800 flex items-center justify-between">
+              <span data-en="Corner Frequency f_c" data-zh="拐角频率 f_c">Corner Frequency f_c</span>
+              <span class="font-mono-code text-[10px] bg-blue-100 px-1.5 rounded">Eq. 9.43</span>
+            </div>
+            <div id="kpi-fc" class="font-mono-code text-sm font-bold text-blue-900 mt-1">0.062 Hz</div>
+            <div id="kpi-tc" class="text-[11px] text-blue-700 mt-0.5">T_c = 1/f_c = 16.1 s</div>
+          </div>
+
+          <!-- Card 4: m_b Readout -->
+          <div class="rounded-lg border border-red-200 bg-red-50/50 p-2.5">
+            <div class="text-[11px] font-semibold text-red-800 flex items-center justify-between">
+              <span data-en="Body-Wave m_b (1 Hz)" data-zh="体波震级 m_b (1 Hz)">Body-Wave m_b (1 Hz)</span>
+              <span id="kpi-mb-regime" class="font-mono-code text-[10px] bg-red-100 text-red-800 px-1.5 rounded">M₀^0.34</span>
+            </div>
+            <div id="kpi-mb-val" class="font-mono-code text-sm font-bold text-red-900 mt-1">m_b ≈ 6.14 (emp 6.1)</div>
+            <div id="kpi-mb-diff" class="text-[11px] text-red-700 mt-0.5">Underestimates M_W by −0.86</div>
+          </div>
+
+          <!-- Card 5: M_S Readout -->
+          <div class="rounded-lg border border-emerald-200 bg-emerald-50/50 p-2.5">
+            <div class="text-[11px] font-semibold text-emerald-800 flex items-center justify-between">
+              <span data-en="Surface-Wave M_S (0.05 Hz)" data-zh="面波震级 M_S (0.05 Hz)">Surface-Wave M_S (0.05 Hz)</span>
+              <span id="kpi-ms-regime" class="font-mono-code text-[10px] bg-emerald-100 text-emerald-800 px-1.5 rounded">M₀^0.74</span>
+            </div>
+            <div id="kpi-ms-val" class="font-mono-code text-sm font-bold text-emerald-900 mt-1">M_S ≈ 7.00 (emp 7.0)</div>
+            <div id="kpi-ms-diff" class="text-[11px] text-emerald-700 mt-0.5">Matches M_W (0.00)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Synchronized Dual Plots Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+        <!-- PLOT 1: Source Displacement Amplitude Spectrum (Log-Log) -->
+        <div class="card-academic p-4 flex flex-col">
+          <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <div>
+              <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 font-mono-code text-xs">Plot 1</span>
+                <span data-en="Far-Field Displacement Amplitude Spectrum" data-zh="远场震源位移振幅谱（双对数坐标）">Far-Field Displacement Amplitude Spectrum</span>
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5" data-en="As M₀ grows, plateau Ω₀ rises while f_c moves left along M₀ ∝ f_c⁻³ (Shearer Figs. 9.19 &amp; 9.24)" data-zh="随 M₀ 增大，低频平台 Ω₀ 抬升且拐角频率 f_c 沿 M₀ ∝ f_c⁻³ 向低频左移（对应教材图 9.19 &amp; 9.24）">As M₀ grows, plateau Ω₀ rises while f_c moves left along M₀ ∝ f_c⁻³ (Shearer Figs. 9.19 &amp; 9.24)</p>
+            </div>
+            <div class="flex items-center gap-2 text-[11px]">
+              <label class="inline-flex items-center gap-1 text-slate-600 cursor-pointer">
+                <input id="chk-ghosts" type="checkbox" checked onchange="renderAll()" class="rounded border-slate-300 text-blue-600" />
+                <span data-en="M4–9 grid" data-zh="M4–9 参考谱">M4–9 grid</span>
+              </label>
+              <label class="inline-flex items-center gap-1 text-slate-600 cursor-pointer">
+                <input id="chk-velocity-peak" type="checkbox" onchange="renderAll()" class="rounded border-slate-300 text-amber-600" />
+                <span data-en="Velocity f·A(f)" data-zh="速度谱 f·A(f)">Velocity f·A(f)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="relative w-full h-[370px] sm:h-[400px] bg-slate-50/50 rounded-lg border border-slate-200 overflow-hidden">
+            <canvas id="canvas-spectrum" class="w-full h-full"></canvas>
+          </div>
+
+          <!-- Dynamic Physical Explanation Callout -->
+          <div id="callout-spectrum" class="mt-3 rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs text-slate-700 leading-relaxed">
+            <!-- Dynamically updated by JS -->
+          </div>
+        </div>
+
+        <!-- PLOT 2: Magnitude Comparison Curve (mb, Ms vs Mw) -->
+        <div class="card-academic p-4 flex flex-col">
+          <div class="flex flex-wrap items-start justify-between gap-2 mb-2">
+            <div>
+              <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono-code text-xs">Plot 2</span>
+                <span data-en="Magnitude Comparison &amp; Saturation Curves" data-zh="震级对比与饱和拐点曲线（m_b、M_S 与 M_W）">Magnitude Comparison &amp; Saturation Curves</span>
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5" data-en="Drag or click horizontally on the plot to scrub M_W; compare ω⁻² spectral slope vs. empirical saturation (Fig. 9.25)" data-zh="可在图上水平拖动或点击以连续调节 M_W；对比 ω⁻² 理论频谱曲线与实际观测饱和拐点（教材图 9.25）">Drag or click horizontally on the plot to scrub M_W; compare ω⁻² spectral slope vs. empirical saturation (Fig. 9.25)</p>
+            </div>
+            <div class="text-[11px] font-mono-code text-slate-500 bg-slate-100 px-2 py-0.5 rounded" data-en="Interactive scrub" data-zh="支持点击/拖拽调节">Interactive scrub</div>
+          </div>
+
+          <div class="relative w-full h-[370px] sm:h-[400px] bg-slate-50/50 rounded-lg border border-slate-200 overflow-hidden cursor-ew-resize">
+            <canvas id="canvas-magnitude" class="w-full h-full"></canvas>
+          </div>
+
+          <!-- Dynamic Saturation Diagnosis Callout -->
+          <div id="callout-magnitude" class="mt-3 rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs text-slate-700 leading-relaxed">
+            <!-- Dynamically updated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Synchronized Time-Domain Rupture Intuition Bar -->
+      <div class="card-academic p-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              <span data-en="Time-Domain Connection: Why Finite Measurement Windows Clip Large Earthquakes" data-zh="时域物理直观：为什么固定周期/有限时间窗会“漏掉”大震能量？">Time-Domain Connection: Why Finite Measurement Windows Clip Large Earthquakes</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-0.5" data-en="Far-field displacement pulse duration τ_d ∝ r ∝ M₀^(1/3) grows from &lt;1 s to &gt;200 s. Compare the earthquake pulse width against the 1 s (m_b) and 20 s (M_S) sampling windows." data-zh="远场位移脉冲宽度 τ_d ∝ r ∝ M₀^(1/3) 从不到 1 s 增长到 200 s 以上。下方对比当前地震破裂脉冲与 1 s (m_b)、20 s (M_S) 测量窗口的时间尺度。">Far-field displacement pulse duration τ_d ∝ r ∝ M₀^(1/3) grows from &lt;1 s to &gt;200 s. Compare the earthquake pulse width against the 1 s (m_b) and 20 s (M_S) sampling windows.</p>
+          </div>
+          <div id="time-domain-badge" class="font-mono-code text-xs px-2.5 py-1 rounded-md bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
+            τ_d ≈ 11.4 s (vs. 1 s m_b, 20 s M_S)
+          </div>
+        </div>
+        <div class="w-full h-[145px] bg-slate-50/70 rounded-lg border border-slate-200 overflow-hidden">
+          <canvas id="canvas-timedomain" class="w-full h-full"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 1: SELF-SIMILARITY & TIME-DOMAIN SCALING ==================== -->
+    <section id="tab-1" class="hidden space-y-5">
+      <div class="card-academic p-5 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900" data-en="Self-Similar Earthquake Scaling (Aki 1967; Shearer Section 9.5.1)" data-zh="地震自相似标度律（Aki 1967；Shearer 第 9.5.1 节）">Self-Similar Earthquake Scaling (Aki 1967; Shearer Section 9.5.1)</h2>
+            <p class="text-xs sm:text-sm text-slate-600 mt-1" data-en="If stress drop Δσ is roughly scale-invariant (~3 MPa), scaling all fault dimensions by a factor b scales area by b², slip by b, and seismic moment M₀ = μ D̄ A by b³." data-zh="当应力降 Δσ 近似与地震大小无关（约 3 MPa）时，断层线性尺度放大 b 倍，面积放大 b²，滑移量放大 b，地震矩 M₀ = μ D̄ A 则按 b³ 放大。">If stress drop Δσ is roughly scale-invariant (~3 MPa), scaling all fault dimensions by a factor b scales area by b², slip by b, and seismic moment M₀ = μ D̄ A by b³.</p>
+          </div>
+          <div class="w-full md:w-72 space-y-1">
+            <div class="flex justify-between text-xs font-semibold">
+              <span class="text-slate-700" data-en="Linear Scale Factor b" data-zh="线性尺度因子 b">Linear Scale Factor b</span>
+              <span id="val-scale-b" class="font-mono-code text-blue-700">b = 3.16× (ΔM_W = +1.0)</span>
+            </div>
+            <input id="slider-scale-b" type="range" min="1.0" max="10.0" step="0.05" value="3.16" class="sci-slider w-full" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <!-- Left Canvas: Time-Domain Pulse Scaling (Fig. 9.20) -->
+          <div class="space-y-2">
+            <h3 class="text-sm font-bold text-slate-800" data-en="Time Domain: Pulse Amplitude ∝ b² &amp; Width ∝ b (Area ∝ b³)" data-zh="时间域：脉冲幅值 ∝ b²、宽度 ∝ b（总面积 Ω₀ ∝ b³）">Time Domain: Pulse Amplitude ∝ b² &amp; Width ∝ b (Area ∝ b³)</h3>
+            <div class="h-[300px] bg-slate-50/60 rounded-lg border border-slate-200 overflow-hidden">
+              <canvas id="canvas-selfsim-time" class="w-full h-full"></canvas>
+            </div>
+          </div>
+
+          <!-- Right Canvas: Frequency Domain Scaling (Fig. 9.20) -->
+          <div class="space-y-2">
+            <h3 class="text-sm font-bold text-slate-800" data-en="Frequency Domain: u*(ω) = b³ u(bω) → Corner Shifts Left by 1/b" data-zh="频率域：u*(ω) = b³ u(bω) → 平台抬升 b³ 且拐角左移 1/b">Frequency Domain: u*(ω) = b³ u(bω) → Corner Shifts Left by 1/b</h3>
+            <div class="h-[300px] bg-slate-50/60 rounded-lg border border-slate-200 overflow-hidden">
+              <canvas id="canvas-selfsim-freq" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step-by-step Scaling Summary Cards -->
+        <div id="selfsim-cards" class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Haskell vs Brune Spectrum Explanation Card -->
+      <div class="card-academic p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="space-y-2">
+          <h3 class="text-sm font-bold text-slate-900" data-en="Why the High-Frequency Slope Is ω⁻² (Eqs. 9.33 &amp; 9.36)" data-zh="为什么高频位移谱按 ω⁻² 衰减？（公式 9.33 &amp; 9.36）">Why the High-Frequency Slope Is ω⁻² (Eqs. 9.33 &amp; 9.36)</h3>
+          <p class="text-xs text-slate-600 leading-relaxed" data-en="In the Haskell (1964) rectangular fault model, the far-field displacement pulse is a trapezoid produced by convolving two boxcars: rise time τ_r and rupture duration τ_d. Each boxcar contributes a sinc(ωτ/2) factor whose envelope decays as ω⁻¹ above its corner frequency. Convolving both yields ω⁰ (f &lt; f_c1), ω⁻¹ (f_c1 &lt; f &lt; f_c2), and ω⁻² at high frequencies. Brune (1970) smoothed this into the canonical single-corner ω⁻² spectrum:" data-zh="在 Haskell (1964) 矩形断层模型中，远场位移脉冲是上升时间 τ_r 与破裂持续时间 τ_d 两个方波脉冲卷积而成的梯形波。每个方波对应一个 sinc(ωτ/2) 频谱包络，高频段各自以 ω⁻¹ 衰减。二者相乘即在高频段呈现 ω⁻² 衰减。Brune (1970) 将其简化为经典的单拐角 ω⁻² 震源谱模型：">In the Haskell (1964) rectangular fault model, the far-field displacement pulse is a trapezoid produced by convolving two boxcars: rise time τ_r and rupture duration τ_d. Each boxcar contributes a sinc(ωτ/2) factor whose envelope decays as ω⁻¹ above its corner frequency. Convolving both yields ω⁰ (f &lt; f_c1), ω⁻¹ (f_c1 &lt; f &lt; f_c2), and ω⁻² at high frequencies. Brune (1970) smoothed this into the canonical single-corner ω⁻² spectrum:</p>
+          <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 font-serif text-sm text-slate-900 text-center">
+            <i>A</i>(<i>f</i>) = Ω₀ / [1 + (<i>f</i> / <i>f<sub>c</sub></i>)<sup>2</sup>] &nbsp;&nbsp;(Brune, Eq. 9.36)
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="text-sm font-bold text-slate-900" data-en="Algebraic Proof of Spectral Saturation Exponent 1/3" data-zh="数学证明：为何越过 f_c 后振幅仅随 M₀^(1/3) 增长？">Algebraic Proof of Spectral Saturation Exponent 1/3</h3>
+          <p class="text-xs text-slate-600 leading-relaxed" data-en="Take a fixed measurement frequency f₀ (1 Hz for m_b or 0.05 Hz for M_S). When an earthquake becomes huge so that f_c ≪ f₀, the denominator is dominated by (f₀/f_c)². Substituting Ω₀ ∝ M₀ and self-similar f_c ∝ M₀^(-1/3):" data-zh="固定观测频率 f₀（m_b 取 1 Hz，M_S 取 0.05 Hz）。当大地震使 f_c ≪ f₀ 时，分母由 (f₀/f_c)² 主导。代入低频平台 Ω₀ ∝ M₀ 与自相似律 f_c ∝ M₀^(-1/3)：">Take a fixed measurement frequency f₀ (1 Hz for m_b or 0.05 Hz for M_S). When an earthquake becomes huge so that f_c ≪ f₀, the denominator is dominated by (f₀/f_c)². Substituting Ω₀ ∝ M₀ and self-similar f_c ∝ M₀^(-1/3):</p>
+          <div class="bg-blue-50/70 border border-blue-200 rounded-lg p-3 font-serif text-xs sm:text-sm text-slate-900 space-y-1 text-center">
+            <div><i>A</i>(<i>f</i>₀) ≈ Ω₀ · (<i>f<sub>c</sub></i> / <i>f</i>₀)² ∝ <i>M</i>₀ · (<i>M</i>₀<sup>−1/3</sup>)² = <b><i>M</i>₀<sup>1/3</sup></b></div>
+            <div class="text-xs text-blue-800 font-sans pt-1" data-en="Therefore log₁₀ A(f₀) grows at only 0.33 log₁₀ M₀ = 0.5 M_W — half the rate of M_W, causing severe underestimation!" data-zh="因此 log₁₀ A(f₀) 仅以 0.33 log₁₀ M₀ = 0.5 M_W 的斜率增长（仅为 M_W 增速的一半），造成震级严重低估！">Therefore log₁₀ A(f₀) grows at only 0.33 log₁₀ M₀ = 0.5 M_W — half the rate of M_W, causing severe underestimation!</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: TABLE 9.1 EARTHQUAKES & FORMULAS ==================== -->
+    <section id="tab-2" class="hidden space-y-5">
+      <div class="card-academic p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-slate-900" data-en="Classic Earthquakes from Shearer Table 9.1" data-zh="Shearer 教材表 9.1：经典地震的震级对比">Classic Earthquakes from Shearer Table 9.1</h2>
+            <p class="text-xs text-slate-600 mt-0.5" data-en="Click any row to load its seismic moment M_W into the Dual-Plot Saturation Lab (Tab 1) and inspect its spectrum." data-zh="点击任意一行即可将对应地震的 M_W 与 M₀ 载入双图实验室，直观查看其拐角频率与震级饱和程度。">Click any row to load its seismic moment M_W into the Dual-Plot Saturation Lab (Tab 1) and inspect its spectrum.</p>
+          </div>
+          <span class="text-xs font-mono-code bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md border border-slate-200" data-en="Source: Shearer (2019), Table 9.1, p. 287" data-zh="数据来源：Shearer (2019) 表 9.1，第 287 页">Source: Shearer (2019), Table 9.1, p. 287</span>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-slate-200">
+          <table class="w-full text-left text-xs sm:text-sm">
+            <thead class="bg-slate-50 text-slate-700 border-b border-slate-200 font-semibold">
+              <tr>
+                <th class="px-4 py-2.5" data-en="Event" data-zh="地震事件">Event</th>
+                <th class="px-4 py-2.5 font-mono-code">m_b (1 s)</th>
+                <th class="px-4 py-2.5 font-mono-code">M_S (20 s)</th>
+                <th class="px-4 py-2.5 font-mono-code">M_W</th>
+                <th class="px-4 py-2.5 font-mono-code" data-en="M₀ (10²⁰ N·m)" data-zh="M₀ (10²⁰ N·m)">M₀ (10²⁰ N·m)</th>
+                <th class="px-4 py-2.5 font-mono-code" data-en="M_W − M_S" data-zh="M_W − M_S 差值">M_W − M_S</th>
+                <th class="px-4 py-2.5 text-right" data-en="Action" data-zh="操作">Action</th>
+              </tr>
+            </thead>
+            <tbody id="table-events-body" class="divide-y divide-slate-100 bg-white">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Complete Formula Reference Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="card-academic p-4 space-y-2">
+          <div class="text-xs font-bold uppercase tracking-wider text-red-700" data-en="Body-Wave Magnitude (Eq. 9.70)" data-zh="体波震级（公式 9.70）">Body-Wave Magnitude (Eq. 9.70)</div>
+          <div class="font-serif text-base text-slate-900 bg-red-50/60 border border-red-100 rounded-lg p-2.5 text-center">
+            <i>m<sub>b</sub></i> = log₁₀(<i>A</i> / <i>T</i>) + <i>Q</i>(<i>h</i>, Δ)
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed" data-en="Measured on short-period (~1 s) vertical P waves during the first few cycles. Empirically saturates around m_b ≈ 6.5 and rarely exceeds 7.0." data-zh="取短周期（约 1 s）垂直向 P 波前几个周期的最大振幅。实际观测在 6.5 级左右强烈饱和，极少超过 7.0。">Measured on short-period (~1 s) vertical P waves during the first few cycles. Empirically saturates around m_b ≈ 6.5 and rarely exceeds 7.0.</p>
+        </div>
+
+        <div class="card-academic p-4 space-y-2">
+          <div class="text-xs font-bold uppercase tracking-wider text-emerald-700" data-en="Surface-Wave Magnitude (Eq. 9.72)" data-zh="面波震级（公式 9.72）">Surface-Wave Magnitude (Eq. 9.72)</div>
+          <div class="font-serif text-base text-slate-900 bg-emerald-50/60 border border-emerald-100 rounded-lg p-2.5 text-center">
+            <i>M<sub>S</sub></i> = log₁₀ <i>A</i>₂₀ + 1.66 log₁₀ Δ + 2.0
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed" data-en="Measured on 20 s Rayleigh waves at teleseismic distances. Tracks M_W well near M 6.5–7.8, then saturates near M_S ≈ 8.0–8.5 (e.g., 1960 Chile M_S 8.3 vs M_W 9.5)." data-zh="取远震 20 s 周期瑞利面波振幅。在 6.5–7.8 级间与 M_W 吻合很好，8.0 级以上饱和在 8.3–8.5 附近（如 1960 智利大地震 M_S 8.3 而 M_W 9.5）。">Measured on 20 s Rayleigh waves at teleseismic distances. Tracks M_W well near M 6.5–7.8, then saturates near M_S ≈ 8.0–8.5 (e.g., 1960 Chile M_S 8.3 vs M_W 9.5).</p>
+        </div>
+
+        <div class="card-academic p-4 space-y-2">
+          <div class="text-xs font-bold uppercase tracking-wider text-indigo-700" data-en="Moment Magnitude (Eq. 9.73)" data-zh="矩震级（公式 9.73）">Moment Magnitude (Eq. 9.73)</div>
+          <div class="font-serif text-base text-slate-900 bg-indigo-50/60 border border-indigo-100 rounded-lg p-2.5 text-center">
+            <i>M<sub>W</sub></i> = ⅔ (log₁₀ <i>M</i>₀ − 9.1) &nbsp;[N·m]
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed" data-en="Calibrated by Kanamori (1977) and Hanks &amp; Kanamori (1979) to match M_S in the mid-range without ever saturating. 1 unit in M_W = 10^1.5 ≈ 31.6× in M₀." data-zh="由 Kanamori (1977) 与 Hanks &amp; Kanamori (1979) 标定，在中等大震范围与 M_S 衔接且永不饱和。M_W 每增 1 级对应地震矩增加 31.6 倍。">Calibrated by Kanamori (1977) and Hanks &amp; Kanamori (1979) to match M_S in the mid-range without ever saturating. 1 unit in M_W = 10^1.5 ≈ 31.6× in M₀.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // 1. GLOBAL STATE & PHYSICAL CONSTANTS (Shearer 2nd Ed., Ch. 9)
+    // =========================================================================
+    const PHYS = {
+      mu: 3.0e10,       // Shear modulus: 30 GPa (Pa)
+      beta: 3500,       // Shear wave velocity: 3.5 km/s (m/s)
+      k: 0.32,          // Madariaga (1976) P-wave corner constant (0.21 for S; 0.32 for P)
+      vrRatio: 0.9,     // Rupture speed v_r / beta
+      fMb: 1.0,         // Body-wave magnitude center frequency (1 Hz, T = 1 s)
+      fMs: 0.05         // Surface-wave magnitude center frequency (0.05 Hz, T = 20 s)
+    };
+
+    // Classic Earthquakes from Shearer (2019), Table 9.1, p. 287
+    const TABLE_9_1_EVENTS = [
+      { id: 'landers',  nameEn: '1992 Landers, CA',        nameZh: '1992 美国兰德斯',   mb: 6.2,  ms: 7.6, mw: 7.5, m0_1e20: 2 },
+      { id: 'wenchuan', nameEn: '2008 E. Sichuan (Wenchuan)', nameZh: '2008 四川汶川',   mb: 6.9,  ms: 8.0, mw: 7.9, m0_1e20: 9 },
+      { id: 'michoacan',nameEn: '1985 Michoacan, Mexico',  nameZh: '1985 墨西哥米却肯', mb: 6.5,  ms: 8.3, mw: 8.0, m0_1e20: 14 },
+      { id: 'sumatra05',nameEn: '2005 N. Sumatra',         nameZh: '2005 北苏门答腊',   mb: 7.2,  ms: 8.4, mw: 8.6, m0_1e20: 105 },
+      { id: 'sumatra',  nameEn: '2004 Sumatra–Andaman',    nameZh: '2004 印度洋苏门答腊',mb: 6.2, ms: 8.5, mw: 9.1, m0_1e20: 680 },
+      { id: 'alaska',   nameEn: '1964 Alaska',             nameZh: '1964 美国阿拉斯加', mb: null, ms: 8.4, mw: 9.2, m0_1e20: 820 },
+      { id: 'chile',    nameEn: '1960 Chile',              nameZh: '1960 智利大地震',   mb: null, ms: 8.3, mw: 9.5, m0_1e20: 2000 }
+    ];
+
+    const state = {
+      lang: 'en',
+      activeTab: 0,
+      mw: 7.0,
+      stressDropMPa: 3.0,
+      spectralModel: 'brune', // 'brune' (gamma=1) or 'boatwright' (gamma=2)
+      scaleB: 3.16,
+      sweeping: false,
+      sweepDir: 1,
+      lastSweepTs: 0,
+      hoverSpec: null,  // { f, amp }
+      hoverEvent: null  // event object on Plot 2
+    };
+
+    // Calibration constants anchored at reference stress drop = 3.0 MPa (Shearer Fig. 9.25)
+    // so that m_b_spec(Mw=5.0) = 5.0 and M_S_spec(Mw=7.0) = 7.0 for Brune model
+    function mwToM0(mw) {
+      return Math.pow(10, 1.5 * mw + 9.1);
+    }
+
+    function m0ToMw(m0) {
+      return (2 / 3) * (Math.log10(m0) - 9.1);
+    }
+
+    function computeSourceParams(mw, stressDropMPa) {
+      const m0 = mwToM0(mw);
+      const dsigma = stressDropMPa * 1e6; // Pa
+      // Eshelby circular crack Eq. (9.40): r = (7 M0 / (16 Δσ))^(1/3)
+      const r = Math.cbrt((7 * m0) / (16 * dsigma));
+      const area = Math.PI * r * r;
+      const slip = m0 / (PHYS.mu * area);
+      // Corner frequency Eq. (9.43): fc = k * beta / r
+      const fc = (PHYS.k * PHYS.beta) / r;
+      const tc = 1 / fc;
+      // Approximate bilateral/circular rupture duration ~ 2r / v_r
+      const vr = PHYS.vrRatio * PHYS.beta;
+      const ruptureDur = (2 * r) / vr;
+      return { mw, m0, dsigma, r, area, slip, fc, tc, ruptureDur };
+    }
+
+    // Far-field displacement amplitude spectrum A(f) normalized so plateau Omega_0 = M0 (Eq. 9.36 & 9.37)
+    function spectralAmp(f, m0, fc, model = state.spectralModel) {
+      const ratio = f / fc;
+      if (model === 'boatwright') {
+        // Boatwright (1980): gamma = 2, n = 2 -> [1 + (f/fc)^4]^(-1/2)
+        return m0 / Math.sqrt(1 + Math.pow(ratio, 4));
+      }
+      // Brune (1970): gamma = 1, n = 2 -> [1 + (f/fc)^2]^(-1)
+      return m0 / (1 + ratio * ratio);
+    }
+
+    // Local scaling exponent d(log10 A(f0)) / d(log10 M0)
+    // For Brune/Boatwright: 1 - (2/3) * u / (1 + u), where u = (f0/fc)^(2*gamma)
+    function localM0Exponent(f0, fc, model = state.spectralModel) {
+      const gamma = model === 'boatwright' ? 2 : 1;
+      const u = Math.pow(f0 / fc, 2 * gamma);
+      return 1 - (2 / 3) * (u / (1 + u));
+    }
+
+    // Calibration offsets computed once per spectralModel at ref Δσ = 3 MPa
+    function getCalOffsets(model) {
+      const ref5 = computeSourceParams(5.0, 3.0);
+      const ref7 = computeSourceParams(7.0, 3.0);
+      const cb = 5.0 - Math.log10(spectralAmp(PHYS.fMb, ref5.m0, ref5.fc, model));
+      const cs = 7.0 - Math.log10(spectralAmp(PHYS.fMs, ref7.m0, ref7.fc, model));
+      return { cb, cs };
+    }
+
+    // Compute theoretical spectral magnitude & empirical finite-window magnitude
+    function computeMagnitudes(mw, stressDropMPa = state.stressDropMPa, model = state.spectralModel) {
+      const p = computeSourceParams(mw, stressDropMPa);
+      const { cb, cs } = getCalOffsets(model);
+
+      const mbSpec = cb + Math.log10(spectralAmp(PHYS.fMb, p.m0, p.fc, model));
+      const msSpec = cs + Math.log10(spectralAmp(PHYS.fMs, p.m0, p.fc, model));
+
+      // Empirical / finite-rupture-window saturation (Houston & Kanamori 1986; Shearer Fig. 9.25):
+      // m_b samples only the first few seconds of P waves -> clips smoothly toward ~6.68 above Mw ~6
+      // M_S loses coherence across fault lengths >> 20 s wavelength -> clips smoothly toward ~8.42 above Mw ~8
+      const mbCap = 6.68;
+      const mbObs = mbCap - (1 / 1.4) * Math.log10(Math.pow(10, 1.4 * (mbCap - mbSpec)) + 1);
+      const msCap = 8.42;
+      const msObs = msCap - (1 / 1.6) * Math.log10(Math.pow(10, 1.6 * (msCap - msSpec)) + 1);
+
+      return {
+        ...p,
+        mbSpec,
+        msSpec,
+        mbEmp: mbObs,
+        msEmp: msObs
+      };
+    }
+
+    // Format helpers
+    function formatSci(val, decimals = 2) {
+      if (val === 0) return '0';
+      const exp = Math.floor(Math.log10(Math.abs(val)));
+      const mant = val / Math.pow(10, exp);
+      const supDigits = { '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻' };
+      const expStr = String(exp).split('').map(c => supDigits[c] || c).join('');
+      return `${mant.toFixed(decimals)} × 10${expStr}`;
+    }
+
+    function formatDuration(sec) {
+      if (sec < 1) return `${sec.toFixed(2)} s`;
+      if (sec < 10) return `${sec.toFixed(1)} s`;
+      return `${Math.round(sec)} s`;
+    }
+
+    function formatFreq(f) {
+      if (f >= 1) return `${f.toFixed(2)} Hz`;
+      if (f >= 0.1) return `${f.toFixed(3)} Hz`;
+      return `${f.toFixed(4)} Hz`;
+    }
+
+    // =========================================================================
+    // 2. CANVAS HIDPI HELPER
+    // =========================================================================
+    function prepCanvas(id) {
+      const canvas = document.getElementById(id);
+      if (!canvas) return null;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return null;
+      const dpr = window.devicePixelRatio || 1;
+      const targetW = Math.round(rect.width * dpr);
+      const targetH = Math.round(rect.height * dpr);
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
+      const ctx = canvas.getContext('2d');
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      return { canvas, ctx, w: rect.width, h: rect.height };
+    }
+
+    // =========================================================================
+    // 3. PLOT 1: LOG-LOG SOURCE DISPLACEMENT SPECTRUM
+    // =========================================================================
+    const SPEC_BOUNDS = {
+      logFMin: Math.log10(0.0018),
+      logFMax: Math.log10(18),
+      logAMin: 12.2,
+      logAMax: 24.0
+    };
+
+    function drawSpectrumPlot() {
+      const prep = prepCanvas('canvas-spectrum');
+      if (!prep) return;
+      const { ctx, w, h } = prep;
+      const isZh = state.lang === 'zh';
+
+      const pad = { left: 58, right: 20, top: 26, bottom: 44 };
+      const pw = w - pad.left - pad.right;
+      const ph = h - pad.top - pad.bottom;
+
+      const xOfLogF = (lf) => pad.left + ((lf - SPEC_BOUNDS.logFMin) / (SPEC_BOUNDS.logFMax - SPEC_BOUNDS.logFMin)) * pw;
+      const yOfLogA = (la) => pad.top + ph - ((la - SPEC_BOUNDS.logAMin) / (SPEC_BOUNDS.logAMax - SPEC_BOUNDS.logAMin)) * ph;
+
+      // Background
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, w, h);
+
+      // Subtle shaded region to the LEFT of Ms (0.05 Hz) & RIGHT of mb (1 Hz)
+      const xMs = xOfLogF(Math.log10(PHYS.fMs));
+      const xMb = xOfLogF(Math.log10(PHYS.fMb));
+
+      ctx.fillStyle = 'rgba(241, 245, 249, 0.55)';
+      ctx.fillRect(pad.left, pad.top, xMs - pad.left, ph);
+
+      // Grid lines (Frequency decades)
+      const freqTicks = [0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10];
+      const majorFreqs = [0.01, 0.1, 1, 10];
+      ctx.lineWidth = 1;
+      freqTicks.forEach(ft => {
+        const x = xOfLogF(Math.log10(ft));
+        if (x < pad.left || x > pad.left + pw) return;
+        ctx.strokeStyle = majorFreqs.includes(ft) ? '#E2E8F0' : '#F1F5F9';
+        ctx.beginPath();
+        ctx.moveTo(x, pad.top);
+        ctx.lineTo(x, pad.top + ph);
+        ctx.stroke();
+      });
+
+      // Grid lines (Log10 A)
+      for (let la = 13; la <= 23; la += 2) {
+        const y = yOfLogA(la);
+        ctx.strokeStyle = '#E2E8F0';
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + pw, y);
+        ctx.stroke();
+
+        ctx.fillStyle = '#64748B';
+        ctx.font = '10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`10^${la}`, pad.left - 7, y);
+      }
+
+      // Self-similar locus line: M0 ∝ fc^(-3) at current stress drop
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = 'rgba(217, 119, 6, 0.65)';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      let startedLocus = false;
+      for (let mwTick = 3.5; mwTick <= 10.0; mwTick += 0.2) {
+        const sp = computeSourceParams(mwTick, state.stressDropMPa);
+        const lx = xOfLogF(Math.log10(sp.fc));
+        const ly = yOfLogA(Math.log10(sp.m0));
+        if (!startedLocus) { ctx.moveTo(lx, ly); startedLocus = true; }
+        else ctx.lineTo(lx, ly);
+      }
+      ctx.stroke();
+      ctx.restore();
+
+      // Label the M0 ∝ fc^(-3) locus
+      const locusRef = computeSourceParams(8.6, state.stressDropMPa);
+      const locusX = Math.max(pad.left + 50, xOfLogF(Math.log10(locusRef.fc)));
+      const locusY = Math.max(pad.top + 16, yOfLogA(Math.log10(locusRef.m0)) - 10);
+      ctx.fillStyle = '#B45309';
+      ctx.font = '600 10px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(isZh ? '自相似轨迹 M₀ ∝ f_c⁻³' : 'Self-similar locus M₀ ∝ f_c⁻³', locusX + 6, locusY);
+
+      // Ghost spectra for Mw = 4, 5, 6, 7, 8, 9
+      const showGhosts = document.getElementById('chk-ghosts').checked;
+      const samplesN = 180;
+      if (showGhosts) {
+        [4, 5, 6, 7, 8, 9].forEach(gmw => {
+          const gp = computeSourceParams(gmw, state.stressDropMPa);
+          ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
+          ctx.lineWidth = 1.1;
+          ctx.beginPath();
+          for (let i = 0; i <= samplesN; i++) {
+            const lf = SPEC_BOUNDS.logFMin + (i / samplesN) * (SPEC_BOUNDS.logFMax - SPEC_BOUNDS.logFMin);
+            const f = Math.pow(10, lf);
+            const la = Math.log10(spectralAmp(f, gp.m0, gp.fc));
+            const x = xOfLogF(lf);
+            const y = yOfLogA(la);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+
+          // Label M4..M9 at left edge
+          const labelY = yOfLogA(Math.log10(gp.m0));
+          if (labelY >= pad.top + 8 && labelY <= pad.top + ph - 8) {
+            ctx.fillStyle = '#94A3B8';
+            ctx.font = '600 10px "JetBrains Mono", monospace';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(`M${gmw}`, pad.left + 4, labelY - 2);
+          }
+        });
+      }
+
+      // Active Spectrum Curve
+      const cur = computeSourceParams(state.mw, state.stressDropMPa);
+
+      // Fill under active curve
+      ctx.save();
+      ctx.beginPath();
+      for (let i = 0; i <= samplesN; i++) {
+        const lf = SPEC_BOUNDS.logFMin + (i / samplesN) * (SPEC_BOUNDS.logFMax - SPEC_BOUNDS.logFMin);
+        const f = Math.pow(10, lf);
+        const la = Math.log10(spectralAmp(f, cur.m0, cur.fc));
+        const x = xOfLogF(lf);
+        const y = Math.min(pad.top + ph, yOfLogA(la));
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.lineTo(pad.left + pw, pad.top + ph);
+      ctx.lineTo(pad.left, pad.top + ph);
+      ctx.closePath();
+      const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + ph);
+      grad.addColorStop(0, 'rgba(37, 99, 235, 0.16)');
+      grad.addColorStop(1, 'rgba(37, 99, 235, 0.01)');
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.restore();
+
+      // Stroke active curve
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(pad.left, pad.top, pw, ph);
+      ctx.clip();
+      ctx.strokeStyle = '#2563EB';
+      ctx.lineWidth = 2.8;
+      ctx.beginPath();
+      for (let i = 0; i <= samplesN; i++) {
+        const lf = SPEC_BOUNDS.logFMin + (i / samplesN) * (SPEC_BOUNDS.logFMax - SPEC_BOUNDS.logFMin);
+        const f = Math.pow(10, lf);
+        const la = Math.log10(spectralAmp(f, cur.m0, cur.fc));
+        const x = xOfLogF(lf);
+        const y = yOfLogA(la);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Optional Velocity Spectrum f * A(f) normalized to match at fc
+      if (document.getElementById('chk-velocity-peak').checked) {
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = '#D97706';
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        for (let i = 0; i <= samplesN; i++) {
+          const lf = SPEC_BOUNDS.logFMin + (i / samplesN) * (SPEC_BOUNDS.logFMax - SPEC_BOUNDS.logFMin);
+          const f = Math.pow(10, lf);
+          const vAmp = (f / cur.fc) * spectralAmp(f, cur.m0, cur.fc);
+          const la = Math.log10(vAmp);
+          const x = xOfLogF(lf);
+          const y = yOfLogA(la);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+      ctx.restore();
+
+      // Vertical Measurement Lines: Ms (0.05 Hz) & mb (1.0 Hz)
+      function drawBandLine(f0, xPos, color, bgFill, labelTop, labelSub) {
+        ctx.save();
+        ctx.fillStyle = bgFill;
+        ctx.fillRect(xPos - 4, pad.top, 8, ph);
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(xPos, pad.top);
+        ctx.lineTo(xPos, pad.top + ph);
+        ctx.stroke();
+        ctx.restore();
+
+        // Top badge
+        ctx.fillStyle = color;
+        ctx.font = '700 11px "Inter", "Noto Sans SC", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(labelTop, xPos, pad.top + 11);
+        ctx.font = '500 9.5px "JetBrains Mono", monospace';
+        ctx.fillText(labelSub, xPos, pad.top + 23);
+
+        // Intersection point with active spectrum
+        const ampAtF0 = spectralAmp(f0, cur.m0, cur.fc);
+        const yInt = yOfLogA(Math.log10(ampAtF0));
+        if (yInt >= pad.top && yInt <= pad.top + ph) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(xPos, yInt, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(xPos, yInt, 4.2, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Local exponent pill near dot
+          const exp = localM0Exponent(f0, cur.fc);
+          const pillText = `∝ M₀^${exp.toFixed(2)}`;
+          ctx.font = '700 10px "JetBrains Mono", monospace';
+          const tw = ctx.measureText(pillText).width + 10;
+          const px = xPos + 8 + tw > pad.left + pw ? xPos - tw - 8 : xPos + 8;
+          const py = Math.min(pad.top + ph - 22, Math.max(pad.top + 28, yInt - 10));
+          ctx.fillStyle = 'rgba(255,255,255,0.92)';
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect(px, py, tw, 17, 4);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = color;
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(pillText, px + 5, py + 8.5);
+        }
+      }
+
+      drawBandLine(PHYS.fMs, xMs, '#059669', 'rgba(5, 150, 105, 0.08)', 'M_S (20 s)', '0.05 Hz');
+      drawBandLine(PHYS.fMb, xMb, '#DC2626', 'rgba(220, 38, 38, 0.08)', 'm_b (1 s)', '1.0 Hz');
+
+      // Active Corner Frequency Marker fc
+      const xFc = xOfLogF(Math.log10(cur.fc));
+      const yFc = yOfLogA(Math.log10(spectralAmp(cur.fc, cur.m0, cur.fc)));
+      const yPlateau = yOfLogA(Math.log10(cur.m0));
+
+      if (xFc >= pad.left && xFc <= pad.left + pw) {
+        // Vertical drop line to x-axis
+        ctx.save();
+        ctx.strokeStyle = '#2563EB';
+        ctx.lineWidth = 1.4;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(xFc, yPlateau);
+        ctx.lineTo(xFc, pad.top + ph);
+        ctx.stroke();
+        ctx.restore();
+
+        // Intersection of asymptotes marker (fc, Omega0)
+        ctx.fillStyle = 'rgba(37, 99, 235, 0.25)';
+        ctx.beginPath();
+        ctx.arc(xFc, yPlateau, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Corner dot on curve
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(xFc, yFc, 6.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#2563EB';
+        ctx.beginPath();
+        ctx.arc(xFc, yFc, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // fc pill label
+        const fcTxt = `f_c = ${formatFreq(cur.fc)}`;
+        ctx.font = '700 10.5px "JetBrains Mono", monospace';
+        const fcW = ctx.measureText(fcTxt).width + 10;
+        const fxBox = Math.min(pad.left + pw - fcW - 4, Math.max(pad.left + 4, xFc - fcW / 2));
+        const fyBox = pad.top + ph - 22;
+        ctx.fillStyle = '#1D4ED8';
+        ctx.beginPath();
+        ctx.roundRect(fxBox, fyBox, fcW, 18, 4);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(fcTxt, fxBox + fcW / 2, fyBox + 9);
+      }
+
+      // Slope hints on active curve (ω^0 & ω^-2)
+      ctx.fillStyle = '#1E40AF';
+      ctx.font = '600 10px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'left';
+      if (xFc - pad.left > 55) {
+        ctx.fillText(isZh ? '低频平台 Ω₀ ∝ M₀' : 'Plateau Ω₀ ∝ M₀ (ω⁰)', pad.left + 10, Math.max(pad.top + 36, yPlateau - 10));
+      }
+      if (pad.left + pw - xFc > 60) {
+        const rx = Math.min(pad.left + pw - 56, xFc + 22);
+        const ry = yOfLogA(Math.log10(spectralAmp(Math.min(10, cur.fc * 2.5), cur.m0, cur.fc))) - 10;
+        if (ry > pad.top + 30 && ry < pad.top + ph - 28) {
+          ctx.fillText('∝ ω⁻²', rx, ry);
+        }
+      }
+
+      // Axes frame & ticks
+      ctx.strokeStyle = '#94A3B8';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(pad.left, pad.top, pw, ph);
+
+      // X-axis frequency tick labels
+      const labeledFreqs = [0.002, 0.01, 0.05, 0.1, 1, 10];
+      ctx.fillStyle = '#475569';
+      ctx.font = '10px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      labeledFreqs.forEach(ft => {
+        const x = xOfLogF(Math.log10(ft));
+        ctx.fillText(ft < 0.1 ? ft.toString() : String(ft), x, pad.top + ph + 6);
+      });
+
+      // Axis titles
+      ctx.fillStyle = '#334155';
+      ctx.font = '600 11px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(isZh ? '频率 f (Hz) — 对数坐标' : 'Frequency f (Hz) — Log Scale', pad.left + pw / 2, h - 14);
+
+      ctx.save();
+      ctx.translate(15, pad.top + ph / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center';
+      ctx.fillText(isZh ? '归一化位移谱振幅 Ω(f) [N·m]' : 'Scaled Displacement Spectrum Ω(f) [N·m]', 0, 0);
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // 4. PLOT 2: MAGNITUDE COMPARISON & SATURATION CURVES
+    // =========================================================================
+    const MAG_BOUNDS = {
+      mwMin: 4.0,
+      mwMax: 9.5,
+      magMin: 3.4,
+      magMax: 9.8
+    };
+
+    function drawMagnitudePlot() {
+      const prep = prepCanvas('canvas-magnitude');
+      if (!prep) return;
+      const { ctx, w, h } = prep;
+      const isZh = state.lang === 'zh';
+
+      const pad = { left: 48, right: 20, top: 34, bottom: 44 };
+      const pw = w - pad.left - pad.right;
+      const ph = h - pad.top - pad.bottom;
+
+      const xOfMw = (mw) => pad.left + ((mw - MAG_BOUNDS.mwMin) / (MAG_BOUNDS.mwMax - MAG_BOUNDS.mwMin)) * pw;
+      const yOfMag = (m) => pad.top + ph - ((m - MAG_BOUNDS.magMin) / (MAG_BOUNDS.magMax - MAG_BOUNDS.magMin)) * ph;
+
+      // Background
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, w, h);
+
+      // Highlight subtle saturation zones (~6.5 mb, ~8.0 Ms)
+      ctx.fillStyle = 'rgba(220, 38, 38, 0.05)';
+      ctx.fillRect(xOfMw(5.8), pad.top, xOfMw(7.0) - xOfMw(5.8), ph);
+      ctx.fillStyle = 'rgba(5, 150, 105, 0.05)';
+      ctx.fillRect(xOfMw(7.6), pad.top, xOfMw(8.5) - xOfMw(7.6), ph);
+
+      // Grid lines
+      ctx.lineWidth = 1;
+      for (let mwT = 4; mwT <= 9.5; mwT += 0.5) {
+        const x = xOfMw(mwT);
+        ctx.strokeStyle = Number.isInteger(mwT) ? '#E2E8F0' : '#F1F5F9';
+        ctx.beginPath();
+        ctx.moveTo(x, pad.top);
+        ctx.lineTo(x, pad.top + ph);
+        ctx.stroke();
+
+        if (Number.isInteger(mwT)) {
+          // Bottom Mw ticks
+          ctx.fillStyle = '#475569';
+          ctx.font = '10px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'top';
+          ctx.fillText(mwT.toFixed(0), x, pad.top + ph + 5);
+
+          // Top log10(M0) ticks
+          const lm0 = 1.5 * mwT + 9.1;
+          ctx.fillStyle = '#64748B';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(`10^${lm0.toFixed(1)}`, x, pad.top - 4);
+        }
+      }
+
+      for (let mT = 4; mT <= 9; mT += 1) {
+        const y = yOfMag(mT);
+        ctx.strokeStyle = '#E2E8F0';
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + pw, y);
+        ctx.stroke();
+
+        ctx.fillStyle = '#64748B';
+        ctx.font = '10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(mT.toFixed(0), pad.left - 7, y);
+      }
+
+      // Top axis label for M0
+      ctx.fillStyle = '#475569';
+      ctx.font = '600 10px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(isZh ? '地震矩 M₀ (N·m):' : 'Moment M₀ (N·m):', pad.left, pad.top - 18);
+
+      // Clip plotting region
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(pad.left, pad.top, pw, ph);
+      ctx.clip();
+
+      // 1) Ideal M_W 1:1 line (never saturates)
+      ctx.strokeStyle = '#312E81';
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(xOfMw(4.0), yOfMag(4.0));
+      ctx.lineTo(xOfMw(9.5), yOfMag(9.5));
+      ctx.stroke();
+
+      const showEmp = document.getElementById('chk-empirical').checked;
+      const steps = 110;
+
+      // 2) Theoretical ω⁻² spectral curves (dashed when empirical is also on, solid otherwise)
+      function plotMagCurve(extractor, color, width, dashed) {
+        ctx.save();
+        if (dashed) ctx.setLineDash([5, 4]);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        for (let i = 0; i <= steps; i++) {
+          const mw = MAG_BOUNDS.mwMin + (i / steps) * (MAG_BOUNDS.mwMax - MAG_BOUNDS.mwMin);
+          const vals = computeMagnitudes(mw);
+          const x = xOfMw(mw);
+          const y = yOfMag(extractor(vals));
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Spectral curves
+      plotMagCurve(v => v.msSpec, 'rgba(5, 150, 105, 0.72)', showEmp ? 1.8 : 2.6, showEmp);
+      plotMagCurve(v => v.mbSpec, 'rgba(220, 38, 38, 0.72)', showEmp ? 1.8 : 2.6, showEmp);
+
+      // Empirical saturation curves
+      if (showEmp) {
+        plotMagCurve(v => v.msEmp, '#059669', 2.8, false);
+        plotMagCurve(v => v.mbEmp, '#DC2626', 2.8, false);
+      }
+
+      // Saturation asymptote annotations
+      ctx.font = '600 10px "Inter", "Noto Sans SC", sans-serif';
+      ctx.fillStyle = '#B91C1C';
+      ctx.textAlign = 'left';
+      ctx.fillText(isZh ? 'm_b 饱和 (~6.5)' : 'm_b plateau (~6.5)', xOfMw(7.45), yOfMag(6.68) - 8);
+
+      ctx.fillStyle = '#047857';
+      ctx.fillText(isZh ? 'M_S 饱和 (~8.3)' : 'M_S plateau (~8.3)', xOfMw(8.15), yOfMag(8.42) - 8);
+
+      // 3) Table 9.1 Real Earthquake Scatter Points
+      if (document.getElementById('chk-table91').checked) {
+        TABLE_9_1_EVENTS.forEach(ev => {
+          const ex = xOfMw(ev.mw);
+          // Ms circle (emerald)
+          if (ev.ms != null) {
+            const ey = yOfMag(ev.ms);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.arc(ex, ey, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#059669';
+            ctx.lineWidth = 1.8;
+            ctx.stroke();
+          }
+          // mb triangle (red)
+          if (ev.mb != null) {
+            const ey = yOfMag(ev.mb);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.strokeStyle = '#DC2626';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.moveTo(ex, ey - 4.5);
+            ctx.lineTo(ex - 4.2, ey + 3.5);
+            ctx.lineTo(ex + 4.2, ey + 3.5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+          }
+        });
+      }
+
+      // 4) Synchronized Vertical Cursor at current state.mw
+      const cx = xOfMw(state.mw);
+      const curMags = computeMagnitudes(state.mw);
+      const curMbY = yOfMag(showEmp ? curMags.mbEmp : curMags.mbSpec);
+      const curMsY = yOfMag(showEmp ? curMags.msEmp : curMags.msSpec);
+      const curMwY = yOfMag(state.mw);
+
+      ctx.strokeStyle = 'rgba(37, 99, 235, 0.55)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cx, pad.top);
+      ctx.lineTo(cx, pad.top + ph);
+      ctx.stroke();
+
+      // Connector bar showing gap between Mw and mb
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.22)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx, curMwY);
+      ctx.lineTo(cx, curMbY);
+      ctx.stroke();
+
+      function drawCursorDot(y, color, label) {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(cx, y, 6.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(cx, y, 4.3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Compact floating readout
+        ctx.font = '700 10px "JetBrains Mono", monospace';
+        const tw = ctx.measureText(label).width + 8;
+        const lx = cx + 9 + tw > pad.left + pw ? cx - tw - 9 : cx + 9;
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(lx, y - 8.5, tw, 17, 4);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, lx + 4, y);
+      }
+
+      drawCursorDot(curMwY, '#312E81', `M_W ${state.mw.toFixed(2)}`);
+      drawCursorDot(curMsY, '#059669', `M_S ${(showEmp ? curMags.msEmp : curMags.msSpec).toFixed(2)}`);
+      drawCursorDot(curMbY, '#DC2626', `m_b ${(showEmp ? curMags.mbEmp : curMags.mbSpec).toFixed(2)}`);
+
+      ctx.restore();
+
+      // Legend box top-left inside plot
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(pad.left + 8, pad.top + 8, isZh ? 148 : 158, 68, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      const legX = pad.left + 16;
+      ctx.font = '600 10px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+
+      ctx.strokeStyle = '#312E81'; ctx.lineWidth = 2.2;
+      ctx.beginPath(); ctx.moveTo(legX, pad.top + 21); ctx.lineTo(legX + 18, pad.top + 21); ctx.stroke();
+      ctx.fillStyle = '#1E293B';
+      ctx.fillText(isZh ? 'M_W (1:1 不饱和)' : 'M_W (non-saturating)', legX + 24, pad.top + 21);
+
+      ctx.strokeStyle = '#059669'; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(legX, pad.top + 38); ctx.lineTo(legX + 18, pad.top + 38); ctx.stroke();
+      ctx.fillStyle = '#065F46';
+      ctx.fillText(isZh ? 'M_S (20 s 面波)' : 'M_S (20 s Rayleigh)', legX + 24, pad.top + 38);
+
+      ctx.strokeStyle = '#DC2626'; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(legX, pad.top + 55); ctx.lineTo(legX + 18, pad.top + 55); ctx.stroke();
+      ctx.fillStyle = '#991B1B';
+      ctx.fillText(isZh ? 'm_b (1 s 体波 P)' : 'm_b (1 s body P)', legX + 24, pad.top + 55);
+
+      // Axes frame & titles
+      ctx.strokeStyle = '#94A3B8';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(pad.left, pad.top, pw, ph);
+
+      ctx.fillStyle = '#334155';
+      ctx.font = '600 11px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText(isZh ? '真实矩震级 M_W (由 M₀ 确定)' : 'True Moment Magnitude M_W', pad.left + pw / 2, h - 8);
+
+      ctx.save();
+      ctx.translate(14, pad.top + ph / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center';
+      ctx.fillText(isZh ? '各标度测定震级 (m_b, M_S, M_W)' : 'Measured Magnitude Scale', 0, 0);
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // 5. LINKED TIME-DOMAIN PULSE VS 1 s & 20 s WINDOWS
+    // =========================================================================
+    function drawTimeDomainStrip() {
+      const prep = prepCanvas('canvas-timedomain');
+      if (!prep) return;
+      const { ctx, w, h } = prep;
+      const isZh = state.lang === 'zh';
+
+      const cur = computeSourceParams(state.mw, state.stressDropMPa);
+      const tau = cur.ruptureDur; // Rupture duration (s)
+      const tMax = Math.max(30, Math.min(400, tau * 1.65));
+
+      const pad = { left: 52, right: 20, top: 20, bottom: 28 };
+      const pw = w - pad.left - pad.right;
+      const ph = h - pad.top - pad.bottom;
+
+      const xOfT = (t) => pad.left + (t / tMax) * pw;
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, w, h);
+
+      // 20 s Ms window shaded bar
+      const x20 = Math.min(pad.left + pw, xOfT(20));
+      ctx.fillStyle = 'rgba(5, 150, 105, 0.11)';
+      ctx.fillRect(pad.left, pad.top, x20 - pad.left, ph);
+      ctx.strokeStyle = '#059669';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(x20, pad.top); ctx.lineTo(x20, pad.top + ph); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 1 s mb window shaded bar (minimum 3 px visibility)
+      const x1 = Math.max(pad.left + 3, xOfT(1));
+      ctx.fillStyle = 'rgba(220, 38, 38, 0.20)';
+      ctx.fillRect(pad.left, pad.top, x1 - pad.left, ph);
+      ctx.strokeStyle = '#DC2626';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(x1, pad.top); ctx.lineTo(x1, pad.top + ph); ctx.stroke();
+
+      // Plot normalized smooth far-field Brune/Haskell-like displacement pulse u(t) = (t/tc)*e^(1 - t/tc)
+      // peaking at t = tc_eff = tau * 0.4
+      const tcEff = Math.max(0.25, tau * 0.42);
+      ctx.fillStyle = 'rgba(37, 99, 235, 0.16)';
+      ctx.strokeStyle = '#2563EB';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.moveTo(pad.left, pad.top + ph);
+      const pts = 220;
+      for (let i = 0; i <= pts; i++) {
+        const t = (i / pts) * tMax;
+        const uNorm = (t / tcEff) * Math.exp(1 - t / tcEff);
+        const y = pad.top + ph - uNorm * (ph * 0.78);
+        ctx.lineTo(xOfT(t), y);
+      }
+      ctx.lineTo(pad.left + pw, pad.top + ph);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      for (let i = 0; i <= pts; i++) {
+        const t = (i / pts) * tMax;
+        const uNorm = (t / tcEff) * Math.exp(1 - t / tcEff);
+        const y = pad.top + ph - uNorm * (ph * 0.78);
+        if (i === 0) ctx.moveTo(xOfT(t), y);
+        else ctx.lineTo(xOfT(t), y);
+      }
+      ctx.stroke();
+
+      // Window labels
+      ctx.font = '700 10px "JetBrains Mono", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#DC2626';
+      ctx.fillText('1 s (m_b)', pad.left + 4, pad.top + 12);
+
+      ctx.fillStyle = '#059669';
+      const msLblX = Math.max(pad.left + 64, Math.min(pad.left + pw - 75, x20 - 58));
+      ctx.fillText('20 s (M_S)', msLblX, pad.top + 12);
+
+      // Pulse width annotation
+      const peakX = xOfT(tcEff);
+      ctx.fillStyle = '#1D4ED8';
+      ctx.textAlign = peakX > pad.left + pw * 0.65 ? 'right' : 'left';
+      ctx.fillText(
+        isZh ? `归一化远场震源脉冲 (破裂约 ${formatDuration(tau)})` : `Source Pulse (duration ≈ ${formatDuration(tau)})`,
+        Math.min(pad.left + pw - 8, Math.max(pad.left + 8, peakX + 8)),
+        pad.top + 28
+      );
+
+      // Axes
+      ctx.strokeStyle = '#94A3B8';
+      ctx.lineWidth = 1.1;
+      ctx.strokeRect(pad.left, pad.top, pw, ph);
+
+      // Time axis ticks
+      const stepT = tMax <= 40 ? 5 : (tMax <= 100 ? 20 : (tMax <= 220 ? 40 : 80));
+      ctx.fillStyle = '#475569';
+      ctx.font = '10px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      for (let t = 0; t <= tMax; t += stepT) {
+        ctx.fillText(`${t} s`, xOfT(t), pad.top + ph + 6);
+      }
+
+      ctx.save();
+      ctx.translate(15, pad.top + ph / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = '#475569';
+      ctx.font = '600 10px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(isZh ? '归一化 u(t)' : 'Norm. u(t)', 0, 0);
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // 6. TAB 1: SELF-SIMILARITY CANVASES (Fig. 9.20)
+    // =========================================================================
+    function drawSelfSimCanvases() {
+      const b = state.scaleB;
+      const isZh = state.lang === 'zh';
+
+      // --- Left: Time domain u(t) vs b^2 * u(t/b) ---
+      const pTime = prepCanvas('canvas-selfsim-time');
+      if (pTime) {
+        const { ctx, w, h } = pTime;
+        const pad = { left: 48, right: 18, top: 24, bottom: 38 };
+        const pw = w - pad.left - pad.right;
+        const ph = h - pad.top - pad.bottom;
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, w, h);
+
+        // Reference triangle/Brune pulse width T0 = 1, maxAmp0 = 1; scaled pulse width = b, maxAmp = b^2
+        const tMax = 12;
+        const maxY = Math.max(12, b * b * 1.15);
+        const xOf = (t) => pad.left + (t / tMax) * pw;
+        const yOf = (u) => pad.top + ph - (u / maxY) * ph;
+
+        // Grid
+        ctx.strokeStyle = '#F1F5F9'; ctx.lineWidth = 1;
+        for (let t = 2; t <= 10; t += 2) {
+          ctx.beginPath(); ctx.moveTo(xOf(t), pad.top); ctx.lineTo(xOf(t), pad.top + ph); ctx.stroke();
+        }
+
+        // Small pulse u(t)
+        function plotPulse(scale, color, fill) {
+          ctx.fillStyle = fill;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2.3;
+          ctx.beginPath();
+          ctx.moveTo(xOf(0), yOf(0));
+          for (let i = 0; i <= 180; i++) {
+            const t = (i / 180) * tMax;
+            const arg = t / (0.35 * scale);
+            const val = scale * scale * arg * Math.exp(1 - arg);
+            ctx.lineTo(xOf(t), yOf(val));
+          }
+          ctx.lineTo(xOf(tMax), yOf(0));
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.beginPath();
+          for (let i = 0; i <= 180; i++) {
+            const t = (i / 180) * tMax;
+            const arg = t / (0.35 * scale);
+            const val = scale * scale * arg * Math.exp(1 - arg);
+            if (i === 0) ctx.moveTo(xOf(t), yOf(val));
+            else ctx.lineTo(xOf(t), yOf(val));
+          }
+          ctx.stroke();
+        }
+
+        plotPulse(b, '#2563EB', 'rgba(37, 99, 235, 0.14)');
+        plotPulse(1, '#64748B', 'rgba(100, 116, 139, 0.20)');
+
+        ctx.fillStyle = '#475569';
+        ctx.font = '600 10.5px "Inter", "Noto Sans SC", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(isZh ? '基准地震 u(t) (b=1)' : 'Reference u(t) (b=1)', pad.left + 8, pad.top + 14);
+        ctx.fillStyle = '#1D4ED8';
+        ctx.fillText(
+          isZh ? `放大地震 b²u(t/b): 高度 ×${(b*b).toFixed(1)}, 宽度 ×${b.toFixed(2)}` : `Scaled b²u(t/b): Height ×${(b*b).toFixed(1)}, Width ×${b.toFixed(2)}`,
+          pad.left + 8, pad.top + 30
+        );
+
+        ctx.strokeStyle = '#94A3B8'; ctx.lineWidth = 1.1;
+        ctx.strokeRect(pad.left, pad.top, pw, ph);
+        ctx.fillStyle = '#475569'; ctx.font = '600 10.5px "Inter", sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(isZh ? '无量纲时间 t / τ₀' : 'Normalized Time t / τ₀', pad.left + pw / 2, h - 10);
+      }
+
+      // --- Right: Freq domain A(f) vs b^3 * A(b*f) ---
+      const pFreq = prepCanvas('canvas-selfsim-freq');
+      if (pFreq) {
+        const { ctx, w, h } = pFreq;
+        const pad = { left: 48, right: 18, top: 24, bottom: 38 };
+        const pw = w - pad.left - pad.right;
+        const ph = h - pad.top - pad.bottom;
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, w, h);
+
+        const lfMin = -2.0, lfMax = 1.8;
+        const laMin = -1.8, laMax = 3.6;
+        const xOf = (lf) => pad.left + ((lf - lfMin) / (lfMax - lfMin)) * pw;
+        const yOf = (la) => pad.top + ph - ((la - laMin) / (laMax - laMin)) * ph;
+
+        // Grid
+        ctx.strokeStyle = '#F1F5F9'; ctx.lineWidth = 1;
+        for (let la = -1; la <= 3; la++) {
+          ctx.beginPath(); ctx.moveTo(pad.left, yOf(la)); ctx.lineTo(pad.left + pw, yOf(la)); ctx.stroke();
+        }
+
+        // Locus line M0 ∝ fc^(-3)
+        ctx.save();
+        ctx.setLineDash([5, 4]);
+        ctx.strokeStyle = '#D97706';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(xOf(0), yOf(0));
+        ctx.lineTo(xOf(-Math.log10(12)), yOf(Math.log10(Math.pow(12, 3))));
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        ctx.beginPath(); ctx.rect(pad.left, pad.top, pw, ph); ctx.clip();
+
+        function plotSpec(scale, color, width) {
+          const fc = 1 / scale;
+          const om0 = Math.pow(scale, 3);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = width;
+          ctx.beginPath();
+          for (let i = 0; i <= 150; i++) {
+            const lf = lfMin + (i / 150) * (lfMax - lfMin);
+            const f = Math.pow(10, lf);
+            const amp = om0 / (1 + Math.pow(f / fc, 2));
+            const x = xOf(lf);
+            const y = yOf(Math.log10(amp));
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+
+          // Corner dot
+          const xc = xOf(Math.log10(fc));
+          const yc = yOf(Math.log10(om0 / 2));
+          ctx.fillStyle = color;
+          ctx.beginPath(); ctx.arc(xc, yc, 4.2, 0, Math.PI * 2); ctx.fill();
+        }
+
+        plotSpec(1, '#64748B', 2.0);
+        plotSpec(b, '#2563EB', 2.8);
+        ctx.restore();
+
+        ctx.fillStyle = '#B45309';
+        ctx.font = '600 10px "Inter", "Noto Sans SC", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('M₀ ∝ f_c⁻³', xOf(-0.65), yOf(2.25));
+
+        ctx.fillStyle = '#1D4ED8';
+        ctx.fillText(
+          isZh ? `平台 ×${Math.pow(b, 3).toFixed(1)}, 拐角 f_c ×${(1/b).toFixed(2)}` : `Plateau ×${Math.pow(b, 3).toFixed(1)}, f_c ×${(1/b).toFixed(2)}`,
+          pad.left + 10, pad.top + 16
+        );
+
+        ctx.strokeStyle = '#94A3B8'; ctx.lineWidth = 1.1;
+        ctx.strokeRect(pad.left, pad.top, pw, ph);
+        ctx.fillStyle = '#475569'; ctx.font = '600 10.5px "Inter", sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(isZh ? '对数频率 log₁₀(f / f_c0)' : 'Log Frequency log₁₀(f / f_c0)', pad.left + pw / 2, h - 10);
+      }
+
+      // Update summary cards
+      const b2 = b * b;
+      const b3 = b * b * b;
+      const dmw = (2 / 3) * Math.log10(b3); // = 2 * log10(b)
+      document.getElementById('val-scale-b').textContent = `b = ${b.toFixed(2)}× (ΔM_W = +${dmw.toFixed(2)})`;
+
+      const cards = [
+        { kEn: 'Fault Area A ∝ b²', kZh: '断层面积 A ∝ b²', val: `×${b2.toFixed(1)}`, subEn: 'L and W both ×b', subZh: '长和宽各放大 b 倍' },
+        { kEn: 'Slip D̄ & Duration τ ∝ b', kZh: '位错 D̄ 与历时 τ ∝ b', val: `×${b.toFixed(2)}`, subEn: 'Constant Δσ ∝ D̄/r', subZh: '恒定应力降要求 D̄/r 不变' },
+        { kEn: 'Seismic Moment M₀ ∝ b³', kZh: '地震矩 M₀ ∝ b³', val: `×${b3.toFixed(1)}`, subEn: `+${dmw.toFixed(2)} in M_W`, subZh: `M_W 增加 +${dmw.toFixed(2)}` },
+        { kEn: 'Corner Freq f_c ∝ 1/b', kZh: '拐角频率 f_c ∝ 1/b', val: `×${(1/b).toFixed(2)}`, subEn: 'Shifts left on log f', subZh: '在对数频率轴左移' }
+      ];
+      document.getElementById('selfsim-cards').innerHTML = cards.map(c => `
+        <div class="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <div class="text-[11px] font-semibold text-slate-600">${isZh ? c.kZh : c.kEn}</div>
+          <div class="font-mono-code text-base font-bold text-blue-700 mt-0.5">${c.val}</div>
+          <div class="text-[11px] text-slate-500 mt-0.5">${isZh ? c.subZh : c.subEn}</div>
+        </div>
+      `).join('');
+    }
+
+    // =========================================================================
+    // 7. DOM TELEMETRY, EXPLANATION CALLOUTS & TABLE 9.1
+    // =========================================================================
+    function updateTelemetryAndCallouts() {
+      const isZh = state.lang === 'zh';
+      const showEmp = document.getElementById('chk-empirical').checked;
+      const m = computeMagnitudes(state.mw, state.stressDropMPa, state.spectralModel);
+
+      // Header slider badges
+      document.getElementById('badge-mw-main').textContent = `M_W ${state.mw.toFixed(2)}`;
+      document.getElementById('badge-m0-main').textContent = `M₀ = ${formatSci(m.m0)} N·m`;
+      document.getElementById('val-stress-drop').textContent = `${state.stressDropMPa.toFixed(1)} MPa`;
+
+      // KPI 1: M0 & relative to M5
+      document.getElementById('kpi-m0').textContent = `${formatSci(m.m0)} N·m`;
+      const rel = m.m0 / mwToM0(5.0);
+      const relStr = rel >= 1000 ? formatSci(rel, 1) : (rel >= 10 ? rel.toFixed(0) : rel.toFixed(2));
+      document.getElementById('kpi-m0-rel').textContent = isZh
+        ? `相当于 ${relStr} 个 M_W 5.0 地震`
+        : `${relStr}× vs. M_W 5.0 event`;
+
+      // KPI 2: Fault radius, slip, duration
+      document.getElementById('kpi-radius').textContent = `r = ${(m.r / 1000).toFixed(2)} km`;
+      document.getElementById('kpi-slip-dur').textContent = `D̄ = ${m.slip.toFixed(2)} m · τ_d ≈ ${formatDuration(m.ruptureDur)}`;
+
+      // KPI 3: fc & Tc
+      document.getElementById('kpi-fc').textContent = formatFreq(m.fc);
+      document.getElementById('kpi-tc').textContent = `T_c = 1/f_c = ${formatDuration(m.tc)}`;
+
+      // KPI 4: mb
+      const expMb = localM0Exponent(PHYS.fMb, m.fc);
+      const mbDisp = showEmp ? m.mbEmp : m.mbSpec;
+      const mbGap = mbDisp - state.mw;
+      document.getElementById('kpi-mb-regime').textContent = `∝ M₀^${expMb.toFixed(2)}`;
+      document.getElementById('kpi-mb-val').textContent = showEmp
+        ? `m_b ≈ ${m.mbEmp.toFixed(2)} (ω⁻²: ${m.mbSpec.toFixed(2)})`
+        : `m_b ≈ ${m.mbSpec.toFixed(2)} (ω⁻²)`;
+      document.getElementById('kpi-mb-diff').textContent = Math.abs(mbGap) < 0.08
+        ? (isZh ? '接近 M_W（未饱和）' : 'Tracks M_W closely')
+        : (isZh ? `相对 M_W 偏低 ${mbGap.toFixed(2)} 级` : `Offset vs M_W: ${mbGap >= 0 ? '+' : ''}${mbGap.toFixed(2)}`);
+
+      // KPI 5: Ms
+      const expMs = localM0Exponent(PHYS.fMs, m.fc);
+      const msDisp = showEmp ? m.msEmp : m.msSpec;
+      const msGap = msDisp - state.mw;
+      document.getElementById('kpi-ms-regime').textContent = `∝ M₀^${expMs.toFixed(2)}`;
+      document.getElementById('kpi-ms-val').textContent = showEmp
+        ? `M_S ≈ ${m.msEmp.toFixed(2)} (ω⁻²: ${m.msSpec.toFixed(2)})`
+        : `M_S ≈ ${m.msSpec.toFixed(2)} (ω⁻²)`;
+      document.getElementById('kpi-ms-diff').textContent = Math.abs(msGap) < 0.12
+        ? (isZh ? '与 M_W 吻合（未饱和）' : 'Matches M_W closely')
+        : (isZh ? `相对 M_W 偏差 ${msGap >= 0 ? '+' : ''}${msGap.toFixed(2)} 级` : `Offset vs M_W: ${msGap >= 0 ? '+' : ''}${msGap.toFixed(2)}`);
+
+      // Time-domain badge
+      document.getElementById('time-domain-badge').textContent = isZh
+        ? `破裂时长 τ_d ≈ ${formatDuration(m.ruptureDur)}（对比 1 s m_b、20 s M_S）`
+        : `τ_d ≈ ${formatDuration(m.ruptureDur)} (vs. 1 s m_b, 20 s M_S)`;
+
+      // Spectrum explanation callout
+      let specMsg = '';
+      if (m.fc >= PHYS.fMb) {
+        specMsg = isZh
+          ? `<b>当前状态：双低频平台区（f_c = ${formatFreq(m.fc)} ≥ 1.0 Hz）。</b>拐角频率仍在 m_b (1 Hz) 与 M_S (0.05 Hz) 右侧，两个测量频段都位于平坦的低频平台 Ω₀ ∝ M₀ 上，振幅随 M₀ 线性增长（指数 ${expMb.toFixed(2)} 和 ${expMs.toFixed(2)}）。`
+          : `<b>Regime: Both bands on flat plateau (f_c = ${formatFreq(m.fc)} ≥ 1.0 Hz).</b> The corner frequency lies to the right of both m_b (1 Hz) and M_S (0.05 Hz), so spectral amplitudes in both bands grow nearly linearly with M₀ (exponents ${expMb.toFixed(2)} and ${expMs.toFixed(2)}).`;
+      } else if (m.fc >= PHYS.fMs) {
+        specMsg = isZh
+          ? `<b>当前状态：m_b 已落入高频衰减段，M_S 仍近平台（0.05 Hz ≤ f_c = ${formatFreq(m.fc)} &lt; 1.0 Hz）。</b>拐角频率已经越过 1 Hz 竖线向左移动！1 Hz 处振幅增长率降至 M₀^${expMb.toFixed(2)}，导致 m_b 明显饱和；而 0.05 Hz 仍紧邻拐角频率（M₀^${expMs.toFixed(2)}），M_S 依然忠实反映地震大小。`
+          : `<b>Regime: m_b saturated while M_S remains responsive (0.05 Hz ≤ f_c = ${formatFreq(m.fc)} &lt; 1.0 Hz).</b> Because f_c has shifted left of 1 Hz, amplitude growth at 1 Hz has slowed to M₀^${expMb.toFixed(2)} (saturating m_b), whereas 0.05 Hz stays near the corner/plateau (M₀^${expMs.toFixed(2)}).`;
+      } else {
+        specMsg = isZh
+          ? `<b>当前状态：特大地震双饱和区（f_c = ${formatFreq(m.fc)} &lt; 0.05 Hz）。</b>拐角频率已同时移到 m_b (1 Hz) 和 M_S (0.05 Hz) 两条竖线左侧！两个固定频段的振幅均跌落到 ω⁻² 高频滚降区，仅按 ~M₀^(1/3) 缓慢上升（分别为 M₀^${expMb.toFixed(2)} 与 M₀^${expMs.toFixed(2)}），只有超长周期测量 M_W 才能准确度量。`
+          : `<b>Regime: Great-earthquake dual saturation (f_c = ${formatFreq(m.fc)} &lt; 0.05 Hz).</b> Corner frequency f_c is now left of BOTH vertical lines! Both 1 Hz (m_b) and 0.05 Hz (M_S) lie deep on the ω⁻² rolloff where amplitudes grow only as ~M₀^(1/3) (${expMb.toFixed(2)} and ${expMs.toFixed(2)}), leaving M_W as the only unsaturated scale.`;
+      }
+      document.getElementById('callout-spectrum').innerHTML = specMsg;
+
+      // Magnitude plot callout
+      const magMsg = isZh
+        ? `<b>饱和拐点诊断：</b>当前 M_W = ${state.mw.toFixed(2)} 时，m_b ≈ ${mbDisp.toFixed(2)}，M_S ≈ ${msDisp.toFixed(2)}。实线反映真实地震台网观测（受有限破裂时间窗与长断层相消干涉限制，m_b 上限 ~6.5，M_S 上限 ~8.3）；虚线为纯 ω⁻² 频谱预测（跨过 f_c 后斜率由 1.5 降至 0.5）。`
+        : `<b>Saturation Curve Diagnosis:</b> At M_W = ${state.mw.toFixed(2)}, m_b ≈ ${mbDisp.toFixed(2)} and M_S ≈ ${msDisp.toFixed(2)}. Solid curves show empirical catalog saturation (finite P-wave window &amp; 20 s Rayleigh-wave fault-length interference capping m_b near ~6.5 and M_S near ~8.3); dashed curves show pure ω⁻² spectral scaling (slope dropping from 1.5 to 0.5 past f_c).`;
+      document.getElementById('callout-magnitude').innerHTML = magMsg;
+
+      // Render Table 9.1 rows
+      const tbody = document.getElementById('table-events-body');
+      tbody.innerHTML = TABLE_9_1_EVENTS.map(ev => {
+        const diff = (ev.mw - ev.ms).toFixed(1);
+        const activeRow = Math.abs(state.mw - ev.mw) < 0.06 ? 'bg-blue-50/80' : 'hover:bg-slate-50';
+        return `
+          <tr class="${activeRow} cursor-pointer transition" onclick="loadEventFromTable(${ev.mw}, '${ev.id}')">
+            <td class="px-4 py-2.5 font-semibold text-slate-900">${isZh ? ev.nameZh : ev.nameEn}</td>
+            <td class="px-4 py-2.5 font-mono-code text-red-700">${ev.mb !== null ? ev.mb.toFixed(1) : '—'}</td>
+            <td class="px-4 py-2.5 font-mono-code text-emerald-700">${ev.ms.toFixed(1)}</td>
+            <td class="px-4 py-2.5 font-mono-code font-bold text-indigo-800">${ev.mw.toFixed(1)}</td>
+            <td class="px-4 py-2.5 font-mono-code text-slate-700">${ev.m0_1e20}</td>
+            <td class="px-4 py-2.5 font-mono-code font-semibold text-amber-700">+${diff}</td>
+            <td class="px-4 py-2.5 text-right">
+              <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs font-semibold">${isZh ? '载入实验室' : 'Load in Lab'}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // =========================================================================
+    // 8. INTERACTIONS, TABS, LANGUAGE SWITCHER & ANIMATION SWEEP
+    // =========================================================================
+    function renderAll() {
+      updateTelemetryAndCallouts();
+      if (state.activeTab === 0) {
+        drawSpectrumPlot();
+        drawMagnitudePlot();
+        drawTimeDomainStrip();
+      } else if (state.activeTab === 1) {
+        drawSelfSimCanvases();
+      }
+    }
+
+    function setMw(val, clearPreset = true) {
+      state.mw = Math.max(4.0, Math.min(9.5, Math.round(val * 20) / 20));
+      document.getElementById('slider-mw').value = state.mw;
+      if (clearPreset) {
+        document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      }
+      renderAll();
+    }
+
+    function applyPresetMw(mw, presetId) {
+      stopSweep();
+      state.mw = mw;
+      document.getElementById('slider-mw').value = mw;
+      document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      const chip = document.getElementById(`preset-${presetId}`);
+      if (chip) chip.classList.add('active');
+      renderAll();
+    }
+
+    function loadEventFromTable(mw, id) {
+      switchTab(0);
+      applyPresetMw(mw, id);
+    }
+
+    function setSpectralModel(model) {
+      state.spectralModel = model;
+      const bBtn = document.getElementById('btn-model-brune');
+      const bwBtn = document.getElementById('btn-model-boatwright');
+      if (model === 'brune') {
+        bBtn.className = 'px-2 py-1 rounded-md text-[11px] font-semibold border border-blue-600 bg-blue-50 text-blue-800 transition';
+        bwBtn.className = 'px-2 py-1 rounded-md text-[11px] font-semibold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition';
+      } else {
+        bwBtn.className = 'px-2 py-1 rounded-md text-[11px] font-semibold border border-blue-600 bg-blue-50 text-blue-800 transition';
+        bBtn.className = 'px-2 py-1 rounded-md text-[11px] font-semibold border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition';
+      }
+      renderAll();
+    }
+
+    function switchTab(idx) {
+      state.activeTab = idx;
+      for (let i = 0; i < 3; i++) {
+        const panel = document.getElementById(`tab-${i}`);
+        const btn = document.getElementById(`tab-btn-${i}`);
+        if (i === idx) {
+          panel.classList.remove('hidden');
+          btn.classList.add('active');
+          btn.classList.remove('text-slate-600');
+          btn.querySelector('span:first-child').className = 'w-5 h-5 rounded-md bg-blue-600 text-white flex items-center justify-center text-[11px] font-mono-code';
+        } else {
+          panel.classList.add('hidden');
+          btn.classList.remove('active');
+          btn.classList.add('text-slate-600');
+          btn.querySelector('span:first-child').className = 'w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center text-[11px] font-mono-code';
+        }
+      }
+      requestAnimationFrame(renderAll);
+    }
+
+    function togglePedagogyPanel() {
+      document.getElementById('pedagogy-panel').classList.toggle('hidden');
+    }
+
+    window.setLanguage = function(lang) {
+      state.lang = lang;
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+      document.getElementById('lab-navigation').setAttribute('aria-label', lang === 'zh' ? '互动实验' : 'Interactive labs');
+      document.getElementById('section-navigation').setAttribute('aria-label', lang === 'zh' ? '实验模块' : 'Lab sections');
+      const enBtn = document.getElementById('btn-lang-en');
+      const zhBtn = document.getElementById('btn-lang-zh');
+      if (lang === 'en') {
+        enBtn.className = 'px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-slate-900 shadow-sm transition';
+        zhBtn.className = 'px-2.5 py-1 text-xs font-semibold rounded-md text-slate-600 hover:text-slate-900 transition';
+      } else {
+        zhBtn.className = 'px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-slate-900 shadow-sm transition';
+        enBtn.className = 'px-2.5 py-1 text-xs font-semibold rounded-md text-slate-600 hover:text-slate-900 transition';
+      }
+
+      document.querySelectorAll('[data-en][data-zh]').forEach(el => {
+        el.innerHTML = lang === 'zh' ? el.getAttribute('data-zh') : el.getAttribute('data-en');
+      });
+
+      const sweepLbl = document.getElementById('sweep-label');
+      if (sweepLbl) {
+        sweepLbl.textContent = state.sweeping
+          ? (lang === 'zh' ? '暂停扫描' : 'Pause')
+          : (lang === 'zh' ? '自动扫描 4.0→9.5' : 'Sweep 4.0→9.5');
+      }
+
+      renderAll();
+    };
+
+    function stopSweep() {
+      state.sweeping = false;
+      document.getElementById('sweep-icon').textContent = '▶';
+      document.getElementById('sweep-label').textContent = state.lang === 'zh' ? '自动扫描 4.0→9.5' : 'Sweep 4.0→9.5';
+    }
+
+    function toggleSweepMw() {
+      if (state.sweeping) {
+        stopSweep();
+        return;
+      }
+      if (state.mw >= 9.45) state.mw = 4.0;
+      state.sweeping = true;
+      state.sweepDir = 1;
+      state.lastSweepTs = performance.now();
+      document.getElementById('sweep-icon').textContent = '⏸';
+      document.getElementById('sweep-label').textContent = state.lang === 'zh' ? '暂停扫描' : 'Pause';
+      requestAnimationFrame(stepSweep);
+    }
+
+    function stepSweep(ts) {
+      if (!state.sweeping) return;
+      const dt = Math.min(0.08, (ts - state.lastSweepTs) / 1000);
+      state.lastSweepTs = ts;
+      let nextMw = state.mw + state.sweepDir * dt * 0.72;
+      if (nextMw >= 9.5) {
+        nextMw = 9.5;
+        state.sweepDir = -1;
+      } else if (nextMw <= 4.0) {
+        nextMw = 4.0;
+        state.sweepDir = 1;
+      }
+      state.mw = nextMw;
+      document.getElementById('slider-mw').value = nextMw.toFixed(2);
+      document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('active'));
+      renderAll();
+      requestAnimationFrame(stepSweep);
+    }
+
+    function setupInteractions() {
+      document.getElementById('slider-mw').addEventListener('input', (e) => {
+        stopSweep();
+        setMw(parseFloat(e.target.value), true);
+      });
+
+      document.getElementById('slider-stress').addEventListener('input', (e) => {
+        state.stressDropMPa = parseFloat(e.target.value);
+        renderAll();
+      });
+
+      document.getElementById('slider-scale-b').addEventListener('input', (e) => {
+        state.scaleB = parseFloat(e.target.value);
+        drawSelfSimCanvases();
+      });
+
+      // Click/drag horizontal scrub directly on Plot 2
+      const magCanvas = document.getElementById('canvas-magnitude');
+      let draggingMag = false;
+      function scrubFromPointer(clientX) {
+        const rect = magCanvas.getBoundingClientRect();
+        const padLeft = 48, padRight = 20;
+        const pw = rect.width - padLeft - padRight;
+        const t = Math.max(0, Math.min(1, (clientX - rect.left - padLeft) / pw));
+        const newMw = MAG_BOUNDS.mwMin + t * (MAG_BOUNDS.mwMax - MAG_BOUNDS.mwMin);
+        stopSweep();
+        setMw(newMw, true);
+      }
+      magCanvas.addEventListener('pointerdown', (e) => {
+        draggingMag = true;
+        magCanvas.setPointerCapture(e.pointerId);
+        scrubFromPointer(e.clientX);
+      });
+      magCanvas.addEventListener('pointermove', (e) => {
+        if (draggingMag) scrubFromPointer(e.clientX);
+      });
+      magCanvas.addEventListener('pointerup', () => { draggingMag = false; });
+      magCanvas.addEventListener('pointercancel', () => { draggingMag = false; });
+
+      window.addEventListener('resize', renderAll);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setupInteractions();
+      setLanguage('en');
+    });
+  </script>
+</body>
+</html>

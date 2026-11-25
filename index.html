@@ -147,6 +147,12 @@
         <a id="navGreenFunctions" href="./section_9_1_green_s_functions_the_moment_tensor_interactive_lab.html" class="rounded-lg px-2.5 py-1.5 bg-slate-800/80 text-slate-100 hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400">
           Green’s Functions &amp; Moment Tensor
         </a>
+        <a id="navSourceTheory" href="./chapter_9_source_theory_interactive_lab.html" class="rounded-lg px-2.5 py-1.5 bg-slate-800/80 text-slate-100 hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400">
+          Chapter 9: Source Theory
+        </a>
+        <a id="navMagSaturation" href="./section_9_4_9_7_magnitude_saturation_source_spectra_lab.html" class="rounded-lg px-2.5 py-1.5 bg-slate-800/80 text-slate-100 hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400">
+          Magnitude Saturation &amp; Source Spectra
+        </a>
       </nav>
     </div>
   </header>
@@ -452,6 +458,8 @@
         labNavigation: 'Interactive labs',
         navFocalMechanisms: 'Focal Mechanisms',
         navGreenFunctions: 'Green’s Functions & Moment Tensor',
+        navSourceTheory: 'Chapter 9: Source Theory',
+        navMagSaturation: 'Magnitude Saturation & Source Spectra',
         uiBadgeTheory: 'Aki & Richards (1980) · GMT pscoupe',
         uiSubtitle: 'Synchronized 3-Column Observatory: 3D Fault Kinematics · Lower-Hemisphere Map Cutaway · Back-Hemisphere Section Cutaway',
         uiRegimesLabel: 'Regimes:',
@@ -529,6 +537,8 @@
         labNavigation: '互动实验',
         navFocalMechanisms: '三维震源机制',
         navGreenFunctions: '格林函数与地震矩张量',
+        navSourceTheory: '第 9 章：震源理论',
+        navMagSaturation: '震级饱和与震源谱',
         uiBadgeTheory: 'Aki & Richards (1980) 震源理论 · GMT pscoupe 剖面规范',
         uiSubtitle: '三列同步观测台：三维断层运动学 · 下半球地图平面切割投影 · 后半球深度剖面切割投影',
         uiRegimesLabel: '典型机制：',
@@ -1804,6 +1814,8 @@
       document.getElementById('labNavigation').setAttribute('aria-label', d.labNavigation);
       document.getElementById('navFocalMechanisms').textContent = d.navFocalMechanisms;
       document.getElementById('navGreenFunctions').textContent = d.navGreenFunctions;
+      document.getElementById('navSourceTheory').textContent = d.navSourceTheory;
+      document.getElementById('navMagSaturation').textContent = d.navMagSaturation;
       document.getElementById('uiBadgeTheory').textContent = d.uiBadgeTheory;
       document.getElementById('uiSubtitle').textContent = d.uiSubtitle;
       document.getElementById('uiRegimesLabel').textContent = d.uiRegimesLabel;

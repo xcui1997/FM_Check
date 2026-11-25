@@ -1,0 +1,3118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chapter 9: Earthquakes &amp; Source Theory | Interactive Seismology Lab</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', '"Noto Sans SC"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #F8FAFC;
+      color: #0F172A;
+      font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    }
+    .math-serif {
+      font-family: 'Times New Roman', Georgia, serif;
+    }
+    .math-var {
+      font-family: 'Times New Roman', Georgia, serif;
+      font-style: italic;
+    }
+    .math-vec {
+      font-family: 'Times New Roman', Georgia, serif;
+      font-weight: bold;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: #E2E8F0;
+      height: 6px;
+      border-radius: 999px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #0F172A;
+      cursor: pointer;
+      border: 2px solid #FFFFFF;
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+      transition: transform 0.12s ease, background-color 0.12s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.18);
+      background: #2563EB;
+    }
+    input[type="range"].accent-red::-webkit-slider-thumb { background: #DC2626; }
+    input[type="range"].accent-emerald::-webkit-slider-thumb { background: #059669; }
+    input[type="range"].accent-amber::-webkit-slider-thumb { background: #D97706; }
+    canvas {
+      display: block;
+      touch-action: none;
+    }
+    .card-academic {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-blue-100 selection:text-blue-900">
+
+  <!-- ==================== Top Academic Header & Language Switcher ==================== -->
+  <header class="bg-white/95 border-b border-slate-200 sticky top-0 z-40 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      <div>
+        <div class="flex flex-wrap items-center gap-2 text-xs font-semibold">
+          <span class="px-2.5 py-0.5 rounded-full bg-slate-900 text-white tracking-wide">
+            Peter M. Shearer · Introduction to Seismology (2nd Ed.)
+          </span>
+          <span class="px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200"
+            data-en="Chapter 9 · Earthquakes &amp; Source Theory Lab"
+            data-zh="第 9 章 · 地震与震源理论交互实验室">
+            第 9 章 · 地震与震源理论交互实验室
+          </span>
+        </div>
+        <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 mt-1 tracking-tight"
+          data-en="Chapter 9: Source Physics, Spectra, Scaling &amp; EGF Lab"
+          data-zh="第九章：震源物理、震源谱、标度律与经验格林函数互动教学">
+          第九章：震源物理、震源谱、标度律与经验格林函数互动教学
+        </h1>
+      </div>
+
+      <!-- Right: Dynamic Core Equation Pill + 中文 / English Switcher -->
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-1.5 flex items-center gap-2.5">
+          <span id="header-eq-label" class="text-[11px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline">
+            方向性脉冲时长
+          </span>
+          <div id="header-eq-math" class="text-sm sm:text-base text-slate-900 math-serif font-semibold">
+            <span class="math-var">T<sub>d</sub></span>(θ) = <span class="math-var">L</span>/<span class="math-var">v<sub>r</sub></span> − (<span class="math-var">L</span> cosθ)/<span class="math-var">c</span>
+          </div>
+        </div>
+
+        <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 shadow-inner" role="group" aria-label="Language Switcher">
+          <button type="button" data-lang="zh" id="btn-lang-zh" aria-pressed="true"
+            class="lang-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white shadow-sm transition cursor-pointer">
+            中文
+          </button>
+          <button type="button" data-lang="en" id="btn-lang-en" aria-pressed="false"
+            class="lang-btn px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer">
+            English
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <nav id="lab-navigation" aria-label="互动实验" class="max-w-7xl mx-auto px-4 sm:px-6 pb-2 flex flex-wrap items-center gap-2 text-xs font-semibold">
+      <a href="./index.html" class="rounded-lg px-2.5 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600" data-en="Focal Mechanisms" data-zh="三维震源机制">三维震源机制</a>
+      <a href="./section_9_1_green_s_functions_the_moment_tensor_interactive_lab.html" class="rounded-lg px-2.5 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600" data-en="Green’s Functions &amp; Moment Tensor" data-zh="格林函数与地震矩张量">格林函数与地震矩张量</a>
+      <span aria-current="page" class="rounded-lg px-2.5 py-1.5 bg-blue-100 text-blue-800" data-en="Chapter 9: Source Theory" data-zh="第 9 章：震源理论">第 9 章：震源理论</span>
+      <a href="./section_9_4_9_7_magnitude_saturation_source_spectra_lab.html" class="rounded-lg px-2.5 py-1.5 bg-slate-100 text-slate-700 hover:bg-slate-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600" data-en="Magnitude Saturation &amp; Source Spectra" data-zh="震级饱和与震源谱">震级饱和与震源谱</a>
+    </nav>
+
+    <!-- 5-Module Navigation Tabs -->
+    <nav id="section-navigation" aria-label="实验模块" class="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1.5 overflow-x-auto pt-2 border-t border-slate-100">
+      <button type="button" onclick="switchTab('tab-directivity')" id="btn-tab-directivity"
+        class="tab-btn px-3.5 py-2 rounded-t-xl text-xs sm:text-sm font-bold border-b-2 border-blue-600 text-blue-700 bg-blue-50/70 transition whitespace-nowrap flex items-center gap-2">
+        <span class="w-5 h-5 rounded-md bg-blue-600 text-white flex items-center justify-center text-xs font-mono">1</span>
+        <span data-en="9.4.1 Directivity" data-zh="9.4.1 破裂方向性">9.4.1 破裂方向性</span>
+      </button>
+      <button type="button" onclick="switchTab('tab-spectra')" id="btn-tab-spectra"
+        class="tab-btn px-3.5 py-2 rounded-t-xl text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 transition whitespace-nowrap flex items-center gap-2">
+        <span class="w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-mono">2</span>
+        <span data-en="9.4.2 &amp; 9.7 Spectra &amp; Saturation" data-zh="9.4.2 &amp; 9.7 震源谱与震级饱和">9.4.2 &amp; 9.7 震源谱与震级饱和</span>
+      </button>
+      <button type="button" onclick="switchTab('tab-nondc')" id="btn-tab-nondc"
+        class="tab-btn px-3.5 py-2 rounded-t-xl text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 transition whitespace-nowrap flex items-center gap-2">
+        <span class="w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-mono">3</span>
+        <span data-en="9.1 &amp; 9.2 Non-DC &amp; Hudson" data-zh="9.1 &amp; 9.2 矩张量分解与非双力偶">9.1 &amp; 9.2 矩张量分解与非双力偶</span>
+      </button>
+      <button type="button" onclick="switchTab('tab-scaling')" id="btn-tab-scaling"
+        class="tab-btn px-3.5 py-2 rounded-t-xl text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 transition whitespace-nowrap flex items-center gap-2">
+        <span class="w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-mono">4</span>
+        <span data-en="9.5 Scaling &amp; Stress Drop" data-zh="9.5 自相似标度与应力降">9.5 自相似标度与应力降</span>
+      </button>
+      <button type="button" onclick="switchTab('tab-egf')" id="btn-tab-egf"
+        class="tab-btn px-3.5 py-2 rounded-t-xl text-xs sm:text-sm font-semibold border-b-2 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 transition whitespace-nowrap flex items-center gap-2">
+        <span class="w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-mono">5</span>
+        <span data-en="9.4.3 EGF Deconvolution" data-zh="9.4.3 经验格林函数反褶积">9.4.3 经验格林函数反褶积</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ==================== Main Workspace ==================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- ===================================================================== -->
+    <!-- MODULE 1: 9.4.1 Rupture Directivity Simulator                         -->
+    <!-- ===================================================================== -->
+    <section id="tab-directivity" class="tab-panel space-y-5">
+      <!-- Intro Banner -->
+      <div class="card-academic rounded-2xl p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-blue-950 text-white border-none">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="space-y-1.5 max-w-3xl">
+            <div class="text-xs font-bold uppercase tracking-widest text-sky-300"
+              data-en="SECTION 9.4.1 · DOPPLER RUPTURE DIRECTIVITY"
+              data-zh="第 9.4.1 节 · 断层破裂多普勒方向性效应">
+              第 9.4.1 节 · 断层破裂多普勒方向性效应
+            </div>
+            <h2 class="text-xl font-extrabold"
+              data-en="Why Do Pulse Width &amp; Peak Amplitude Vary With Azimuth While Moment M₀ Stays Constant?"
+              data-zh="为什么不同方位的地震波脉冲宽窄、振幅大相径庭，但积分面积（地震矩 M₀）始终守恒？">
+              为什么不同方位的地震波脉冲宽窄、振幅大相径庭，但积分面积（地震矩 M₀）始终守恒？
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-200 leading-relaxed"
+              data-en="As rupture propagates at speed vᵣ along a fault of length L, seismic wavefronts compress ahead (θ=0°) and stretch behind (θ=180°). When vᵣ > c (Supershear, 1.0c–1.7c), the rupture tip outruns S-waves to form a Mach cone—focusing peak shaking at the Mach angle θ_M = arccos(c/vᵣ) instead of 0°!"
+              data-zh="当断层破裂以速度 vᵣ 沿长度为 L 的断层传播时，前方波前压缩、后方波前拉长（多普勒效应）。当 vᵣ > c（超剪切破裂，1.0c~1.7c）时，破裂前沿超越 S 波形成“马赫锥 (Mach Cone)”，最大振幅不再位于 0° 而转向马赫角 θ_M = arccos(c/vᵣ) 方向！">
+              当断层破裂以速度 vᵣ 沿长度为 L 的断层传播时，前方波前压缩、后方波前拉长（多普勒效应）。当 vᵣ > c（超剪切破裂，1.0c~1.7c）时，破裂前沿超越 S 波形成“马赫锥 (Mach Cone)”，最大振幅不再位于 0° 而转向马赫角 θ_M = arccos(c/vᵣ) 方向！
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="triggerDirectivityQuake()"
+              class="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-red-900/30 transition flex items-center gap-2">
+              <span>⚡</span>
+              <span data-en="Trigger Quake" data-zh="点击发震演示">点击发震演示</span>
+            </button>
+            <button type="button" onclick="toggleDirPause()" id="btn-dir-pause"
+              class="px-3 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold transition">
+              <span data-en="Pause" data-zh="暂停">暂停</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls Bar -->
+      <div class="card-academic rounded-2xl p-4 space-y-3 text-xs">
+        <!-- Regime Scenario Presets + Supershear Status Pill -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-slate-500 font-bold mr-1" data-en="Rupture Regimes:" data-zh="典型破裂场景预设：">典型破裂场景预设：</span>
+            <button type="button" onclick="setDirPreset('subshear')" id="dir-pre-sub"
+              class="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-900 font-bold transition">
+              <span data-en="Sub-shear (0.80c)" data-zh="常规亚剪切 (0.80c)">常规亚剪切 (0.80c)</span>
+            </button>
+            <button type="button" onclick="setDirPreset('supershear')" id="dir-pre-super"
+              class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 font-bold transition">
+              <span data-en="⚡ Supershear (√2c = 1.41c · Mach 45°)" data-zh="⚡ 经典超剪切 (√2c = 1.41c · 马赫角 45°)">⚡ 经典超剪切 (√2c = 1.41c · 马赫角 45°)</span>
+            </button>
+            <button type="button" onclick="setDirPreset('fast_super')" id="dir-pre-fast"
+              class="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-red-900 font-bold transition">
+              <span data-en="Near-P Supershear (1.65c)" data-zh="近 P 波速强超剪切 (1.65c)">近 P 波速强超剪切 (1.65c)</span>
+            </button>
+          </div>
+          <span id="dir-regime-badge" class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-mono text-[11px] font-bold">
+            Sub-shear (vᵣ &lt; c) · Max focus at 0°
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+          <div>
+            <div class="flex justify-between font-semibold mb-1">
+              <span class="text-slate-700" data-en="Rupture Mode" data-zh="破裂传播模式">破裂传播模式</span>
+            </div>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button type="button" onclick="setDirMode('unilateral')" id="dir-mode-uni"
+                class="py-1.5 rounded-lg bg-slate-900 text-white font-bold shadow-sm transition">
+                <span data-en="Unilateral" data-zh="单侧破裂">单侧破裂</span>
+              </button>
+              <button type="button" onclick="setDirMode('bilateral')" id="dir-mode-bi"
+                class="py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold transition">
+                <span data-en="Bilateral" data-zh="双侧破裂">双侧破裂</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between font-semibold mb-1">
+              <span class="text-slate-700" data-en="Velocity Ratio vᵣ / c" data-zh="破裂速度比 vᵣ / c">破裂速度比 vᵣ / c</span>
+              <span id="dir-val-vr" class="font-mono text-red-600 font-bold">0.80</span>
+            </div>
+            <input type="range" id="dir-vr" min="0.30" max="1.70" step="0.01" value="0.80" class="w-full accent-red" oninput="updateDirectivityParams()">
+            <div class="flex justify-between text-[10px] text-slate-400 mt-0.5 font-mono">
+              <span>0.30c</span><span class="text-amber-600 font-bold">1.0c (Sonic)</span><span>1.70c (~v_P)</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between font-semibold mb-1">
+              <span class="text-slate-700" data-en="Fault Length L" data-zh="断层破裂长度 L">断层破裂长度 L</span>
+              <span id="dir-val-len" class="font-mono text-blue-700 font-bold">60 km</span>
+            </div>
+            <input type="range" id="dir-len" min="20" max="120" step="5" value="60" class="w-full" oninput="updateDirectivityParams()">
+            <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+              <span>20 km</span><span>c = β = 3.5 km/s</span><span>120 km</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex justify-between font-semibold mb-1">
+              <span class="text-slate-700" data-en="Local Rise Time τᵣ" data-zh="局部上升时间 τᵣ">局部上升时间 τᵣ</span>
+              <span id="dir-val-rise" class="font-mono text-emerald-700 font-bold">1.5 s</span>
+            </div>
+            <input type="range" id="dir-rise" min="0.5" max="4.0" step="0.1" value="1.5" class="w-full accent-emerald" oninput="updateDirectivityParams()">
+            <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+              <span>0.5 s (impulsive)</span><span>4.0 s (smooth)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Split View: Left Map Wavefronts, Right 4 Station Pulses -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div class="lg:col-span-6 card-academic rounded-2xl p-4 flex flex-col">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-900"
+                data-en="Top-Down Fault &amp; Doppler Wavefront Compression"
+                data-zh="俯视断层破裂与多普勒同心波前图">
+                俯视断层破裂与多普勒同心波前图
+              </h3>
+              <p class="text-xs text-slate-500"
+                data-en="Notice how consecutive wavefronts bunch up at 0° (Forward) and spread out at 180° (Backward)."
+                data-zh="观察破裂前沿沿断层推进时，0° 前方波前紧密挤压、180° 后方波前明显稀疏拉长。">
+                观察破裂前沿沿断层推进时，0° 前方波前紧密挤压、180° 后方波前明显稀疏拉长。
+              </p>
+            </div>
+            <span id="dir-time-badge" class="font-mono text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-200">
+              t = 0.0 s
+            </span>
+          </div>
+          <div class="flex-1 min-h-[380px] sm:min-h-[430px] bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+            <canvas id="canvas-dir-map" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 card-academic rounded-2xl p-4 flex flex-col">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-900"
+                data-en="Far-Field Displacement Pulses at 4 Azimuths"
+                data-zh="四个方位角台站的远场位移脉冲（同比例对比）">
+                四个方位角台站的远场位移脉冲（同比例对比）
+              </h3>
+              <p class="text-xs text-slate-500"
+                data-en="All 4 pulses share the same axes. Narrower pulse = proportionally taller peak; shaded area ∫u(t)dt = M₀ is strictly conserved!"
+                data-zh="四道波形采用完全相同的坐标尺度：脉冲越窄则峰值越高，阴影积分面积（地震矩 M₀）严格守恒！">
+                四道波形采用完全相同的坐标尺度：脉冲越窄则峰值越高，阴影积分面积（地震矩 M₀）严格守恒！
+              </p>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-bold font-mono">
+              ∫ u(t) dt = 1.00 M₀
+            </span>
+          </div>
+          <div class="flex-1 min-h-[380px] sm:min-h-[430px] bg-slate-50 rounded-xl border border-slate-200 p-2">
+            <canvas id="canvas-dir-pulses" class="w-full h-full"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MODULE 2: 9.4.2 & 9.7 Source Spectra & Magnitude Saturation Lab       -->
+    <!-- ===================================================================== -->
+    <section id="tab-spectra" class="tab-panel hidden space-y-5">
+      <div class="card-academic rounded-2xl p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white border-none">
+        <div class="space-y-1.5 max-w-4xl">
+          <div class="text-xs font-bold uppercase tracking-widest text-indigo-300"
+            data-en="SECTIONS 9.4.2 &amp; 9.7 · BRUNE SPECTRUM &amp; MAGNITUDE SATURATION"
+            data-zh="第 9.4.2 &amp; 9.7 节 · 震源位移谱与震级饱和实验室">
+            第 9.4.2 &amp; 9.7 节 · 震源位移谱与震级饱和实验室
+          </div>
+          <h2 class="text-xl font-extrabold"
+            data-en="Why Do m_b (1 s) and M_s (20 s) Saturate for Great Earthquakes While M_w Never Saturates?"
+            data-zh="为什么特大地震中 m_b（1秒）和 M_s（20秒）会“饱和”，而矩震级 M_w 却不会？">
+            为什么特大地震中 m_b（1秒）和 M_s（20秒）会“饱和”，而矩震级 M_w 却不会？
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-200 leading-relaxed"
+            data-en="Drag M_w upward and watch the corner frequency f_c shift leftward past the 1 Hz (m_b) and 0.05 Hz (M_s) measurement bands. Once f_c drops below a band's frequency, amplitude falls onto the ω⁻² rolloff and grows far more slowly with M₀!"
+            data-zh="拖动 M_w 滑块增大地震矩，观察震源位移谱低频平台抬升的同时，拐角频率 f_c 遵循自相似律 M₀ ∝ f_c⁻³ 向左移动。一旦 f_c 越过 1 Hz（m_b）或 0.05 Hz（M_s）竖线，该频段落在 ω⁻² 衰减斜坡上，振幅增长大幅放缓，导致震级饱和！">
+            拖动 M_w 滑块增大地震矩，观察震源位移谱低频平台抬升的同时，拐角频率 f_c 遵循自相似律 M₀ ∝ f_c⁻³ 向左移动。一旦 f_c 越过 1 Hz（m_b）或 0.05 Hz（M_s）竖线，该频段落在 ω⁻² 衰减斜坡上，振幅增长大幅放缓，导致震级饱和！
+          </p>
+        </div>
+      </div>
+
+      <!-- Controls & Live Readouts -->
+      <div class="card-academic rounded-2xl p-4 space-y-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+          <div class="lg:col-span-5 space-y-2">
+            <div class="flex justify-between text-xs font-bold">
+              <span class="text-slate-700" data-en="Moment Magnitude M_w" data-zh="矩震级 M_w">矩震级 M_w</span>
+              <span id="spec-val-mw" class="font-mono text-lg text-blue-700 font-extrabold">6.5</span>
+            </div>
+            <input type="range" id="spec-mw" min="3.5" max="9.5" step="0.05" value="6.5" class="w-full" oninput="updateSpectraParams()">
+            <div class="flex flex-wrap gap-1.5 pt-1 text-[11px]">
+              <button type="button" onclick="setSpecPreset(4.5)" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 border border-slate-200 font-semibold transition">M 4.5 <span data-en="Local" data-zh="地方小震">地方小震</span></button>
+              <button type="button" onclick="setSpecPreset(6.5)" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 border border-slate-200 font-semibold transition">M 6.5 <span data-en="m_b saturates" data-zh="m_b 饱和拐点">m_b 饱和拐点</span></button>
+              <button type="button" onclick="setSpecPreset(7.9)" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 border border-slate-200 font-semibold transition">M 7.9 <span data-en="Wenchuan" data-zh="汶川尺度">汶川尺度</span></button>
+              <button type="button" onclick="setSpecPreset(9.1)" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 border border-slate-200 font-semibold transition">M 9.1 <span data-en="Tohoku (M_s sat.)" data-zh="东日本(M_s饱和)">东日本(M_s饱和)</span></button>
+            </div>
+          </div>
+
+          <div class="lg:col-span-3 space-y-2">
+            <div class="flex justify-between text-xs font-bold">
+              <span class="text-slate-700" data-en="Stress Drop Δσ" data-zh="静态应力降 Δσ">静态应力降 Δσ</span>
+              <span id="spec-val-ds" class="font-mono text-amber-700 font-bold">3.0 MPa</span>
+            </div>
+            <input type="range" id="spec-ds" min="0.5" max="20" step="0.5" value="3.0" class="w-full accent-amber" oninput="updateSpectraParams()">
+            <div class="text-[11px] text-slate-500" data-en="Shifts f_c ∝ Δσ^(1/3) along constant M₀" data-zh="保持 M₀ 不变时，增大 Δσ 使 f_c 向右移动">保持 M₀ 不变时，增大 Δσ 使 f_c 向右移动</div>
+          </div>
+
+          <!-- 5 Readout Pills -->
+          <div class="lg:col-span-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 text-xs font-mono">
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-2">
+              <div class="text-[10px] text-slate-500 font-sans font-semibold" data-en="Seismic Moment M₀" data-zh="地震矩 M₀">地震矩 M₀</div>
+              <div id="spec-read-m0" class="font-bold text-slate-900 text-xs mt-0.5">7.08 × 10¹⁸ N·m</div>
+            </div>
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-2">
+              <div class="text-[10px] text-blue-700 font-sans font-semibold" data-en="Corner Freq f_c (T_c)" data-zh="拐角频率 f_c (周期)">拐角频率 f_c (周期)</div>
+              <div id="spec-read-fc" class="font-bold text-blue-900 text-xs mt-0.5">0.13 Hz (7.7 s)</div>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-xl p-2">
+              <div class="text-[10px] text-red-700 font-sans font-semibold">m_b (1 Hz / 1 s)</div>
+              <div id="spec-read-mb" class="font-bold text-red-800 text-sm mt-0.5">6.02</div>
+            </div>
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2">
+              <div class="text-[10px] text-emerald-700 font-sans font-semibold">M_s (0.05 Hz / 20 s)</div>
+              <div id="spec-read-ms" class="font-bold text-emerald-800 text-sm mt-0.5">6.50</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dual Linked Plots -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div class="lg:col-span-7 card-academic rounded-2xl p-4 flex flex-col">
+          <div class="mb-2">
+            <h3 class="text-sm sm:text-base font-bold text-slate-900"
+              data-en="Brune ω⁻² Source Displacement Spectrum (Log-Log)"
+              data-zh="Brune ω⁻² 震源位移谱（双对数坐标）">
+              Brune ω⁻² 震源位移谱（双对数坐标）
+            </h3>
+            <p class="text-xs text-slate-500"
+              data-en="Dashed curves show M_w 4–9 self-similar spectra (M₀ ∝ f_c⁻³). Vertical lines mark m_b (1 Hz) &amp; M_s (0.05 Hz) bands."
+              data-zh="灰色虚线族展示 M_w 4~9 自相似谱（f_c 沿 M₀ ∝ f_c⁻³ 轨迹移动）；红/绿竖线标出 m_b（1 Hz）与 M_s（0.05 Hz）观测频段。">
+              灰色虚线族展示 M_w 4~9 自相似谱（f_c 沿 M₀ ∝ f_c⁻³ 轨迹移动）；红/绿竖线标出 m_b（1 Hz）与 M_s（0.05 Hz）观测频段。
+            </p>
+          </div>
+          <div class="flex-1 min-h-[380px] bg-slate-50 rounded-xl border border-slate-200 p-2">
+            <canvas id="canvas-spec-log" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 card-academic rounded-2xl p-4 flex flex-col">
+          <div class="mb-2">
+            <h3 class="text-sm sm:text-base font-bold text-slate-900"
+              data-en="Magnitude Saturation Curves (vs. M_w)"
+              data-zh="各类震级饱和对比曲线 (vs. M_w)">
+              各类震级饱和对比曲线 (vs. M_w)
+            </h3>
+            <p class="text-xs text-slate-500"
+              data-en="m_b flattens near ~6.5 and M_s flattens near ~8.2 when fault duration exceeds wave period."
+              data-zh="当震源持续时间 T_c 超过测量波周期（1 s 或 20 s），仪器只采样到部分破裂，m_b 在 ~6.5 级、M_s 在 ~8.2 级处显著饱和。">
+              当震源持续时间 T_c 超过测量波周期（1 s 或 20 s），仪器只采样到部分破裂，m_b 在 ~6.5 级、M_s 在 ~8.2 级处显著饱和。
+            </p>
+          </div>
+          <div class="flex-1 min-h-[380px] bg-slate-50 rounded-xl border border-slate-200 p-2">
+            <canvas id="canvas-spec-sat" class="w-full h-full"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MODULE 3: 9.1 & 9.2 Moment Tensor Decomposition, Non-DC & Hudson Plot -->
+    <!-- ===================================================================== -->
+    <section id="tab-nondc" class="tab-panel hidden space-y-5">
+      <div class="card-academic rounded-2xl p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-purple-950 text-white border-none">
+        <div class="space-y-1.5 max-w-4xl">
+          <div class="text-xs font-bold uppercase tracking-widest text-purple-300"
+            data-en="SECTIONS 9.1 &amp; 9.2.1 · NON-DOUBLE-COUPLE SOURCES &amp; HUDSON PLOT"
+            data-zh="第 9.1 &amp; 9.2.1 节 · 矩张量分解、非双力偶震源与 Hudson 图">
+            第 9.1 &amp; 9.2.1 节 · 矩张量分解、非双力偶震源与 Hudson 图
+          </div>
+          <h2 class="text-xl font-extrabold"
+            data-en="How Do ISO, DC &amp; CLVD Components Combine Into 3D Radiation Patterns &amp; Non-Standard Beachballs?"
+            data-zh="各向同性 (ISO)、双力偶 (DC) 与补偿线性矢量偶极 (CLVD) 如何塑形非标准“沙滩球”？">
+            各向同性 (ISO)、双力偶 (DC) 与补偿线性矢量偶极 (CLVD) 如何塑形非标准“沙滩球”？
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-200 leading-relaxed"
+            data-en="Mix ISO (volume explosion/collapse), DC (planar fault shear), and CLVD (volcanic fluid / ring-fault / curved fault) weights to watch the 3D P-wave radiation pattern morph, beachball nodal curves bend into rings, and the source move across the Hudson (T, k) diamond."
+            data-zh="自由调节 ISO（体积膨胀/塌陷）、DC（纯剪切双力偶）和 CLVD（流体运移/复杂多断层）权重，实时观察三维 P 波辐射花样形变、环形/牛眼状非标准沙滩球、特征值 (λ₁, λ₂, λ₃) 以及 Hudson 震源类型图落点。">
+            自由调节 ISO（体积膨胀/塌陷）、DC（纯剪切双力偶）和 CLVD（流体运移/复杂多断层）权重，实时观察三维 P 波辐射花样形变、环形/牛眼状非标准沙滩球、特征值 (λ₁, λ₂, λ₃) 以及 Hudson 震源类型图落点。
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- Left 4 Cols: Mixture Sliders + Orientation + Matrix & Eigenvalues -->
+        <div class="lg:col-span-4 space-y-4">
+          <div class="card-academic rounded-2xl p-4 space-y-3">
+            <div class="text-xs font-extrabold text-slate-800 uppercase tracking-wider"
+              data-en="Physical Component Mixture" data-zh="震源物理成分混合控制">
+              震源物理成分混合控制
+            </div>
+
+            <!-- Quick Presets -->
+            <div class="grid grid-cols-3 gap-1.5 text-[11px]">
+              <button type="button" onclick="setNonDCPreset('dc')" class="px-2 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 font-bold transition">
+                <span data-en="Pure DC" data-zh="纯双力偶">纯双力偶</span>
+              </button>
+              <button type="button" onclick="setNonDCPreset('exp')" class="px-2 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 border border-red-200 text-red-900 font-bold transition">
+                <span data-en="Explosion" data-zh="纯爆炸 +ISO">纯爆炸 +ISO</span>
+              </button>
+              <button type="button" onclick="setNonDCPreset('imp')" class="px-2 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-900 font-bold transition">
+                <span data-en="Implosion" data-zh="塌陷 -ISO">塌陷 -ISO</span>
+              </button>
+              <button type="button" onclick="setNonDCPreset('clvd_p')" class="px-2 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-bold transition">
+                <span data-en="+CLVD" data-zh="纯 +CLVD">纯 +CLVD</span>
+              </button>
+              <button type="button" onclick="setNonDCPreset('crack')" class="px-2 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-900 font-bold transition">
+                <span data-en="Tensile Crack" data-zh="火山张裂">火山张裂</span>
+              </button>
+              <button type="button" onclick="setNonDCPreset('mixed')" class="px-2 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-900 font-bold transition">
+                <span data-en="ISO+DC+CLVD" data-zh="混合非DC">混合非DC</span>
+              </button>
+            </div>
+
+            <!-- ISO / DC / CLVD Sliders -->
+            <div class="space-y-2.5 text-xs pt-1">
+              <div>
+                <div class="flex justify-between font-semibold mb-1">
+                  <span class="text-red-700" data-en="ISO Weight (Volume ±)" data-zh="ISO 各向同性权重 (膨胀+/塌陷-)">ISO 各向同性权重 (膨胀+/塌陷-)</span>
+                  <span id="ndc-val-iso" class="font-mono font-bold text-red-700">0.00</span>
+                </div>
+                <input type="range" id="ndc-iso" min="-1" max="1" step="0.05" value="0" class="w-full accent-red" oninput="updateNonDC()">
+              </div>
+
+              <div>
+                <div class="flex justify-between font-semibold mb-1">
+                  <span class="text-emerald-700" data-en="DC Weight (Shear Fault)" data-zh="DC 纯剪切双力偶权重">DC 纯剪切双力偶权重</span>
+                  <span id="ndc-val-dc" class="font-mono font-bold text-emerald-700">1.00</span>
+                </div>
+                <input type="range" id="ndc-dc" min="0" max="1" step="0.05" value="1" class="w-full accent-emerald" oninput="updateNonDC()">
+              </div>
+
+              <div>
+                <div class="flex justify-between font-semibold mb-1">
+                  <span class="text-amber-700" data-en="CLVD Weight (±)" data-zh="CLVD 补偿线性偶极权重 (±)">CLVD 补偿线性偶极权重 (±)</span>
+                  <span id="ndc-val-clvd" class="font-mono font-bold text-amber-700">0.00</span>
+                </div>
+                <input type="range" id="ndc-clvd" min="-1" max="1" step="0.05" value="0" class="w-full accent-amber" oninput="updateNonDC()">
+              </div>
+            </div>
+
+            <!-- Orientation Strike / Dip / Rake -->
+            <div class="border-t border-slate-100 pt-2.5 space-y-2 text-xs">
+              <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+                data-en="Principal Basis Orientation (Strike / Dip / Rake)" data-zh="断层参考方位 (走向 / 倾角 / 滑动角)">
+                断层参考方位 (走向 / 倾角 / 滑动角)
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <div class="flex justify-between text-[11px] font-mono"><span>Strike</span><span id="ndc-val-str">0°</span></div>
+                  <input type="range" id="ndc-str" min="0" max="360" step="5" value="0" class="w-full" oninput="updateNonDC()">
+                </div>
+                <div>
+                  <div class="flex justify-between text-[11px] font-mono"><span>Dip</span><span id="ndc-val-dip">60°</span></div>
+                  <input type="range" id="ndc-dip" min="5" max="90" step="5" value="60" class="w-full" oninput="updateNonDC()">
+                </div>
+                <div>
+                  <div class="flex justify-between text-[11px] font-mono"><span>Rake</span><span id="ndc-val-rak">0°</span></div>
+                  <input type="range" id="ndc-rak" min="-180" max="180" step="5" value="0" class="w-full" oninput="updateNonDC()">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3x3 Moment Tensor Matrix + Eigenvalues & Decomposition Bar -->
+          <div class="card-academic rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-slate-900" data-en="Resulting 3×3 Moment Tensor Mᵢⱼ" data-zh="合成 3×3 矩张量矩阵 Mᵢⱼ">合成 3×3 矩张量矩阵 Mᵢⱼ</span>
+              <span class="font-mono text-[11px] text-slate-500">tr(M) = <strong id="ndc-trace" class="text-slate-900">0.00</strong></span>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 font-mono text-xs text-center">
+              <div class="bg-slate-50 border border-slate-200 rounded-lg py-1.5"><span class="text-[9px] text-slate-400 block">M_NN</span><strong id="ndc-m11">0.00</strong></div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg py-1.5"><span class="text-[9px] text-slate-400 block">M_NE</span><strong id="ndc-m12">0.00</strong></div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg py-1.5"><span class="text-[9px] text-slate-400 block">M_ND</span><strong id="ndc-m13">0.00</strong></div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg py-1.5"><span class="text-[9px] text-slate-400 block">M_EN</span><strong id="ndc-m21">0.00</strong></div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg py-1.5"><span class="text-[9px] text-slate-400 block">M_EE</span><strong id="ndc-m22">0.00</strong></div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg py-1.5"><span class="text-[9px] text-slate-400 block">M_ED</span><strong id="ndc-m23">0.00</strong></div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg py-1.5"><span class="text-[9px] text-slate-400 block">M_DN</span><strong id="ndc-m31">0.00</strong></div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg py-1.5"><span class="text-[9px] text-slate-400 block">M_DE</span><strong id="ndc-m32">0.00</strong></div>
+              <div class="bg-slate-50 border border-slate-200 rounded-lg py-1.5"><span class="text-[9px] text-slate-400 block">M_DD</span><strong id="ndc-m33">0.00</strong></div>
+            </div>
+
+            <!-- Eigenvalues -->
+            <div class="grid grid-cols-3 gap-1.5 text-center font-mono text-xs pt-1">
+              <div class="bg-red-50/70 rounded-lg p-1.5 border border-red-200">
+                <div class="text-[10px] text-red-700 font-bold">λ₁ (max)</div>
+                <div id="ndc-lam1" class="font-extrabold text-red-700">+1.00</div>
+              </div>
+              <div class="bg-slate-50 rounded-lg p-1.5 border border-slate-200">
+                <div class="text-[10px] text-slate-500 font-bold">λ₂ (mid)</div>
+                <div id="ndc-lam2" class="font-extrabold text-slate-800">0.00</div>
+              </div>
+              <div class="bg-blue-50/70 rounded-lg p-1.5 border border-blue-200">
+                <div class="text-[10px] text-blue-700 font-bold">λ₃ (min)</div>
+                <div id="ndc-lam3" class="font-extrabold text-blue-700">-1.00</div>
+              </div>
+            </div>
+
+            <!-- Percentage Bar -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-[11px] font-bold">
+                <span class="text-red-600">ISO: <span id="ndc-pct-iso">0%</span></span>
+                <span class="text-emerald-700">DC: <span id="ndc-pct-dc">100%</span></span>
+                <span class="text-amber-600">CLVD: <span id="ndc-pct-clvd">0%</span></span>
+              </div>
+              <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden flex border border-slate-200">
+                <div id="ndc-bar-iso" class="bg-red-500 transition-all duration-150" style="width:0%"></div>
+                <div id="ndc-bar-dc" class="bg-emerald-500 transition-all duration-150" style="width:100%"></div>
+                <div id="ndc-bar-clvd" class="bg-amber-400 transition-all duration-150" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right 8 Cols: 3D P-Wave Radiation Pattern + Beachball + Hudson Source-Type Plot -->
+        <div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- 3D Radiation Pattern -->
+          <div class="card-academic rounded-2xl p-4 flex flex-col md:col-span-2">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <h3 class="text-sm sm:text-base font-bold text-slate-900"
+                  data-en="3D P-Wave Radiation Pattern |γᵀ M γ| (Drag to Rotate)"
+                  data-zh="三维 P 波空间辐射花样 |γᵀ M γ|（鼠标拖拽旋转视角）">
+                  三维 P 波空间辐射花样 |γᵀ M γ|（鼠标拖拽旋转视角）
+                </h3>
+                <p class="text-xs text-slate-500"
+                  data-en="Red lobes = Compression (+ outward); Blue lobes = Dilatation (− inward). Watch lobes merge into a sphere (+ISO) or torus (CLVD)."
+                  data-zh="红色花瓣为压缩区（+ 外推），蓝色花瓣为膨胀区（− 内拉）。混合 ISO 可见球形膨胀，混合 CLVD 可见环带状辐射瓣。">
+                  红色花瓣为压缩区（+ 外推），蓝色花瓣为膨胀区（− 内拉）。混合 ISO 可见球形膨胀，混合 CLVD 可见环带状辐射瓣。
+                </p>
+              </div>
+              <button type="button" onclick="resetNonDCCam()" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
+                <span data-en="Reset View" data-zh="重置视角">重置视角</span>
+              </button>
+            </div>
+            <div class="h-[290px] sm:h-[320px] bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+              <canvas id="canvas-mt-3d" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+            </div>
+          </div>
+
+          <!-- Non-Standard Beachball -->
+          <div class="card-academic rounded-2xl p-4 flex flex-col items-center">
+            <div class="w-full flex items-center justify-between mb-2">
+              <h3 class="text-sm font-bold text-slate-900" data-en="Lower-Hemisphere Beachball" data-zh="下半球投影“沙滩球”">下半球投影“沙滩球”</h3>
+              <span class="text-[10px] font-mono text-slate-500">Red (+) / White (−)</span>
+            </div>
+            <div class="w-full h-[240px] flex items-center justify-center bg-slate-50 rounded-xl border border-slate-200 p-2">
+              <canvas id="canvas-mt-beachball" width="220" height="220" class="w-[210px] h-[210px]"></canvas>
+            </div>
+          </div>
+
+          <!-- Hudson Source-Type Plot -->
+          <div class="card-academic rounded-2xl p-4 flex flex-col">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-bold text-slate-900" data-en="Hudson Source-Type Plot (T, k)" data-zh="Hudson 震源类型分布图 (T, k)">Hudson 震源类型分布图 (T, k)</h3>
+              <span id="ndc-tk-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200">
+                T=0.00, k=0.00
+              </span>
+            </div>
+            <div class="flex-1 min-h-[240px] bg-slate-50 rounded-xl border border-slate-200 p-2">
+              <canvas id="canvas-mt-hudson" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MODULE 4: 9.5 Self-Similar Scaling & Static Stress Drop               -->
+    <!-- ===================================================================== -->
+    <section id="tab-scaling" class="tab-panel hidden space-y-5">
+      <div class="card-academic rounded-2xl p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 text-white border-none">
+        <div class="space-y-1.5 max-w-4xl">
+          <div class="text-xs font-bold uppercase tracking-widest text-emerald-300"
+            data-en="SECTION 9.5 · SELF-SIMILAR SCALING &amp; STATIC STRESS DROP"
+            data-zh="第 9.5 节 · 地震自相似标度律与静态应力降">
+            第 9.5 节 · 地震自相似标度律与静态应力降
+          </div>
+          <h2 class="text-xl font-extrabold"
+            data-en="From a Football Field (M_w 4) to a Subduction Margin (M_w 9): Why Is Stress Drop Δσ Nearly Constant?"
+            data-zh="从足球场（M_w 4）到千里海岸线（M_w 9）：震级跨越五个量级，为何静态应力降 Δσ 几乎保持常数？">
+            从足球场（M_w 4）到千里海岸线（M_w 9）：震级跨越五个量级，为何静态应力降 Δσ 几乎保持常数？
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-200 leading-relaxed"
+            data-en="Under self-similar scaling (constant Δσ ≈ 1–10 MPa), increasing M_w by +2 multiplies seismic moment M₀ by 1000×, fault length L by 10×, fault area A by 100×, and average slip D̄ by 10×, keeping strain D̄/L ≈ Δσ/μ ~ 10⁻⁴ invariant across all earthquake sizes."
+            data-zh="在自相似标度律（常数应力降 Δσ ≈ 1~10 MPa）下，M_w 每增加 2 级，地震矩 M₀ 增大 1000 倍，断层尺度 L 与平均错距 D̄ 同步增大 10 倍，破裂面积 A 增大 100 倍，从而维持应变释放率 D̄/L ≈ Δσ/μ ≈ 10⁻⁴ 在大小地震间基本不变。">
+            在自相似标度律（常数应力降 Δσ ≈ 1~10 MPa）下，M_w 每增加 2 级，地震矩 M₀ 增大 1000 倍，断层尺度 L 与平均错距 D̄ 同步增大 10 倍，破裂面积 A 增大 100 倍，从而维持应变释放率 D̄/L ≈ Δσ/μ ≈ 10⁻⁴ 在大小地震间基本不变。
+          </p>
+        </div>
+      </div>
+
+      <!-- Sliders & Telemetry Cards -->
+      <div class="card-academic rounded-2xl p-4 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+          <div class="md:col-span-5 space-y-1.5">
+            <div class="flex justify-between text-xs font-bold">
+              <span class="text-slate-700" data-en="Moment Magnitude M_w" data-zh="矩震级 M_w">矩震级 M_w</span>
+              <span id="scl-val-mw" class="font-mono text-lg text-emerald-700 font-extrabold">6.5</span>
+            </div>
+            <input type="range" id="scl-mw" min="3.5" max="9.2" step="0.1" value="6.5" class="w-full accent-emerald" oninput="updateScalingParams()">
+            <div class="flex flex-wrap gap-1.5 pt-1 text-[11px]">
+              <button type="button" onclick="setScalePreset(4.0, 3.0)" class="px-2 py-1 rounded bg-slate-100 hover:bg-emerald-50 border border-slate-200 font-semibold">M 4.0</button>
+              <button type="button" onclick="setScalePreset(5.5, 3.0)" class="px-2 py-1 rounded bg-slate-100 hover:bg-emerald-50 border border-slate-200 font-semibold">M 5.5</button>
+              <button type="button" onclick="setScalePreset(7.0, 3.0)" class="px-2 py-1 rounded bg-slate-100 hover:bg-emerald-50 border border-slate-200 font-semibold">M 7.0</button>
+              <button type="button" onclick="setScalePreset(8.0, 3.5)" class="px-2 py-1 rounded bg-slate-100 hover:bg-emerald-50 border border-slate-200 font-semibold">M 8.0</button>
+              <button type="button" onclick="setScalePreset(9.0, 3.0)" class="px-2 py-1 rounded bg-slate-100 hover:bg-emerald-50 border border-slate-200 font-semibold">M 9.0</button>
+            </div>
+          </div>
+
+          <div class="md:col-span-4 space-y-1.5">
+            <div class="flex justify-between text-xs font-bold">
+              <span class="text-slate-700" data-en="Static Stress Drop Δσ (Log)" data-zh="静态应力降 Δσ (对数滑块)">静态应力降 Δσ (对数滑块)</span>
+              <span id="scl-val-ds" class="font-mono text-sm text-amber-700 font-bold">3.0 MPa</span>
+            </div>
+            <input type="range" id="scl-ds" min="-1" max="2" step="0.05" value="0.477" class="w-full accent-amber" oninput="updateScalingParams()">
+            <div class="flex justify-between text-[10px] text-slate-400 font-mono">
+              <span>0.1 MPa (tsunami)</span><span>3 MPa (global avg)</span><span>100 MPa (intraplate)</span>
+            </div>
+          </div>
+
+          <div class="md:col-span-3 space-y-1.5 text-xs">
+            <label class="font-bold text-slate-700 block" data-en="Crustal Rigidity μ" data-zh="地壳剪切模量 μ">地壳剪切模量 μ</label>
+            <select id="scl-mu" onchange="updateScalingParams()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 font-medium outline-none focus:border-emerald-500">
+              <option value="15e9">15 GPa (Shallow Sediments)</option>
+              <option value="33e9" selected>33 GPa (Standard Crust)</option>
+              <option value="60e9">60 GPa (Deep Lithosphere)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 5 Key Output Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5 text-xs font-mono pt-1">
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5">
+            <div class="text-[10px] text-slate-500 font-sans font-semibold" data-en="Circular Diameter (2r)" data-zh="等效破裂直径 (2r)">等效破裂直径 (2r)</div>
+            <div id="scl-out-diam" class="text-sm font-extrabold text-slate-900 mt-0.5">20.2 km</div>
+          </div>
+          <div class="bg-blue-50 border border-blue-200 rounded-xl p-2.5">
+            <div class="text-[10px] text-blue-700 font-sans font-semibold" data-en="Fault Area A = πr²" data-zh="断层破裂面积 A">断层破裂面积 A</div>
+            <div id="scl-out-area" class="text-sm font-extrabold text-blue-900 mt-0.5">322 km²</div>
+          </div>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5">
+            <div class="text-[10px] text-emerald-700 font-sans font-semibold" data-en="Average Slip D̄" data-zh="断层平均错距 D̄">断层平均错距 D̄</div>
+            <div id="scl-out-slip" class="text-sm font-extrabold text-emerald-900 mt-0.5">0.67 m</div>
+          </div>
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-2.5">
+            <div class="text-[10px] text-amber-800 font-sans font-semibold" data-en="Strain Drop D̄/(2r)" data-zh="应变降 D̄/(2r)">应变降 D̄/(2r)</div>
+            <div id="scl-out-strain" class="text-sm font-extrabold text-amber-900 mt-0.5">3.3 × 10⁻⁵</div>
+          </div>
+          <div class="bg-red-50 border border-red-200 rounded-xl p-2.5 col-span-2 sm:col-span-1">
+            <div class="text-[10px] text-red-700 font-sans font-semibold" data-en="Radiated Energy E_R" data-zh="地震波辐射能 E_R">地震波辐射能 E_R</div>
+            <div id="scl-out-energy" class="text-sm font-extrabold text-red-900 mt-0.5">3.2 × 10¹⁴ J</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visual Panels -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div class="lg:col-span-7 card-academic rounded-2xl p-4 flex flex-col">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-900"
+                data-en="Auto-Scaled Fault Patch vs. Geographic References &amp; Slip Gauge"
+                data-zh="自适应等比例尺度对比：破裂断层 vs. 现实地理参照与位错标尺">
+                自适应等比例尺度对比：破裂断层 vs. 现实地理参照与位错标尺
+              </h3>
+              <p class="text-xs text-slate-500"
+                data-en="Reference landmark automatically switches among Football Field, Manhattan/City, and Taiwan/San Andreas as rupture grows."
+                data-zh="右侧绿色参照物随震级自动切换为足球场 (105m)、北京四环/曼哈顿岛 (20km) 或台湾岛/圣安德烈斯断层 (400km)。">
+                右侧绿色参照物随震级自动切换为足球场 (105m)、北京四环/曼哈顿岛 (20km) 或台湾岛/圣安德烈斯断层 (400km)。
+              </p>
+            </div>
+          </div>
+          <div class="flex-1 min-h-[390px] bg-slate-50 rounded-xl border border-slate-200 overflow-hidden">
+            <canvas id="canvas-scale-map" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 card-academic rounded-2xl p-4 flex flex-col">
+          <div class="mb-2">
+            <h3 class="text-sm sm:text-base font-bold text-slate-900"
+              data-en="Constant Stress-Drop Scaling Locus (M₀ vs. Fault Radius r)"
+              data-zh="自相似双对数标度图 (M₀ vs. 断层半径 r)">
+              自相似双对数标度图 (M₀ vs. 断层半径 r)
+            </h3>
+            <p class="text-xs text-slate-500"
+              data-en="Diagonal lines trace Δσ = 0.1, 1, 3, 10, 100 MPa (slope 3 on log-log plot). Famous earthquakes plotted for reference."
+              data-zh="斜线代表 Δσ = 0.1, 1, 3, 10, 100 MPa 等应力降线（斜率为 3，即 M₀ ∝ r³）。图中标注典型真实大震作参考。">
+              斜线代表 Δσ = 0.1, 1, 3, 10, 100 MPa 等应力降线（斜率为 3，即 M₀ ∝ r³）。图中标注典型真实大震作参考。
+            </p>
+          </div>
+          <div class="flex-1 min-h-[390px] bg-slate-50 rounded-xl border border-slate-200 p-2">
+            <canvas id="canvas-scale-loglog" class="w-full h-full"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MODULE 5: 9.4.3 Empirical Green's Function (EGF) Deconvolution Lab    -->
+    <!-- ===================================================================== -->
+    <section id="tab-egf" class="tab-panel hidden space-y-5">
+      <div class="card-academic rounded-2xl p-5 bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-950 text-white border-none">
+        <div class="space-y-1.5 max-w-4xl">
+          <div class="text-xs font-bold uppercase tracking-widest text-cyan-300"
+            data-en="SECTION 9.4.3 · EMPIRICAL GREEN'S FUNCTION (EGF) DECONVOLUTION"
+            data-zh="第 9.4.3 节 · 经验格林函数 (EGF) 频域反褶积实验">
+            第 9.4.3 节 · 经验格林函数 (EGF) 频域反褶积实验
+          </div>
+          <h2 class="text-xl font-extrabold"
+            data-en="Extracting the Mainshock Source Time Function by Canceling Complex Earth Paths"
+            data-zh="如何用“同位置、同机制”的小震波形消除复杂传播路径，提取大震真实震源时间函数？">
+            如何用“同位置、同机制”的小震波形消除复杂传播路径，提取大震真实震源时间函数？
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-200 leading-relaxed"
+            data-en="Real seismograms are heavily distorted by crustal reflections and scattering coda. If a small earthquake shares the mainshock's hypocenter and focal mechanism, it acts as an impulse response G(t). Try cranking up 'Path Complexity' first (it still works cleanly!), then break 'Location Offset' or 'Mechanism Mismatch' to see deconvolution fail!"
+            data-zh="真实地震图混杂了莫霍面反射与地壳散射尾波。只要小震（EGF）与主震位置极近、机制相同，它就等同于地球脉冲响应 G(t)。试着先把“路径复杂度”拉满（仍能完美恢复双子震脉冲！），再故意偏离“位置”或“机制”，观察反褶积如何产生假象与崩溃！">
+            真实地震图混杂了莫霍面反射与地壳散射尾波。只要小震（EGF）与主震位置极近、机制相同，它就等同于地球脉冲响应 G(t)。试着先把“路径复杂度”拉满（仍能完美恢复双子震脉冲！），再故意偏离“位置”或“机制”，观察反褶积如何产生假象与崩溃！
+          </p>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="card-academic rounded-2xl p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-xs items-start">
+        <div class="space-y-1.5">
+          <label class="font-bold text-slate-700 block" data-en="Mainshock STF Shape" data-zh="主震真实 STF 形态">主震真实 STF 形态</label>
+          <select id="egf-stf-type" onchange="updateEGF()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-2 py-1.5 font-medium outline-none focus:border-blue-500">
+            <option value="double" selected>Twin Asperity (双子震双脉冲)</option>
+            <option value="triple">Complex 3-Subevent (复杂三子事件)</option>
+            <option value="brune">Single Brune Pulse (单脉冲)</option>
+          </select>
+          <div class="flex flex-wrap gap-1 pt-1">
+            <button type="button" onclick="setEGFPreset('ideal')" class="px-2 py-1 rounded bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 font-bold">
+              <span data-en="Ideal EGF" data-zh="理想配对">理想配对</span>
+            </button>
+            <button type="button" onclick="setEGFPreset('bad_loc')" class="px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-900 font-bold">
+              <span data-en="Bad Loc" data-zh="位置偏离">位置偏离</span>
+            </button>
+            <button type="button" onclick="setEGFPreset('bad_mech')" class="px-2 py-1 rounded bg-red-50 hover:bg-red-100 border border-red-200 text-red-900 font-bold">
+              <span data-en="Bad Mech" data-zh="机制不同">机制不同</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex justify-between font-bold mb-1">
+            <span class="text-slate-700" data-en="Path Complexity (Coda)" data-zh="路径复杂度（反射与尾波）">路径复杂度（反射与尾波）</span>
+            <span id="egf-val-path" class="font-mono text-blue-700">60%</span>
+          </div>
+          <input type="range" id="egf-path" min="0" max="1" step="0.05" value="0.60" class="w-full" oninput="updateEGF()">
+          <p class="text-[10px] text-slate-400 mt-1" data-en="Adds Moho bounce + scattered coda to both quakes" data-zh="同时增强主震与小震的反射/散射尾波">同时增强主震与小震的反射/散射尾波</p>
+        </div>
+
+        <div>
+          <div class="flex justify-between font-bold mb-1">
+            <span class="text-slate-700" data-en="EGF Location Offset Δx" data-zh="EGF 位置偏离 Δx">EGF 位置偏离 Δx</span>
+            <span id="egf-val-loc" class="font-mono text-amber-700">0 km</span>
+          </div>
+          <input type="range" id="egf-loc" min="0" max="40" step="1" value="0" class="w-full accent-amber" oninput="updateEGF()">
+          <p class="text-[10px] text-slate-400 mt-1" data-en="Shifts secondary arrival lags &amp; coda phases" data-zh="改变散射体与反射面到时，破坏路径一致性">改变散射体与反射面到时，破坏路径一致性</p>
+        </div>
+
+        <div>
+          <div class="flex justify-between font-bold mb-1">
+            <span class="text-slate-700" data-en="Mechanism Mismatch Δθ" data-zh="EGF 震源机制差异 Δθ">EGF 震源机制差异 Δθ</span>
+            <span id="egf-val-mech" class="font-mono text-red-600">0°</span>
+          </div>
+          <input type="range" id="egf-mech" min="0" max="90" step="2" value="0" class="w-full accent-red" oninput="updateEGF()">
+          <p class="text-[10px] text-slate-400 mt-1" data-en="Alters P/S polarity &amp; radiation amplitudes" data-zh="改变辐射花样 P/S 振幅比甚至翻转极性">改变辐射花样 P/S 振幅比甚至翻转极性</p>
+        </div>
+
+        <div>
+          <div class="flex justify-between font-bold mb-1">
+            <span class="text-slate-700" data-en="Water-Level &amp; Noise" data-zh="水位正则化 c_w / 噪声">水位正则化 c_w / 噪声</span>
+            <span id="egf-val-wl" class="font-mono text-slate-800">0.03 / 2%</span>
+          </div>
+          <div class="space-y-1.5">
+            <input type="range" id="egf-wl" min="0.002" max="0.20" step="0.002" value="0.03" class="w-full" oninput="updateEGF()">
+            <input type="range" id="egf-noise" min="0" max="0.12" step="0.005" value="0.02" class="w-full accent-red" oninput="updateEGF()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Plots -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div class="lg:col-span-7 card-academic rounded-2xl p-4 flex flex-col">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <div>
+              <h3 class="text-sm sm:text-base font-bold text-slate-900"
+                data-en="Time-Domain Seismograms &amp; Deconvolved STF"
+                data-zh="时域波形对比与反褶积提取结果">
+                时域波形对比与反褶积提取结果
+              </h3>
+              <p class="text-xs text-slate-500"
+                data-en="Top: Mainshock U(t). Middle: Small EGF g(t). Bottom: Recovered STF(t) (blue) vs. True STF(t) (dashed red)."
+                data-zh="上道：主震波形 U(t)；中道：小震经验格林函数 g(t)；下道：反褶积恢复 STF（实线）与真实 STF（红色虚线）对比。">
+                上道：主震波形 U(t)；中道：小震经验格林函数 g(t)；下道：反褶积恢复 STF（实线）与真实 STF（红色虚线）对比。
+              </p>
+            </div>
+            <span id="egf-corr-badge" class="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-mono font-bold">
+              Corr r = 0.99
+            </span>
+          </div>
+          <div class="flex-1 min-h-[410px] bg-slate-50 rounded-xl border border-slate-200 p-2">
+            <canvas id="canvas-egf-traces" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 card-academic rounded-2xl p-4 flex flex-col">
+          <div class="mb-2">
+            <h3 class="text-sm sm:text-base font-bold text-slate-900"
+              data-en="Frequency-Domain Spectral Division &amp; Water-Level"
+              data-zh="频域谱除法与水位正则化 (Water-Level)">
+              频域谱除法与水位正则化 (Water-Level)
+            </h3>
+            <p class="text-xs text-slate-500"
+              data-en="STF(ω) = [U(ω)·g*(ω)] / max(|g(ω)|², c_w·max|g|²). Water-level prevents dividing by spectral holes!"
+              data-zh="展示主震谱 |U(f)|、小震谱 |g(f)| 与水位阈值线。当小震频谱出现深谷（Spectral Holes）时，水位线防止高频噪声被无限放大。">
+              展示主震谱 |U(f)|、小震谱 |g(f)| 与水位阈值线。当小震频谱出现深谷（Spectral Holes）时，水位线防止高频噪声被无限放大。
+            </p>
+          </div>
+          <div class="flex-1 min-h-[410px] bg-slate-50 rounded-xl border border-slate-200 p-2">
+            <canvas id="canvas-egf-spec" class="w-full h-full"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== Collapsible Study Notes & Discussion Questions ==================== -->
+    <section class="card-academic rounded-2xl overflow-hidden">
+      <button type="button" onclick="togglePedagogyPanel()" class="w-full px-5 py-3.5 flex items-center justify-between text-left hover:bg-slate-50 transition">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-0.5 rounded-md bg-slate-900 text-white text-xs font-bold" data-en="Study Notes" data-zh="教学要点">教学要点</span>
+          <span class="text-sm font-bold text-slate-900" data-en="Chapter 9 Key Physical Takeaways &amp; Classroom Discussion Questions" data-zh="第九章核心物理概念梳理与课堂思考题">第九章核心物理概念梳理与课堂思考题</span>
+        </div>
+        <span class="text-slate-500 text-xs font-mono">▼ / ▲</span>
+      </button>
+
+      <div id="pedagogy-content" class="px-5 pb-5 pt-3 border-t border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs leading-relaxed">
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+          <div class="font-bold text-blue-800 text-sm" data-en="1. Directivity, Supershear &amp; M₀ Conservation" data-zh="1. 方向性、超剪切马赫锥与 M₀ 守恒">1. 方向性、超剪切马赫锥与 M₀ 守恒</div>
+          <p class="text-slate-700"
+            data-en="Sub-shear rupture (vᵣ < c) focuses energy at θ=0°. In supershear rupture (vᵣ > c, e.g. √2c), rupture outruns S-waves to build a Mach cone at cosθ_M = c/vᵣ: peak shaking shifts off-fault to θ_M, while θ=0° experiences time-reversed arrivals—yet ∫u(t)dt = M₀ remains strictly invariant."
+            data-zh="亚剪切破裂（vᵣ < c）在 0° 方向产生最强聚束；而当 vᵣ > c 进入超剪切状态（如 √2c ≈ 1.41c，见于 2001 昆仑山与 2023 土耳其大震），破裂超越 S 波形成“马赫锥”，强震峰值转向马赫角 cosθ_M = c/vᵣ 方向（45°），锥内（0°）甚至出现“后破裂段先到达”的时间反转，但总面积 M₀ 依然严格守恒。">
+            亚剪切破裂（vᵣ < c）在 0° 方向产生最强聚束；而当 vᵣ > c 进入超剪切状态（如 √2c ≈ 1.41c，见于 2001 昆仑山与 2023 土耳其大震），破裂超越 S 波形成“马赫锥”，强震峰值转向马赫角 cosθ_M = c/vᵣ 方向（45°），锥内（0°）甚至出现“后破裂段先到达”的时间反转，但总面积 M₀ 依然严格守恒。
+          </p>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+          <div class="font-bold text-emerald-800 text-sm" data-en="2. Corner Frequency &amp; Saturation" data-zh="2. 拐角频率与震级饱和物理机制">2. 拐角频率与震级饱和物理机制</div>
+          <p class="text-slate-700"
+            data-en="For constant stress drop Δσ, fault duration T_c ~ 1/f_c grows as M₀^(1/3). When T_c exceeds 1 s (m_b) or 20 s (M_s), narrowband waves only see a fraction of the total rupture, causing m_b to saturate around 6.5 and M_s around 8.2."
+            data-zh="在常数应力降下，破裂持续时间 T_c ≈ 1/f_c 随 M₀^(1/3) 增长。当破裂时长超过短周期体波（1 s）或面波（20 s）周期时，相应频段落入 ω⁻² 高频斜坡，震级停止随地震矩同步增长，产生饱和。只有基于全频段零频平台的 M_w 永不饱和。">
+            在常数应力降下，破裂持续时间 T_c ≈ 1/f_c 随 M₀^(1/3) 增长。当破裂时长超过短周期体波（1 s）或面波（20 s）周期时，相应频段落入 ω⁻² 高频斜坡，震级停止随地震矩同步增长，产生饱和。只有基于全频段零频平台的 M_w 永不饱和。
+          </p>
+        </div>
+
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3.5 space-y-1.5">
+          <div class="font-bold text-amber-800 text-sm" data-en="3. Non-DC &amp; EGF Conditions" data-zh="3. 非双力偶成分与 EGF 选震原则">3. 非双力偶成分与 EGF 选震原则</div>
+          <p class="text-slate-700"
+            data-en="Real volcanic/geothermal/mine-collapse events exhibit large ISO and CLVD components. For EGF deconvolution, if the small earthquake is >10 km away or has a different focal mechanism, path phase shifts and nodal polarity flips corrupt the recovered STF."
+            data-zh="火山、地热或矿井塌陷常伴随显著的 ISO 与 CLVD 成分；而构造大震的浅层复杂多断层弯曲破裂也可能产生视 CLVD。在 EGF 反褶积中，小震必须满足“同位置（远小于波长与震中距）”和“同机制”两大条件，才能充当真实路径脉冲响应。">
+            火山、地热或矿井塌陷常伴随显著的 ISO 与 CLVD 成分；而构造大震的浅层复杂多断层弯曲破裂也可能产生视 CLVD。在 EGF 反褶积中，小震必须满足“同位置（远小于波长与震中距）”和“同机制”两大条件，才能充当真实路径脉冲响应。
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // 0. Global State & Tab Metadata
+    // =========================================================================
+    const state = {
+      lang: 'zh',
+      activeTab: 'tab-directivity',
+      dir: {
+        mode: 'unilateral', // 'unilateral' | 'bilateral'
+        vrRatio: 0.80,
+        c: 3.5, // km/s
+        length: 60, // km
+        riseTime: 1.5, // s
+        animTime: 25.0,
+        playing: false,
+        wavefronts: []
+      },
+      spec: {
+        mw: 6.5,
+        dsMPa: 3.0
+      },
+      nondc: {
+        iso: 0.0,
+        dc: 1.0,
+        clvd: 0.0,
+        strike: 0,
+        dip: 60,
+        rake: 0,
+        yaw: -0.65,
+        pitch: 0.42,
+        dragging: false,
+        lastX: 0,
+        lastY: 0,
+        M: [[0,0,0],[0,0,0],[0,0,0]],
+        eigs: [1, 0, -1],
+        T: 0,
+        k: 0
+      },
+      scale: {
+        mw: 6.5,
+        dsMPa: 3.0,
+        mu: 33e9
+      },
+      egf: {
+        stfType: 'double',
+        pathComplexity: 0.60,
+        locOffsetKm: 0,
+        mechMismatchDeg: 0,
+        waterLevel: 0.03,
+        noise: 0.02
+      }
+    };
+
+    const tabEquations = {
+      'tab-directivity': {
+        labelZh: '方向性脉冲时长', labelEn: 'Directivity Duration',
+        math: '<span class="math-var">T<sub>d</sub></span>(θ) = (<span class="math-var">L</span>/<span class="math-var">v<sub>r</sub></span>) |1 − (<span class="math-var">v<sub>r</sub></span>/<span class="math-var">c</span>) cosθ|'
+      },
+      'tab-spectra': {
+        labelZh: 'Brune 震源位移谱', labelEn: 'Brune Source Spectrum',
+        math: 'Ω(ω) = <span class="math-var">M</span><sub>0</sub> / [1 + (ω/ω<sub>c</sub>)²], &nbsp; <span class="math-var">M</span><sub>0</sub> ∝ <span class="math-var">f</span><sub>c</sub><sup>−3</sup>'
+      },
+      'tab-nondc': {
+        labelZh: '矩张量分解', labelEn: 'MT Decomposition',
+        math: '<span class="math-vec">M</span> = <span class="math-vec">M</span><sub>ISO</sub> + <span class="math-vec">M</span><sub>DC</sub> + <span class="math-vec">M</span><sub>CLVD</sub>'
+      },
+      'tab-scaling': {
+        labelZh: '静态应力降与标度律', labelEn: 'Static Stress Drop',
+        math: 'Δσ = (7/16) · <span class="math-var">M</span><sub>0</sub> / <span class="math-var">r</span><sup>3</sup>, &nbsp; <span class="math-var">M</span><sub>0</sub> = μ<span class="math-var">A</span><span class="math-var">D̄</span>'
+      },
+      'tab-egf': {
+        labelZh: 'EGF 频域反褶积', labelEn: 'EGF Deconvolution',
+        math: 'STF(ω) = <span class="math-var">U</span><sub>main</sub>(ω) · <span class="math-var">g</span>*(ω) / max(|<span class="math-var">g</span>(ω)|², <span class="math-var">c<sub>w</sub></span>)'
+      }
+    };
+
+    // =========================================================================
+    // 1. Language Switcher & Tab Navigation
+    // =========================================================================
+    function updateHeaderEquation() {
+      const info = tabEquations[state.activeTab];
+      if (!info) return;
+      document.getElementById('header-eq-label').textContent = state.lang === 'zh' ? info.labelZh : info.labelEn;
+      document.getElementById('header-eq-math').innerHTML = info.math;
+    }
+
+    window.setLanguage = function(lang) {
+      state.lang = (lang === 'en') ? 'en' : 'zh';
+      document.documentElement.lang = state.lang === 'en' ? 'en' : 'zh-CN';
+      document.getElementById('lab-navigation').setAttribute('aria-label', state.lang === 'en' ? 'Interactive labs' : '互动实验');
+      document.getElementById('section-navigation').setAttribute('aria-label', state.lang === 'en' ? 'Lab sections' : '实验模块');
+
+      ['zh', 'en'].forEach(l => {
+        const btn = document.getElementById('btn-lang-' + l);
+        if (!btn) return;
+        if (l === state.lang) {
+          btn.className = 'lang-btn px-3 py-1 rounded-lg text-xs font-bold bg-slate-900 text-white shadow-sm transition cursor-pointer';
+          btn.setAttribute('aria-pressed', 'true');
+        } else {
+          btn.className = 'lang-btn px-3 py-1 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer';
+          btn.setAttribute('aria-pressed', 'false');
+        }
+      });
+
+      document.querySelectorAll('[data-en][data-zh]').forEach(el => {
+        el.textContent = state.lang === 'en' ? el.getAttribute('data-en') : el.getAttribute('data-zh');
+      });
+
+      updateHeaderEquation();
+      updateDirRegimeBadge();
+      renderActiveTab();
+    };
+
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      const target = document.getElementById(tabId);
+      if (target) target.classList.remove('hidden');
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-blue-600', 'text-blue-700', 'bg-blue-50/70', 'font-bold');
+        btn.classList.add('border-transparent', 'text-slate-600', 'font-semibold');
+        const badge = btn.querySelector('span:first-child');
+        if (badge) {
+          badge.classList.remove('bg-blue-600', 'text-white');
+          badge.classList.add('bg-slate-200', 'text-slate-700');
+        }
+      });
+
+      const activeBtn = document.getElementById('btn-' + tabId);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-transparent', 'text-slate-600', 'font-semibold');
+        activeBtn.classList.add('border-blue-600', 'text-blue-700', 'bg-blue-50/70', 'font-bold');
+        const activeBadge = activeBtn.querySelector('span:first-child');
+        if (activeBadge) {
+          activeBadge.classList.remove('bg-slate-200', 'text-slate-700');
+          activeBadge.classList.add('bg-blue-600', 'text-white');
+        }
+      }
+
+      updateHeaderEquation();
+      resizeAllCanvases();
+      renderActiveTab();
+    }
+
+    function renderActiveTab() {
+      if (state.activeTab === 'tab-directivity') { drawDirectivityMap(); drawDirectivityPulses(); }
+      if (state.activeTab === 'tab-spectra') { drawSpectraLog(); drawSaturationPlot(); }
+      if (state.activeTab === 'tab-nondc') { drawMT3D(); drawNonDCBeachball(); drawHudsonPlot(); }
+      if (state.activeTab === 'tab-scaling') { drawScalingMap(); drawScalingLogLog(); }
+      if (state.activeTab === 'tab-egf') { computeAndDrawEGF(); }
+    }
+
+    function togglePedagogyPanel() {
+      document.getElementById('pedagogy-content').classList.toggle('hidden');
+    }
+
+    function resizeAllCanvases() {
+      const dpr = window.devicePixelRatio || 1;
+      const ids = [
+        'canvas-dir-map', 'canvas-dir-pulses',
+        'canvas-spec-log', 'canvas-spec-sat',
+        'canvas-mt-3d', 'canvas-mt-hudson',
+        'canvas-scale-map', 'canvas-scale-loglog',
+        'canvas-egf-traces', 'canvas-egf-spec'
+      ];
+      ids.forEach(id => {
+        const c = document.getElementById(id);
+        if (!c || !c.parentElement) return;
+        const rect = c.parentElement.getBoundingClientRect();
+        if (rect.width > 10 && rect.height > 10) {
+          c.width = Math.floor(rect.width * dpr);
+          c.height = Math.floor(rect.height * dpr);
+        }
+      });
+    }
+
+    // =========================================================================
+    // 2. Module 1: 9.4.1 Rupture Directivity Simulator
+    // =========================================================================
+    function setDirMode(mode) {
+      state.dir.mode = mode;
+      const bUni = document.getElementById('dir-mode-uni');
+      const bBi = document.getElementById('dir-mode-bi');
+      if (mode === 'unilateral') {
+        bUni.className = 'py-1.5 rounded-lg bg-slate-900 text-white font-bold shadow-sm transition';
+        bBi.className = 'py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold transition';
+      } else {
+        bBi.className = 'py-1.5 rounded-lg bg-slate-900 text-white font-bold shadow-sm transition';
+        bUni.className = 'py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-semibold transition';
+      }
+      triggerDirectivityQuake();
+    }
+
+    function setDirPreset(preset) {
+      const slider = document.getElementById('dir-vr');
+      if (preset === 'subshear') slider.value = 0.80;
+      else if (preset === 'supershear') slider.value = 1.41;
+      else if (preset === 'fast_super') slider.value = 1.65;
+      updateDirectivityParams();
+      triggerDirectivityQuake();
+    }
+
+    function updateDirRegimeBadge() {
+      const badge = document.getElementById('dir-regime-badge');
+      if (!badge) return;
+      const r = state.dir.vrRatio;
+      if (r <= 1.001) {
+        badge.className = 'px-2.5 py-1 rounded-full bg-blue-50 text-blue-800 border border-blue-200 font-mono text-[11px] font-bold';
+        badge.textContent = state.lang === 'zh'
+          ? (r > 0.99 ? '临界声速 (vᵣ ≈ c) · 0° 强烈挤压' : `亚剪切破裂 (vᵣ < c) · 极值位于 0°`)
+          : (r > 0.99 ? 'Transonic (vᵣ ≈ c) · Strong 0° focus' : 'Sub-shear (vᵣ < c) · Max focus at 0°');
+      } else {
+        const thetaM = Math.acos(1 / r) * 180 / Math.PI;
+        const psiM = 90 - thetaM;
+        badge.className = 'px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-400 font-mono text-[11px] font-bold';
+        badge.textContent = state.lang === 'zh'
+          ? `⚡ 超剪切马赫锥 (vᵣ > c) · 半锥角 ψ_M=${psiM.toFixed(1)}° · 强聚束 θ_M=±${thetaM.toFixed(1)}°`
+          : `⚡ Supershear Mach Cone · ψ_M=${psiM.toFixed(1)}° · Peak focus θ_M=±${thetaM.toFixed(1)}°`;
+      }
+    }
+
+    function updateDirectivityParams() {
+      state.dir.vrRatio = parseFloat(document.getElementById('dir-vr').value);
+      state.dir.length = parseFloat(document.getElementById('dir-len').value);
+      state.dir.riseTime = parseFloat(document.getElementById('dir-rise').value);
+      document.getElementById('dir-val-vr').textContent = state.dir.vrRatio.toFixed(2) + (state.dir.vrRatio > 1.001 ? ' (Supershear!)' : '');
+      document.getElementById('dir-val-len').textContent = state.dir.length.toFixed(0) + ' km';
+      document.getElementById('dir-val-rise').textContent = state.dir.riseTime.toFixed(1) + ' s';
+      updateDirRegimeBadge();
+      drawDirectivityMap();
+      drawDirectivityPulses();
+    }
+
+    function triggerDirectivityQuake() {
+      state.dir.animTime = 0.0;
+      state.dir.playing = true;
+      const pauseBtn = document.getElementById('btn-dir-pause');
+      if (pauseBtn) {
+        pauseBtn.innerHTML = state.lang === 'zh' ? '暂停' : 'Pause';
+      }
+      drawDirectivityMap();
+      drawDirectivityPulses();
+    }
+
+    function toggleDirPause() {
+      state.dir.playing = !state.dir.playing;
+      const pauseBtn = document.getElementById('btn-dir-pause');
+      if (pauseBtn) {
+        pauseBtn.innerHTML = state.dir.playing
+          ? (state.lang === 'zh' ? '暂停' : 'Pause')
+          : (state.lang === 'zh' ? '继续' : 'Resume');
+      }
+    }
+
+    // Normalized boxcar convolution -> trapezoidal pulse of exact unit area
+    function boxcarConv(t, tStart, dur, rise) {
+      // Convolution of rect(0, dur)/dur and rect(0, rise)/rise
+      if (dur < 0.01) dur = 0.01;
+      if (rise < 0.01) rise = 0.01;
+      const a = t - tStart;
+      const lo = Math.max(0, a - rise);
+      const hi = Math.min(dur, a);
+      if (hi <= lo) return 0;
+      return (hi - lo) / (dur * rise);
+    }
+
+    function computeStationPulse(thetaDeg, tArr) {
+      const L = state.dir.length;
+      const vr = state.dir.vrRatio * state.dir.c;
+      const rise = state.dir.riseTime;
+      const cosT = Math.cos(thetaDeg * Math.PI / 180);
+
+      const vals = new Float64Array(tArr.length);
+      let peak = 0;
+      let area = 0;
+      const dt = tArr.length > 1 ? (tArr[1] - tArr[0]) : 0.05;
+
+      if (state.dir.mode === 'unilateral') {
+        const dEff = 1 - state.dir.vrRatio * cosT;
+        const td = Math.max(0.05, (L / vr) * Math.abs(dEff));
+        const reversed = dEff < -0.02;
+        const isMach = state.dir.vrRatio > 1.001 && Math.abs(dEff) < 0.12;
+        // Shift start so even time-reversed arrivals stay inside t >= 2s window
+        const t0 = 2.5;
+        for (let i = 0; i < tArr.length; i++) {
+          const v = boxcarConv(tArr[i], t0, td, rise);
+          vals[i] = v;
+          if (v > peak) peak = v;
+          area += v * dt;
+        }
+        return { vals, td: td + rise, tdRupture: td, peak, area, t0, reversed, isMach };
+      } else {
+        // Bilateral symmetric from center: two half-faults of length L/2
+        const halfL = L * 0.5;
+        const dPos = 1 - state.dir.vrRatio * cosT;
+        const dNeg = 1 + state.dir.vrRatio * cosT;
+        const tdPos = Math.max(0.05, (halfL / vr) * Math.abs(dPos));
+        const tdNeg = Math.max(0.05, (halfL / vr) * Math.abs(dNeg));
+        const reversed = dPos < -0.02 || dNeg < -0.02;
+        const isMach = state.dir.vrRatio > 1.001 && (Math.abs(dPos) < 0.12 || Math.abs(dNeg) < 0.12);
+        const t0 = 2.5;
+        for (let i = 0; i < tArr.length; i++) {
+          const v = 0.5 * boxcarConv(tArr[i], t0, tdPos, rise) + 0.5 * boxcarConv(tArr[i], t0, tdNeg, rise);
+          vals[i] = v;
+          if (v > peak) peak = v;
+          area += v * dt;
+        }
+        return { vals, td: Math.max(tdPos, tdNeg) + rise, tdRupture: Math.max(tdPos, tdNeg), peak, area, t0, reversed, isMach };
+      }
+    }
+
+    function drawDirectivityMap() {
+      const canvas = document.getElementById('canvas-dir-map');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr, h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const cx = w * 0.5, cy = h * 0.5;
+      const L = state.dir.length;
+      const vr = state.dir.vrRatio * state.dir.c;
+      const c = state.dir.c;
+      const t = state.dir.animTime;
+      const isSuper = state.dir.vrRatio > 1.001;
+
+      // Scale: fit 140 km fault + station ring nicely
+      const pxPerKm = Math.min(w, h) / 290;
+      const faultPx = L * pxPerKm;
+      const stationDistKm = 105;
+      const stationDistPx = stationDistKm * pxPerKm;
+
+      // Subtle polar grid
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.lineWidth = 1;
+      [50, 105].forEach(rk => {
+        ctx.beginPath();
+        ctx.arc(cx, cy, rk * pxPerKm, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+
+      // Azimuth guidelines
+      [0, 45, 90, 180].forEach(ang => {
+        const rad = -ang * Math.PI / 180; // 0° right (+x), 90° up (-y)
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(rad) * (stationDistPx + 14), cy + Math.sin(rad) * (stationDistPx + 14));
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+
+      // Fault geometry
+      let xStartPx, xEndPx, hypoPx;
+      if (state.dir.mode === 'unilateral') {
+        xStartPx = cx - faultPx * 0.5;
+        xEndPx = cx + faultPx * 0.5;
+        hypoPx = xStartPx;
+      } else {
+        xStartPx = cx - faultPx * 0.5;
+        xEndPx = cx + faultPx * 0.5;
+        hypoPx = cx;
+      }
+
+      // Draw Huygens wavefront circles emitted during rupture
+      const numSources = 15;
+      const Trup = (state.dir.mode === 'unilateral') ? (L / vr) : (L * 0.5 / vr);
+      for (let i = 0; i < numSources; i++) {
+        const frac = i / (numSources - 1);
+        const emitPoints = [];
+        if (state.dir.mode === 'unilateral') {
+          emitPoints.push({ xKm: -L * 0.5 + frac * L, tEmit: frac * Trup });
+        } else {
+          if (i === 0) emitPoints.push({ xKm: 0, tEmit: 0 });
+          else {
+            emitPoints.push({ xKm: frac * L * 0.5, tEmit: frac * Trup });
+            emitPoints.push({ xKm: -frac * L * 0.5, tEmit: frac * Trup });
+          }
+        }
+        emitPoints.forEach(pt => {
+          if (t >= pt.tEmit) {
+            const rKm = (t - pt.tEmit) * c;
+            const rPx = rKm * pxPerKm;
+            if (rPx > 2 && rPx < Math.max(w, h) * 0.85) {
+              const alpha = Math.max(0.10, 0.58 - rKm / 260);
+              ctx.strokeStyle = isSuper
+                ? `rgba(217, 119, 6, ${alpha.toFixed(2)})`
+                : `rgba(37, 99, 235, ${alpha.toFixed(2)})`;
+              ctx.lineWidth = (i % 3 === 0) ? 1.8 : 1.1;
+              ctx.beginPath();
+              ctx.arc(cx + pt.xKm * pxPerKm, cy, rPx, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+          }
+        });
+      }
+
+      // Exact Mach Cone Envelope (when v_r > c)
+      if (isSuper && t > 0.2) {
+        const cosTM = 1 / state.dir.vrRatio;
+        const sinTM = Math.sqrt(Math.max(0, 1 - cosTM * cosTM));
+        const rHypoKm = t * c;
+        const tEnd = Math.min(t, Trup);
+        const rEndKm = (t - tEnd) * c;
+
+        const drawMachBranch = (xHypoKm, dirSign) => {
+          const xStopKm = xHypoKm + dirSign * tEnd * vr;
+          const pOutX = cx + (xHypoKm + dirSign * rHypoKm * cosTM) * pxPerKm;
+          const pInX  = cx + (xStopKm + dirSign * rEndKm * cosTM) * pxPerKm;
+
+          [-1, 1].forEach(side => {
+            const pOutY = cy + side * rHypoKm * sinTM * pxPerKm;
+            const pInY  = cy + side * rEndKm * sinTM * pxPerKm;
+
+            // Mach shock front glow
+            ctx.save();
+            ctx.strokeStyle = 'rgba(220, 38, 38, 0.28)';
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+            ctx.beginPath(); ctx.moveTo(pInX, pInY); ctx.lineTo(pOutX, pOutY); ctx.stroke();
+
+            ctx.strokeStyle = '#DC2626';
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(pInX, pInY); ctx.lineTo(pOutX, pOutY); ctx.stroke();
+            ctx.restore();
+          });
+
+          // Mach propagation normal ray guideline (angle theta_M)
+          ctx.save();
+          ctx.setLineDash([3, 3]);
+          ctx.strokeStyle = '#D97706';
+          ctx.lineWidth = 1.4;
+          const rayLen = stationDistPx + 14;
+          ctx.beginPath();
+          ctx.moveTo(cx + xHypoKm * pxPerKm, cy);
+          ctx.lineTo(cx + xHypoKm * pxPerKm + dirSign * rayLen * cosTM, cy - rayLen * sinTM);
+          ctx.stroke();
+          ctx.restore();
+        };
+
+        if (state.dir.mode === 'unilateral') {
+          drawMachBranch(-L * 0.5, +1);
+        } else {
+          drawMachBranch(0, +1);
+          drawMachBranch(0, -1);
+        }
+
+        // Mach label badge inside canvas
+        const thetaDeg = Math.acos(cosTM) * 180 / Math.PI;
+        ctx.fillStyle = 'rgba(254, 243, 199, 0.94)';
+        ctx.strokeStyle = '#F59E0B';
+        ctx.lineWidth = 1.2;
+        ctx.fillRect(10, 10, 194, 24);
+        ctx.strokeRect(10, 10, 194, 24);
+        ctx.fillStyle = '#92400E';
+        ctx.font = 'bold 10.5px "JetBrains Mono", "Noto Sans SC", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`⚡ Mach Front θ_M = ${thetaDeg.toFixed(1)}°`, 16, 26);
+      }
+
+      // Unruptured fault track
+      ctx.strokeStyle = '#94A3B8';
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(xStartPx, cy);
+      ctx.lineTo(xEndPx, cy);
+      ctx.stroke();
+
+      // Ruptured fault segment (red)
+      ctx.strokeStyle = '#DC2626';
+      ctx.lineWidth = 6;
+      if (state.dir.mode === 'unilateral') {
+        const rupLen = Math.min(L, t * vr) * pxPerKm;
+        ctx.beginPath();
+        ctx.moveTo(hypoPx, cy);
+        ctx.lineTo(hypoPx + rupLen, cy);
+        ctx.stroke();
+
+        // Rupture tip dot
+        if (t * vr < L) {
+          ctx.fillStyle = isSuper ? '#F59E0B' : '#EF4444';
+          ctx.beginPath();
+          ctx.arc(hypoPx + rupLen, cy, isSuper ? 6.5 : 5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      } else {
+        const halfRup = Math.min(L * 0.5, t * vr) * pxPerKm;
+        ctx.beginPath();
+        ctx.moveTo(cx - halfRup, cy);
+        ctx.lineTo(cx + halfRup, cy);
+        ctx.stroke();
+        if (t * vr < L * 0.5) {
+          ctx.fillStyle = isSuper ? '#F59E0B' : '#EF4444';
+          ctx.beginPath(); ctx.arc(cx + halfRup, cy, 5.5, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(cx - halfRup, cy, 5.5, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+
+      // Hypocenter Star
+      ctx.fillStyle = '#F59E0B';
+      ctx.strokeStyle = '#78350F';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let k = 0; k < 10; k++) {
+        const r = k % 2 === 0 ? 8 : 3.8;
+        const a = k * Math.PI / 5 - Math.PI / 2;
+        const sx = hypoPx + Math.cos(a) * r;
+        const sy = cy + Math.sin(a) * r;
+        if (k === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Rupture Direction Arrow Annotation
+      ctx.fillStyle = '#B91C1C';
+      ctx.font = 'bold 11px "Inter", "Noto Sans SC", sans-serif';
+      const dirTxt = state.dir.mode === 'unilateral'
+        ? (state.lang === 'zh' ? `破裂方向 v_r = ${state.dir.vrRatio.toFixed(2)}c → (L=${L}km)` : `Rupture v_r = ${state.dir.vrRatio.toFixed(2)}c → (L=${L}km)`)
+        : (state.lang === 'zh' ? `← 双向破裂 v_r = ${state.dir.vrRatio.toFixed(2)}c → (L=${L}km)` : `← Bilateral v_r = ${state.dir.vrRatio.toFixed(2)}c → (L=${L}km)`);
+      ctx.textAlign = 'center';
+      ctx.fillText(dirTxt, cx, cy + 20);
+
+      // 4 Virtual Stations
+      const stations = [
+        { ang: 0,   label: '0°',   tagZh: '正前方', tagEn: 'Forward',  color: '#DC2626' },
+        { ang: 45,  label: '45°',  tagZh: '斜前方', tagEn: '45°',      color: '#D97706' },
+        { ang: 90,  label: '90°',  tagZh: '垂直向', tagEn: 'Broadside',color: '#059669' },
+        { ang: 180, label: '180°', tagZh: '正后方', tagEn: 'Backward', color: '#2563EB' }
+      ];
+
+      stations.forEach(st => {
+        const rad = -st.ang * Math.PI / 180;
+        const sx = cx + Math.cos(rad) * stationDistPx;
+        const sy = cy + Math.sin(rad) * stationDistPx;
+
+        // Check if wavefront is currently passing station
+        const hypoXKm = (state.dir.mode === 'unilateral') ? -L * 0.5 : 0;
+        const stXKm = Math.cos(rad) * stationDistKm;
+        const stYKm = -Math.sin(rad) * stationDistKm;
+        const distFromHypo = Math.hypot(stXKm - hypoXKm, stYKm);
+        const tArrive = distFromHypo / c;
+        const pulseInfo = computeStationPulse(st.ang, [0]);
+        const isActive = (t >= tArrive - 0.5 && t <= tArrive + pulseInfo.td);
+
+        if (isActive) {
+          ctx.fillStyle = st.color + '33';
+          ctx.beginPath();
+          ctx.arc(sx, sy, 15, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Triangle station marker
+        ctx.fillStyle = st.color;
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy - 8);
+        ctx.lineTo(sx - 7, sy + 6);
+        ctx.lineTo(sx + 7, sy + 6);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#0F172A';
+        ctx.font = 'bold 11px "JetBrains Mono", "Noto Sans SC", sans-serif';
+        const tag = state.lang === 'zh' ? `${st.label} ${st.tagZh}` : `${st.label} ${st.tagEn}`;
+        const lx = sx + (st.ang === 0 ? -4 : st.ang === 180 ? 4 : 0);
+        const ly = sy + (st.ang === 90 ? -14 : 20);
+        ctx.textAlign = st.ang === 0 ? 'right' : st.ang === 180 ? 'left' : 'center';
+        ctx.fillText(tag, lx, ly);
+      });
+
+      document.getElementById('dir-time-badge').textContent = `t = ${t.toFixed(1)} s`;
+      ctx.restore();
+    }
+
+    function drawDirectivityPulses() {
+      const canvas = document.getElementById('canvas-dir-pulses');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr, h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const N = 500;
+      const tMax = Math.max(25, (state.dir.length / (state.dir.vrRatio * state.dir.c)) * (1 + state.dir.vrRatio) + state.dir.riseTime + 7);
+      const tArr = new Float64Array(N);
+      for (let i = 0; i < N; i++) tArr[i] = (i / (N - 1)) * tMax;
+
+      const stations = [
+        { ang: 0,   labelZh: 'θ = 0° (破裂前方)', labelEn: 'θ = 0° (Forward)',  color: '#DC2626', fill: 'rgba(220, 38, 38, 0.16)' },
+        { ang: 45,  labelZh: 'θ = 45° (斜前方)', labelEn: 'θ = 45° (Oblique)', color: '#D97706', fill: 'rgba(217, 119, 6, 0.16)' },
+        { ang: 90,  labelZh: 'θ = 90° (垂直向)', labelEn: 'θ = 90° (Broadside)',color: '#059669', fill: 'rgba(5, 150, 105, 0.16)' },
+        { ang: 180, labelZh: 'θ = 180° (破裂后方)',labelEn: 'θ = 180° (Backward)',color: '#2563EB', fill: 'rgba(37, 99, 235, 0.16)' }
+      ];
+
+      const results = stations.map(st => computeStationPulse(st.ang, tArr));
+      // Global max peak across all 4 stations so scale is strictly shared!
+      let globalPeak = 0.05;
+      results.forEach(r => { if (r.peak > globalPeak) globalPeak = r.peak; });
+
+      const rowH = h / 4;
+      const padL = 16, padR = 16;
+      const plotW = w - padL - padR;
+
+      stations.forEach((st, idx) => {
+        const res = results[idx];
+        const yBase = rowH * (idx + 0.84);
+        const ampH = rowH * 0.56;
+
+        // Subtle highlight if this station sits on the Mach Cone
+        if (res.isMach) {
+          ctx.fillStyle = 'rgba(254, 243, 199, 0.55)';
+          ctx.fillRect(6, rowH * idx + 3, w - 12, rowH - 6);
+        }
+
+        // Baseline
+        ctx.strokeStyle = '#CBD5E1';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padL, yBase);
+        ctx.lineTo(w - padR, yBase);
+        ctx.stroke();
+
+        // Fill shaded area under pulse
+        ctx.beginPath();
+        ctx.moveTo(padL, yBase);
+        for (let i = 0; i < N; i++) {
+          const x = padL + (i / (N - 1)) * plotW;
+          const y = yBase - (res.vals[i] / globalPeak) * ampH;
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(padL + plotW, yBase);
+        ctx.closePath();
+        ctx.fillStyle = st.fill;
+        ctx.fill();
+
+        // Pulse outline
+        ctx.beginPath();
+        for (let i = 0; i < N; i++) {
+          const x = padL + (i / (N - 1)) * plotW;
+          const y = yBase - (res.vals[i] / globalPeak) * ampH;
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = st.color;
+        ctx.lineWidth = 2.4;
+        ctx.stroke();
+
+        // Labels + Supershear Mach / Time-Reversed indicator
+        ctx.fillStyle = st.color;
+        ctx.font = 'bold 11.5px "Inter", "Noto Sans SC", sans-serif';
+        ctx.textAlign = 'left';
+        let extra = '';
+        if (res.isMach) extra = state.lang === 'zh' ? ' ⚡马赫锥峰值!' : ' ⚡MACH CONE!';
+        else if (res.reversed) extra = state.lang === 'zh' ? ' ↺末端先到(反转)' : ' ↺Time-Reversed';
+        ctx.fillText((state.lang === 'zh' ? st.labelZh : st.labelEn) + extra, padL + 2, rowH * idx + 18);
+
+        ctx.fillStyle = '#334155';
+        ctx.font = '600 10.5px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(
+          `Td=${res.td.toFixed(1)}s  |  Peak=${res.peak.toFixed(2)}  |  Area=${res.area.toFixed(2)}`,
+          w - padR - 2,
+          rowH * idx + 18
+        );
+      });
+
+      ctx.fillStyle = '#64748B';
+      ctx.font = '10px "JetBrains Mono", sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(`0 → ${tMax.toFixed(0)} s`, w - padR, h - 4);
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // 3. Module 2: 9.4.2 & 9.7 Source Spectra & Magnitude Saturation
+    // =========================================================================
+    function calcBruneParams(mw, dsMPa) {
+      const m0 = Math.pow(10, 1.5 * mw + 9.1); // N·m
+      const dsPa = dsMPa * 1e6;
+      const beta = 3500; // m/s
+      const fc = 0.49 * beta * Math.pow(dsPa / m0, 1 / 3);
+      return { m0, fc };
+    }
+
+    // Calibrated empirical magnitude saturation curves matching Shearer Fig 9.20 / Kanamori 1977
+    function calcApparentMagnitudes(mw, dsMPa) {
+      // Shift slightly with stress drop (higher Δσ -> slightly higher high-freq mb)
+      const dsShift = 0.25 * Math.log10(dsMPa / 3.0);
+      // mb (1 Hz): linear below ~5.2, saturates smoothly near 6.45 + dsShift
+      const mbSat = 6.45 + dsShift;
+      const mb = mbSat - Math.log(1 + Math.exp(-(mw - mbSat) * 1.35)) / 1.35;
+      // Ms (20 s): linear below ~7.4, saturates smoothly near 8.25
+      const msSat = 8.25 + 0.1 * Math.log10(dsMPa / 3.0);
+      const ms = msSat - Math.log(1 + Math.exp(-(mw - msSat) * 1.45)) / 1.45;
+      // ML: saturates near ~6.85
+      const mlSat = 6.85 + dsShift * 0.7;
+      const ml = mlSat - Math.log(1 + Math.exp(-(mw - mlSat) * 1.4)) / 1.4;
+      return { mb, ms, ml };
+    }
+
+    function setSpecPreset(mw) {
+      document.getElementById('spec-mw').value = mw;
+      updateSpectraParams();
+    }
+
+    function formatSci(val) {
+      if (val === 0) return '0';
+      const exp = Math.floor(Math.log10(Math.abs(val)));
+      const mant = val / Math.pow(10, exp);
+      const supMap = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+      const expStr = String(exp).split('').map(ch => supMap[ch] || ch).join('');
+      return `${mant.toFixed(2)} × 10${expStr}`;
+    }
+
+    function updateSpectraParams() {
+      state.spec.mw = parseFloat(document.getElementById('spec-mw').value);
+      state.spec.dsMPa = parseFloat(document.getElementById('spec-ds').value);
+      document.getElementById('spec-val-mw').textContent = state.spec.mw.toFixed(2);
+      document.getElementById('spec-val-ds').textContent = state.spec.dsMPa.toFixed(1) + ' MPa';
+
+      const { m0, fc } = calcBruneParams(state.spec.mw, state.spec.dsMPa);
+      const { mb, ms } = calcApparentMagnitudes(state.spec.mw, state.spec.dsMPa);
+      document.getElementById('spec-read-m0').textContent = formatSci(m0) + ' N·m';
+      document.getElementById('spec-read-fc').textContent = `${fc.toFixed(3)} Hz (${(1 / fc).toFixed(1)} s)`;
+      document.getElementById('spec-read-mb').textContent = mb.toFixed(2);
+      document.getElementById('spec-read-ms').textContent = ms.toFixed(2);
+
+      drawSpectraLog();
+      drawSaturationPlot();
+    }
+
+    function drawSpectraLog() {
+      const canvas = document.getElementById('canvas-spec-log');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr, h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const padL = 56, padR = 20, padT = 26, padB = 40;
+      const plotW = w - padL - padR, plotH = h - padT - padB;
+
+      const logFMin = -2.7, logFMax = 1.4; // ~0.002 Hz to 25 Hz
+      const logYMin = 12.5, logYMax = 24.0; // log10(Omega) in N*m
+
+      const xOf = lf => padL + ((lf - logFMin) / (logFMax - logFMin)) * plotW;
+      const yOf = ly => padT + (1 - (ly - logYMin) / (logYMax - logYMin)) * plotH;
+
+      // Grid lines
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.lineWidth = 1;
+      [-2, -1, 0, 1].forEach(lf => {
+        const x = xOf(lf);
+        ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + plotH); ctx.stroke();
+        ctx.fillStyle = '#64748B';
+        ctx.font = '10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(Math.pow(10, lf) + ' Hz', x, h - 18);
+      });
+      for (let ly = 14; ly <= 23; ly += 2) {
+        const y = yOf(ly);
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + plotW, y); ctx.stroke();
+        ctx.fillStyle = '#64748B';
+        ctx.font = '10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`10^${ly}`, padL - 6, y + 3);
+      }
+
+      // Vertical measurement bands: Ms (0.05 Hz) & mb (1.0 Hz)
+      const bands = [
+        { f: 0.05, label: 'M_s (0.05 Hz / 20s)', color: '#059669' },
+        { f: 1.0,  label: 'm_b (1 Hz / 1s)',     color: '#DC2626' }
+      ];
+      bands.forEach(b => {
+        const xb = xOf(Math.log10(b.f));
+        ctx.fillStyle = b.color + '18';
+        ctx.fillRect(xb - 6, padT, 12, plotH);
+        ctx.strokeStyle = b.color;
+        ctx.lineWidth = 1.6;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(xb, padT); ctx.lineTo(xb, padT + plotH); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = b.color;
+        ctx.font = 'bold 10.5px "Inter", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(b.label, xb, padT - 8);
+      });
+
+      // Reference Ghost Spectra for Mw = 4, 5, 6, 7, 8, 9
+      const steps = 140;
+      for (let refMw = 4; refMw <= 9; refMw++) {
+        const { m0, fc } = calcBruneParams(refMw, state.spec.dsMPa);
+        ctx.beginPath();
+        for (let i = 0; i <= steps; i++) {
+          const lf = logFMin + (i / steps) * (logFMax - logFMin);
+          const f = Math.pow(10, lf);
+          const amp = m0 / (1 + Math.pow(f / fc, 2));
+          const x = xOf(lf), y = yOf(Math.log10(amp));
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+        ctx.setLineDash([3, 3]);
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'left';
+        const y0 = yOf(Math.log10(m0));
+        if (y0 > padT + 10 && y0 < padT + plotH - 8) {
+          ctx.fillText(`Mw${refMw}`, padL + 5, y0 - 3);
+        }
+      }
+
+      // Locus line of corner frequencies (M0 proportional to fc^-3)
+      ctx.beginPath();
+      [3.8, 9.4].forEach((m, idx) => {
+        const { m0, fc } = calcBruneParams(m, state.spec.dsMPa);
+        const x = xOf(Math.log10(fc)), y = yOf(Math.log10(m0));
+        if (idx === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = 'rgba(217, 119, 6, 0.45)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Active Mw spectrum
+      const { m0, fc } = calcBruneParams(state.spec.mw, state.spec.dsMPa);
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const lf = logFMin + (i / steps) * (logFMax - logFMin);
+        const f = Math.pow(10, lf);
+        const amp = m0 / (1 + Math.pow(f / fc, 2));
+        const x = xOf(lf), y = yOf(Math.log10(amp));
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = '#1D4ED8';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Corner frequency marker
+      const xFc = xOf(Math.log10(fc));
+      const yFc = yOf(Math.log10(m0 * 0.5));
+      const yPlat = yOf(Math.log10(m0));
+      if (xFc >= padL && xFc <= padL + plotW) {
+        ctx.strokeStyle = '#2563EB';
+        ctx.setLineDash([3, 3]);
+        ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(xFc, yPlat); ctx.lineTo(xFc, padT + plotH); ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.fillStyle = '#2563EB';
+        ctx.beginPath(); ctx.arc(xFc, yFc, 5.5, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1.5; ctx.stroke();
+
+        ctx.fillStyle = '#1E3A8A';
+        ctx.font = 'bold 11px "JetBrains Mono", monospace';
+        ctx.textAlign = xFc > w - 120 ? 'right' : 'left';
+        ctx.fillText(`f_c=${fc.toFixed(3)}Hz`, xFc + (xFc > w - 120 ? -8 : 8), yPlat - 6);
+      }
+
+      // Highlight dots at Ms and mb bands
+      bands.forEach(b => {
+        const amp = m0 / (1 + Math.pow(b.f / fc, 2));
+        const xb = xOf(Math.log10(b.f));
+        const yb = yOf(Math.log10(amp));
+        if (yb >= padT && yb <= padT + plotH) {
+          ctx.fillStyle = b.color;
+          ctx.beginPath(); ctx.arc(xb, yb, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1.5; ctx.stroke();
+        }
+      });
+
+      // Axes border & titles
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(padL, padT, plotW, plotH);
+
+      ctx.fillStyle = '#334155';
+      ctx.font = 'bold 11px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(state.lang === 'zh' ? '频率 Frequency f (Hz)' : 'Frequency f (Hz)', padL + plotW * 0.5, h - 4);
+
+      ctx.save();
+      ctx.translate(14, padT + plotH * 0.5);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText(state.lang === 'zh' ? '位移谱振幅 Ω(f) (N·m)' : 'Displacement Spectrum Ω(f) (N·m)', 0, 0);
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    function drawSaturationPlot() {
+      const canvas = document.getElementById('canvas-spec-sat');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr, h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const padL = 44, padR = 18, padT = 20, padB = 38;
+      const plotW = w - padL - padR, plotH = h - padT - padB;
+      const mMin = 3.5, mMax = 9.5;
+
+      const xOf = m => padL + ((m - mMin) / (mMax - mMin)) * plotW;
+      const yOf = m => padT + (1 - (m - mMin) / (mMax - mMin)) * plotH;
+
+      // Grid
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.lineWidth = 1;
+      for (let m = 4; m <= 9; m++) {
+        const x = xOf(m), y = yOf(m);
+        ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + plotH); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + plotW, y); ctx.stroke();
+        ctx.fillStyle = '#64748B';
+        ctx.font = '10px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(m.toFixed(0), x, h - 18);
+        ctx.textAlign = 'right';
+        ctx.fillText(m.toFixed(0), padL - 6, y + 3);
+      }
+
+      // 1:1 Mw diagonal
+      ctx.strokeStyle = '#0F172A';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.moveTo(xOf(mMin), yOf(mMin));
+      ctx.lineTo(xOf(mMax), yOf(mMax));
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Plot Ms, ML, mb
+      const curves = [
+        { key: 'ms', label: 'M_s (20 s)', color: '#059669' },
+        { key: 'ml', label: 'M_L',        color: '#D97706' },
+        { key: 'mb', label: 'm_b (1 s)',  color: '#DC2626' }
+      ];
+      curves.forEach(c => {
+        ctx.beginPath();
+        for (let i = 0; i <= 100; i++) {
+          const mw = mMin + (i / 100) * (mMax - mMin);
+          const mags = calcApparentMagnitudes(mw, state.spec.dsMPa);
+          const x = xOf(mw), y = yOf(mags[c.key]);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = c.color;
+        ctx.lineWidth = 2.6;
+        ctx.stroke();
+      });
+
+      // Current Mw vertical indicator & dots
+      const curX = xOf(state.spec.mw);
+      ctx.strokeStyle = '#2563EB';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(curX, padT); ctx.lineTo(curX, padT + plotH); ctx.stroke();
+
+      const curMags = calcApparentMagnitudes(state.spec.mw, state.spec.dsMPa);
+      [
+        { val: state.spec.mw, color: '#0F172A' },
+        { val: curMags.ms, color: '#059669' },
+        { val: curMags.ml, color: '#D97706' },
+        { val: curMags.mb, color: '#DC2626' }
+      ].forEach(pt => {
+        ctx.fillStyle = pt.color;
+        ctx.beginPath(); ctx.arc(curX, yOf(pt.val), 4.8, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 1.5; ctx.stroke();
+      });
+
+      // Legend box
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.fillRect(padL + 8, padT + 8, 128, 76);
+      ctx.strokeStyle = '#CBD5E1';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(padL + 8, padT + 8, 128, 76);
+      ctx.font = 'bold 10.5px "Inter", sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#0F172A'; ctx.fillText('--- M_w (1:1 Unsaturated)', padL + 14, padT + 24);
+      ctx.fillStyle = '#059669'; ctx.fillText('— M_s (~8.2 sat.)', padL + 14, padT + 41);
+      ctx.fillStyle = '#D97706'; ctx.fillText('— M_L (~6.9 sat.)', padL + 14, padT + 58);
+      ctx.fillStyle = '#DC2626'; ctx.fillText('— m_b (~6.5 sat.)', padL + 14, padT + 75);
+
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(padL, padT, plotW, plotH);
+
+      ctx.fillStyle = '#334155';
+      ctx.font = 'bold 11px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(state.lang === 'zh' ? '真实矩震级 M_w' : 'True Moment Magnitude M_w', padL + plotW * 0.5, h - 4);
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // 4. Module 3: 9.1 & 9.2 Moment Tensor Decomposition, 3D Radiation & Hudson
+    // =========================================================================
+    function setNonDCPreset(type) {
+      const presets = {
+        dc:     { iso: 0.0,  dc: 1.0, clvd: 0.0 },
+        exp:    { iso: 1.0,  dc: 0.0, clvd: 0.0 },
+        imp:    { iso: -1.0, dc: 0.0, clvd: 0.0 },
+        clvd_p: { iso: 0.0,  dc: 0.0, clvd: 1.0 },
+        crack:  { iso: 0.70, dc: 0.0, clvd: 0.55 },
+        mixed:  { iso: 0.45, dc: 0.65, clvd: -0.45 }
+      };
+      const p = presets[type] || presets.dc;
+      document.getElementById('ndc-iso').value = p.iso;
+      document.getElementById('ndc-dc').value = p.dc;
+      document.getElementById('ndc-clvd').value = p.clvd;
+      updateNonDC();
+    }
+
+    function computeEigen3x3(A) {
+      const M = A.map(r => r.slice());
+      const V = [[1,0,0],[0,1,0],[0,0,1]];
+      for (let iter = 0; iter < 35; iter++) {
+        let p = 0, q = 1, maxOff = Math.abs(M[0][1]);
+        if (Math.abs(M[0][2]) > maxOff) { p = 0; q = 2; maxOff = Math.abs(M[0][2]); }
+        if (Math.abs(M[1][2]) > maxOff) { p = 1; q = 2; maxOff = Math.abs(M[1][2]); }
+        if (maxOff < 1e-10) break;
+        const app = M[p][p], aqq = M[q][q], apq = M[p][q];
+        const phi = 0.5 * Math.atan2(2 * apq, aqq - app);
+        const c = Math.cos(phi), s = Math.sin(phi);
+        for (let i = 0; i < 3; i++) {
+          if (i !== p && i !== q) {
+            const mip = M[i][p], miq = M[i][q];
+            M[i][p] = M[p][i] = c * mip - s * miq;
+            M[i][q] = M[q][i] = s * mip + c * miq;
+          }
+          const vip = V[i][p], viq = V[i][q];
+          V[i][p] = c * vip - s * viq;
+          V[i][q] = s * vip + c * viq;
+        }
+        M[p][p] = c*c*app - 2*c*s*apq + s*s*aqq;
+        M[q][q] = s*s*app + 2*c*s*apq + c*c*aqq;
+        M[p][q] = M[q][p] = 0;
+      }
+      const res = [0,1,2].map(i => ({ val: M[i][i], vec: [V[0][i], V[1][i], V[2][i]] }));
+      res.sort((a, b) => b.val - a.val);
+      return res;
+    }
+
+    function updateNonDC() {
+      const nd = state.nondc;
+      nd.iso = parseFloat(document.getElementById('ndc-iso').value);
+      nd.dc = parseFloat(document.getElementById('ndc-dc').value);
+      nd.clvd = parseFloat(document.getElementById('ndc-clvd').value);
+      nd.strike = parseFloat(document.getElementById('ndc-str').value);
+      nd.dip = parseFloat(document.getElementById('ndc-dip').value);
+      nd.rake = parseFloat(document.getElementById('ndc-rak').value);
+
+      document.getElementById('ndc-val-iso').textContent = (nd.iso >= 0 ? '+' : '') + nd.iso.toFixed(2);
+      document.getElementById('ndc-val-dc').textContent = nd.dc.toFixed(2);
+      document.getElementById('ndc-val-clvd').textContent = (nd.clvd >= 0 ? '+' : '') + nd.clvd.toFixed(2);
+      document.getElementById('ndc-val-str').textContent = nd.strike + '°';
+      document.getElementById('ndc-val-dip').textContent = nd.dip + '°';
+      document.getElementById('ndc-val-rak').textContent = nd.rake + '°';
+
+      // Build T, B, P orthonormal axes in NED from Strike/Dip/Rake
+      const phi = nd.strike * Math.PI / 180;
+      const del = nd.dip * Math.PI / 180;
+      const lam = nd.rake * Math.PI / 180;
+
+      const n = [-Math.sin(del)*Math.sin(phi), Math.sin(del)*Math.cos(phi), -Math.cos(del)];
+      const d = [
+        Math.cos(lam)*Math.cos(phi) + Math.cos(del)*Math.sin(lam)*Math.sin(phi),
+        Math.cos(lam)*Math.sin(phi) - Math.cos(del)*Math.sin(lam)*Math.cos(phi),
+        -Math.sin(del)*Math.sin(lam)
+      ];
+      const invS2 = 1 / Math.SQRT2;
+      const t = [(n[0]+d[0])*invS2, (n[1]+d[1])*invS2, (n[2]+d[2])*invS2];
+      const p = [(n[0]-d[0])*invS2, (n[1]-d[1])*invS2, (n[2]-d[2])*invS2];
+      const b = [t[1]*p[2] - t[2]*p[1], t[2]*p[0] - t[0]*p[2], t[0]*p[1] - t[1]*p[0]];
+
+      const M = [[0,0,0],[0,0,0],[0,0,0]];
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          const mIso = (i === j ? nd.iso : 0);
+          const mDC = nd.dc * (t[i]*t[j] - p[i]*p[j]);
+          const mCLVD = nd.clvd * (t[i]*t[j] - 0.5*b[i]*b[j] - 0.5*p[i]*p[j]);
+          M[i][j] = mIso + mDC + mCLVD;
+        }
+      }
+      nd.M = M;
+
+      // Update 3x3 display
+      const ids = [['11','12','13'],['21','22','23'],['31','32','33']];
+      for (let i = 0; i < 3; i++) {
+        for (let j = 0; j < 3; j++) {
+          document.getElementById('ndc-m' + ids[i][j]).textContent = M[i][j].toFixed(2);
+        }
+      }
+      const tr = M[0][0] + M[1][1] + M[2][2];
+      document.getElementById('ndc-trace').textContent = tr.toFixed(2);
+
+      // Eigenvalues & standard Hudson / Knopoff-Randall decomposition
+      const eig = computeEigen3x3(M);
+      const l1 = eig[0].val, l2 = eig[1].val, l3 = eig[2].val;
+      nd.eigs = [l1, l2, l3];
+      document.getElementById('ndc-lam1').textContent = (l1 >= 0 ? '+' : '') + l1.toFixed(2);
+      document.getElementById('ndc-lam2').textContent = (l2 >= 0 ? '+' : '') + l2.toFixed(2);
+      document.getElementById('ndc-lam3').textContent = (l3 >= 0 ? '+' : '') + l3.toFixed(2);
+
+      const mIsoVal = (l1 + l2 + l3) / 3;
+      const d1 = l1 - mIsoVal, d2 = l2 - mIsoVal, d3 = l3 - mIsoVal;
+      const mMaxDev = Math.max(Math.abs(d1), Math.abs(d3));
+
+      let pIso = 0, pDC = 100, pCLVD = 0;
+      const denom = Math.abs(mIsoVal) + mMaxDev;
+      if (denom > 1e-6) {
+        pIso = (Math.abs(mIsoVal) / denom) * 100;
+        const devPct = 100 - pIso;
+        const eps = mMaxDev > 1e-6 ? Math.abs(d2) / mMaxDev : 0; // 0 for DC, 0.5 for pure CLVD
+        pCLVD = devPct * (2 * eps);
+        pDC = Math.max(0, devPct - pCLVD);
+      }
+      document.getElementById('ndc-pct-iso').textContent = Math.round(pIso) + '%';
+      document.getElementById('ndc-pct-dc').textContent = Math.round(pDC) + '%';
+      document.getElementById('ndc-pct-clvd').textContent = Math.round(pCLVD) + '%';
+      document.getElementById('ndc-bar-iso').style.width = pIso + '%';
+      document.getElementById('ndc-bar-dc').style.width = pDC + '%';
+      document.getElementById('ndc-bar-clvd').style.width = pCLVD + '%';
+
+      // Hudson (T, k)
+      nd.k = denom > 1e-6 ? mIsoVal / denom : 0;
+      nd.T = mMaxDev > 1e-6 ? (2 * d2) / mMaxDev : 0;
+      document.getElementById('ndc-tk-badge').textContent = `T=${nd.T.toFixed(2)}, k=${nd.k.toFixed(2)}`;
+
+      drawMT3D();
+      drawNonDCBeachball();
+      drawHudsonPlot();
+    }
+
+    function projectMT3D(x1, x2, x3, cx, cy, scale) {
+      const wx = x2, wy = -x3, wz = x1;
+      const cosY = Math.cos(state.nondc.yaw), sinY = Math.sin(state.nondc.yaw);
+      const cosP = Math.cos(state.nondc.pitch), sinP = Math.sin(state.nondc.pitch);
+      const rx = wx * cosY - wz * sinY;
+      const rz1 = wx * sinY + wz * cosY;
+      const ry = wy * cosP - rz1 * sinP;
+      const rz = wy * sinP + rz1 * cosP;
+      const persp = 4.2 / (4.2 - rz * 0.35);
+      return { x: cx + rx * scale * persp, y: cy - ry * scale * persp, z: rz };
+    }
+
+    function drawMT3D() {
+      const canvas = document.getElementById('canvas-mt-3d');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr, h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const cx = w * 0.5, cy = h * 0.52;
+      const M = state.nondc.M;
+
+      // Sample 3D sphere and compute max |gamma^T M gamma| for normalization
+      const nTheta = 24, nPhi = 44;
+      const pts = [];
+      let maxAmp = 0.05;
+      for (let it = 0; it <= nTheta; it++) {
+        const th = (it / nTheta) * Math.PI;
+        const row = [];
+        for (let ip = 0; ip <= nPhi; ip++) {
+          const ph = (ip / nPhi) * Math.PI * 2;
+          const g1 = Math.sin(th) * Math.cos(ph);
+          const g2 = Math.sin(th) * Math.sin(ph);
+          const g3 = Math.cos(th);
+          const amp =
+            g1*(M[0][0]*g1 + M[0][1]*g2 + M[0][2]*g3) +
+            g2*(M[1][0]*g1 + M[1][1]*g2 + M[1][2]*g3) +
+            g3*(M[2][0]*g1 + M[2][1]*g2 + M[2][2]*g3);
+          if (Math.abs(amp) > maxAmp) maxAmp = Math.abs(amp);
+          row.push({ g1, g2, g3, amp });
+        }
+        pts.push(row);
+      }
+
+      const scale = Math.min(w, h) * 0.37;
+      const quads = [];
+      for (let it = 0; it < nTheta; it++) {
+        for (let ip = 0; ip < nPhi; ip++) {
+          const c00 = pts[it][ip], c10 = pts[it+1][ip], c11 = pts[it+1][ip+1], c01 = pts[it][ip+1];
+          const avgAmp = 0.25 * (c00.amp + c10.amp + c11.amp + c01.amp);
+          if (Math.abs(avgAmp) < maxAmp * 0.015) continue;
+
+          const p00 = projectMT3D(c00.g1*Math.abs(c00.amp)/maxAmp, c00.g2*Math.abs(c00.amp)/maxAmp, c00.g3*Math.abs(c00.amp)/maxAmp, cx, cy, scale);
+          const p10 = projectMT3D(c10.g1*Math.abs(c10.amp)/maxAmp, c10.g2*Math.abs(c10.amp)/maxAmp, c10.g3*Math.abs(c10.amp)/maxAmp, cx, cy, scale);
+          const p11 = projectMT3D(c11.g1*Math.abs(c11.amp)/maxAmp, c11.g2*Math.abs(c11.amp)/maxAmp, c11.g3*Math.abs(c11.amp)/maxAmp, cx, cy, scale);
+          const p01 = projectMT3D(c01.g1*Math.abs(c01.amp)/maxAmp, c01.g2*Math.abs(c01.amp)/maxAmp, c01.g3*Math.abs(c01.amp)/maxAmp, cx, cy, scale);
+
+          const zAvg = 0.25 * (p00.z + p10.z + p11.z + p01.z);
+          quads.push({ p00, p10, p11, p01, zAvg, pos: avgAmp >= 0, intensity: Math.min(1, Math.abs(avgAmp)/maxAmp) });
+        }
+      }
+      quads.sort((a, b) => a.zAvg - b.zAvg);
+
+      // Reference NED axes behind/around
+      const org = projectMT3D(0,0,0, cx, cy, scale);
+      const axN = projectMT3D(1.18,0,0, cx, cy, scale);
+      const axE = projectMT3D(0,1.18,0, cx, cy, scale);
+      const axD = projectMT3D(0,0,1.18, cx, cy, scale);
+
+      ctx.strokeStyle = '#94A3B8';
+      ctx.lineWidth = 1.3;
+      [[axN,'N'],[axE,'E'],[axD,'D']].forEach(([ax, lbl]) => {
+        ctx.beginPath(); ctx.moveTo(org.x, org.y); ctx.lineTo(ax.x, ax.y); ctx.stroke();
+        ctx.fillStyle = '#334155'; ctx.font = 'bold 11px "Inter", sans-serif';
+        ctx.fillText(lbl, ax.x + 4, ax.y + 4);
+      });
+
+      // Draw sorted quads
+      quads.forEach(q => {
+        const shade = 0.65 + 0.35 * ((q.zAvg + 1) * 0.5);
+        if (q.pos) {
+          const r = Math.round(220 * shade + 25), g = Math.round(45 * shade), b = Math.round(45 * shade);
+          ctx.fillStyle = `rgba(${r},${g},${b},0.88)`;
+          ctx.strokeStyle = 'rgba(153, 27, 27, 0.25)';
+        } else {
+          const r = Math.round(37 * shade), g = Math.round(99 * shade + 10), b = Math.round(235 * shade + 15);
+          ctx.fillStyle = `rgba(${r},${g},${b},0.88)`;
+          ctx.strokeStyle = 'rgba(30, 58, 138, 0.25)';
+        }
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(q.p00.x, q.p00.y);
+        ctx.lineTo(q.p10.x, q.p10.y);
+        ctx.lineTo(q.p11.x, q.p11.y);
+        ctx.lineTo(q.p01.x, q.p01.y);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      });
+
+      ctx.restore();
+    }
+
+    function drawNonDCBeachball() {
+      const canvas = document.getElementById('canvas-mt-beachball');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      const cx = w / 2, cy = h / 2, R = w * 0.43;
+      ctx.clearRect(0, 0, w, h);
+
+      const M = state.nondc.M;
+      const img = ctx.createImageData(w, h);
+      const data = img.data;
+
+      for (let py = 0; py < h; py++) {
+        for (let px = 0; px < w; px++) {
+          const X = (px - cx) / R;
+          const Y = (cy - py) / R;
+          const r2 = X*X + Y*Y;
+          if (r2 <= 1.0) {
+            const r = Math.sqrt(r2);
+            const sinIh = r * Math.sqrt(Math.max(0, 2 - r2));
+            const cosIh = 1 - r2;
+            const az = Math.atan2(X, Y);
+            const g1 = sinIh * Math.cos(az);
+            const g2 = sinIh * Math.sin(az);
+            const g3 = cosIh;
+            const ampP =
+              g1*(M[0][0]*g1 + M[0][1]*g2 + M[0][2]*g3) +
+              g2*(M[1][0]*g1 + M[1][1]*g2 + M[1][2]*g3) +
+              g3*(M[2][0]*g1 + M[2][1]*g2 + M[2][2]*g3);
+            const idx = (py * w + px) * 4;
+            if (ampP > 0.004) {
+              data[idx] = 220; data[idx+1] = 38; data[idx+2] = 38; data[idx+3] = 240;
+            } else {
+              data[idx] = 255; data[idx+1] = 255; data[idx+2] = 255; data[idx+3] = 255;
+            }
+          }
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+
+      ctx.strokeStyle = '#0F172A';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+
+      ctx.fillStyle = '#0F172A';
+      ctx.font = 'bold 11px "Inter", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('N', cx, cy - R - 5);
+    }
+
+    function drawHudsonPlot() {
+      const canvas = document.getElementById('canvas-mt-hudson');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr, h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const cx = w * 0.5, cy = h * 0.5;
+      const rx = w * 0.36, ry = h * 0.38;
+      const toPx = (u, v) => ({ x: cx + u * rx, y: cy - v * ry });
+
+      // Diamond boundary |u| + |v| = 1
+      const top = toPx(0, 1), right = toPx(1, 0), bot = toPx(0, -1), left = toPx(-1, 0);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(top.x, top.y);
+      ctx.lineTo(right.x, right.y);
+      ctx.lineTo(bot.x, bot.y);
+      ctx.lineTo(left.x, left.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Grid lines inside diamond (constant k and constant T)
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.lineWidth = 1;
+      [-0.5, 0, 0.5].forEach(k => {
+        const p1 = toPx(-(1 - Math.abs(k)), k);
+        const p2 = toPx(+(1 - Math.abs(k)), k);
+        ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+      });
+      ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(bot.x, bot.y); ctx.stroke();
+
+      // Landmarks
+      const marks = [
+        { u: 0, v: 0, lbl: 'DC', color: '#059669', dx: 7, dy: -6 },
+        { u: 0, v: 1, lbl: '+ISO (Exp)', color: '#DC2626', dx: 0, dy: -10, align: 'center' },
+        { u: 0, v: -1, lbl: '-ISO (Imp)', color: '#2563EB', dx: 0, dy: 14, align: 'center' },
+        { u: -1, v: 0, lbl: '+CLVD', color: '#D97706', dx: -6, dy: 4, align: 'right' },
+        { u: 1, v: 0, lbl: '-CLVD', color: '#D97706', dx: 6, dy: 4, align: 'left' },
+        { u: -4/9, v: 5/9, lbl: '+Crack', color: '#7C3AED', dx: -6, dy: -4, align: 'right' },
+        { u: 4/9, v: -5/9, lbl: '-Crack', color: '#7C3AED', dx: 6, dy: 8, align: 'left' }
+      ];
+      marks.forEach(m => {
+        const p = toPx(m.u, m.v);
+        ctx.fillStyle = m.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3.2, 0, Math.PI * 2); ctx.fill();
+        ctx.font = 'bold 10px "JetBrains Mono", sans-serif';
+        ctx.textAlign = m.align || 'left';
+        ctx.fillText(m.lbl, p.x + m.dx, p.y + m.dy);
+      });
+
+      // Current Source (u, v) = (T*(1-|k|), k)
+      const u = state.nondc.T * (1 - Math.abs(state.nondc.k));
+      const v = state.nondc.k;
+      const cur = toPx(u, v);
+
+      ctx.fillStyle = 'rgba(220, 38, 38, 0.20)';
+      ctx.beginPath(); ctx.arc(cur.x, cur.y, 12, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#DC2626';
+      ctx.beginPath(); ctx.arc(cur.x, cur.y, 5.5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function resetNonDCCam() {
+      state.nondc.yaw = -0.65;
+      state.nondc.pitch = 0.42;
+      drawMT3D();
+    }
+
+    // =========================================================================
+    // 5. Module 4: 9.5 Self-Similar Scaling & Stress Drop
+    // =========================================================================
+    function calcScalingPhysics(mw, dsMPa, mu) {
+      const m0 = Math.pow(10, 1.5 * mw + 9.1); // N·m
+      const dsPa = dsMPa * 1e6;
+      const rMeters = Math.pow((7 / 16) * (m0 / dsPa), 1 / 3);
+      const areaM2 = Math.PI * rMeters * rMeters;
+      const slipMeters = m0 / (mu * areaM2);
+      const strain = slipMeters / (2 * rMeters);
+      const energyJ = (dsPa / (2 * mu)) * m0;
+      return { m0, rMeters, diamKm: (2 * rMeters) / 1000, areaKm2: areaM2 / 1e6, slipMeters, strain, energyJ };
+    }
+
+    function setScalePreset(mw, dsMPa) {
+      document.getElementById('scl-mw').value = mw;
+      document.getElementById('scl-ds').value = Math.log10(dsMPa).toFixed(2);
+      updateScalingParams();
+    }
+
+    function updateScalingParams() {
+      state.scale.mw = parseFloat(document.getElementById('scl-mw').value);
+      state.scale.dsMPa = Math.pow(10, parseFloat(document.getElementById('scl-ds').value));
+      state.scale.mu = parseFloat(document.getElementById('scl-mu').value);
+
+      document.getElementById('scl-val-mw').textContent = state.scale.mw.toFixed(1);
+      document.getElementById('scl-val-ds').textContent = state.scale.dsMPa.toFixed(2) + ' MPa';
+
+      const ph = calcScalingPhysics(state.scale.mw, state.scale.dsMPa, state.scale.mu);
+      document.getElementById('scl-out-diam').textContent = ph.diamKm >= 1 ? ph.diamKm.toFixed(1) + ' km' : (ph.diamKm * 1000).toFixed(0) + ' m';
+      document.getElementById('scl-out-area').textContent = ph.areaKm2 >= 1 ? ph.areaKm2.toFixed(1) + ' km²' : (ph.areaKm2 * 1e6).toFixed(0) + ' m²';
+      document.getElementById('scl-out-slip').textContent = ph.slipMeters >= 0.1 ? ph.slipMeters.toFixed(2) + ' m' : (ph.slipMeters * 100).toFixed(1) + ' cm';
+      document.getElementById('scl-out-strain').textContent = formatSci(ph.strain);
+      document.getElementById('scl-out-energy').textContent = formatSci(ph.energyJ) + ' J';
+
+      drawScalingMap();
+      drawScalingLogLog();
+    }
+
+    function drawScalingMap() {
+      const canvas = document.getElementById('canvas-scale-map');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr, h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const ph = calcScalingPhysics(state.scale.mw, state.scale.dsMPa, state.scale.mu);
+      const diamKm = ph.diamKm;
+
+      // Choose auto-zoom reference landmark
+      let ref;
+      if (diamKm < 2.2) {
+        ref = {
+          nameZh: '标准足球场 (105 m × 68 m)', nameEn: 'Soccer Field (105 m × 68 m)',
+          lenKm: 0.105, widKm: 0.068,
+          viewKm: Math.max(0.6, diamKm * 2.1),
+          shape: 'field'
+        };
+      } else if (diamKm < 65) {
+        ref = {
+          nameZh: '北京四环路尺度 (~18 km × 15 km)', nameEn: 'Manhattan Island (21.6 km × 3.7 km)',
+          lenKm: 21.6, widKm: 3.7,
+          viewKm: Math.max(26, diamKm * 1.9),
+          shape: 'island'
+        };
+      } else {
+        ref = {
+          nameZh: '台湾岛尺度 (394 km × 144 km)', nameEn: 'Taiwan / San Andreas Segment (394 km)',
+          lenKm: 394, widKm: 144,
+          viewKm: Math.max(430, diamKm * 1.5),
+          shape: 'taiwan'
+        };
+      }
+
+      const pxPerKm = Math.min(w * 0.65, h * 0.72) / ref.viewKm;
+      const leftCx = w * 0.34, cy = h * 0.50;
+      const rightCx = w * 0.72;
+
+      // Fault patch on left (equivalent circle + 2:1 rectangle of same area)
+      const rPx = (diamKm * 0.5) * pxPerKm;
+      const rectW = Math.sqrt(2 * ph.areaKm2) * pxPerKm;
+      const rectH = rectW * 0.5;
+
+      // Rectangular rupture patch
+      ctx.fillStyle = 'rgba(220, 38, 38, 0.16)';
+      ctx.strokeStyle = '#DC2626';
+      ctx.lineWidth = 2;
+      ctx.fillRect(leftCx - rectW/2, cy - rectH/2, rectW, rectH);
+      ctx.strokeRect(leftCx - rectW/2, cy - rectH/2, rectW, rectH);
+
+      // Circular crack dashed outline
+      ctx.setLineDash([4, 3]);
+      ctx.strokeStyle = '#B91C1C';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(leftCx, cy, rPx, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Slip vector arrows across patch
+      const arrowLen = Math.min(36, Math.max(10, rectW * 0.25));
+      ctx.strokeStyle = '#991B1B';
+      ctx.fillStyle = '#991B1B';
+      ctx.lineWidth = 1.8;
+      [-0.25, 0.25].forEach(fy => {
+        const y = cy + rectH * fy;
+        ctx.beginPath(); ctx.moveTo(leftCx - arrowLen, y); ctx.lineTo(leftCx + arrowLen, y); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(leftCx + arrowLen + 4, y);
+        ctx.lineTo(leftCx + arrowLen - 3, y - 3.5);
+        ctx.lineTo(leftCx + arrowLen - 3, y + 3.5);
+        ctx.closePath(); ctx.fill();
+      });
+
+      ctx.fillStyle = '#991B1B';
+      ctx.font = 'bold 11.5px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'center';
+      const dimLbl = diamKm >= 1 ? `${diamKm.toFixed(1)} km` : `${(diamKm*1000).toFixed(0)} m`;
+      ctx.fillText((state.lang === 'zh' ? '断层破裂区 ' : 'Rupture ') + `2r = ${dimLbl}`, leftCx, cy + Math.max(rPx, rectH/2) + 18);
+
+      // Geographic reference on right
+      const refW = ref.widKm * pxPerKm;
+      const refH = ref.lenKm * pxPerKm;
+      ctx.fillStyle = 'rgba(5, 150, 105, 0.18)';
+      ctx.strokeStyle = '#059669';
+      ctx.lineWidth = 2;
+
+      if (ref.shape === 'field') {
+        ctx.fillRect(rightCx - refH/2, cy - refW/2, refH, refW);
+        ctx.strokeRect(rightCx - refH/2, cy - refW/2, refH, refW);
+        ctx.beginPath(); ctx.moveTo(rightCx, cy - refW/2); ctx.lineTo(rightCx, cy + refW/2); ctx.stroke();
+      } else if (ref.shape === 'island') {
+        ctx.save();
+        ctx.translate(rightCx, cy);
+        ctx.rotate(0.42);
+        ctx.beginPath();
+        ctx.roundRect(-refW/2, -refH/2, refW, refH, refW*0.45);
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+      } else {
+        // Simplified Taiwan-like leaf polygon
+        ctx.save();
+        ctx.translate(rightCx, cy);
+        ctx.rotate(0.26);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, refW*0.46, refH*0.5, 0, 0, Math.PI*2);
+        ctx.fill(); ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.fillStyle = '#065F46';
+      ctx.font = 'bold 11px "Inter", "Noto Sans SC", sans-serif';
+      ctx.fillText(state.lang === 'zh' ? ref.nameZh : ref.nameEn, rightCx, cy + Math.max(refH/2, 40) + 18);
+
+      // Bottom Slip D̄ Comparison Bar
+      const barY = h - 38;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.strokeStyle = '#CBD5E1';
+      ctx.lineWidth = 1;
+      ctx.fillRect(14, barY - 12, w - 28, 38);
+      ctx.strokeRect(14, barY - 12, w - 28, 38);
+
+      const slipCmp = ph.slipMeters < 0.05
+        ? (state.lang === 'zh' ? '≈ 硬币厚度 (数厘米)' : '≈ Coin / Finger width')
+        : ph.slipMeters < 1.0
+        ? (state.lang === 'zh' ? '≈ 膝盖到腰部高度' : '≈ Knee to Waist height')
+        : ph.slipMeters < 5.0
+        ? (state.lang === 'zh' ? '≈ 一至两层楼房高度' : '≈ 1–2 Story Building')
+        : (state.lang === 'zh' ? '≈ 3~10 层大楼级巨型错动！' : '≈ Multi-Story Building Offset!');
+
+      ctx.fillStyle = '#0F172A';
+      ctx.font = 'bold 11.5px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'left';
+      const slipStr = ph.slipMeters >= 0.1 ? `${ph.slipMeters.toFixed(2)} m` : `${(ph.slipMeters*100).toFixed(1)} cm`;
+      ctx.fillText((state.lang === 'zh' ? `平均错距 D̄ = ${slipStr}  ` : `Average Slip D̄ = ${slipStr}  `) + slipCmp, 24, barY + 11);
+
+      ctx.restore();
+    }
+
+    function drawScalingLogLog() {
+      const canvas = document.getElementById('canvas-scale-loglog');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr, h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const padL = 52, padR = 18, padT = 22, padB = 38;
+      const plotW = w - padL - padR, plotH = h - padT - padB;
+      const logRMin = 2.0, logRMax = 5.6; // 100 m to 400 km
+      const logMMin = 13.5, logMMax = 23.5;
+
+      const xOf = lr => padL + ((lr - logRMin) / (logRMax - logRMin)) * plotW;
+      const yOf = lm => padT + (1 - (lm - logMMin) / (logMMax - logMMin)) * plotH;
+
+      // Grid
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.lineWidth = 1;
+      [2, 3, 4, 5].forEach(lr => {
+        const x = xOf(lr);
+        ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + plotH); ctx.stroke();
+        ctx.fillStyle = '#64748B'; ctx.font = '10px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+        const lbl = lr === 2 ? '0.1 km' : lr === 3 ? '1 km' : lr === 4 ? '10 km' : '100 km';
+        ctx.fillText(lbl, x, h - 18);
+      });
+      for (let lm = 14; lm <= 22; lm += 2) {
+        const y = yOf(lm);
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + plotW, y); ctx.stroke();
+        ctx.fillStyle = '#64748B'; ctx.font = '10px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
+        ctx.fillText(`10^${lm}`, padL - 6, y + 3);
+      }
+
+      // Constant stress drop diagonal lines: M0 = (16/7) * ds * r^3
+      [0.1, 1, 3, 10, 100].forEach(ds => {
+        ctx.beginPath();
+        let started = false;
+        for (let lr = logRMin; lr <= logRMax; lr += 0.1) {
+          const lm = Math.log10((16/7) * ds * 1e6) + 3 * lr;
+          if (lm >= logMMin && lm <= logMMax) {
+            const x = xOf(lr), y = yOf(lm);
+            if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
+          }
+        }
+        ctx.strokeStyle = ds === 3 ? '#059669' : '#CBD5E1';
+        ctx.lineWidth = ds === 3 ? 2.2 : 1.2;
+        if (ds !== 3) ctx.setLineDash([4, 3]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Label near top or right edge
+        const rLabel = Math.pow(Math.pow(10, 22.4) / ((16/7)*ds*1e6), 1/3);
+        const lrLbl = Math.log10(rLabel);
+        if (lrLbl > logRMin + 0.2 && lrLbl < logRMax - 0.1) {
+          ctx.fillStyle = ds === 3 ? '#059669' : '#64748B';
+          ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText(`${ds} MPa`, xOf(lrLbl), yOf(22.5));
+        }
+      });
+
+      // Reference Earthquakes
+      const refs = [
+        { name: 'Parkfield (M6.0)', mw: 6.0, ds: 3.0 },
+        { name: 'Wenchuan (M7.9)',  mw: 7.9, ds: 4.0 },
+        { name: 'Tohoku (M9.1)',    mw: 9.1, ds: 3.5 }
+      ];
+      refs.forEach(rf => {
+        const p = calcScalingPhysics(rf.mw, rf.ds, 33e9);
+        const x = xOf(Math.log10(p.rMeters)), y = yOf(Math.log10(p.m0));
+        ctx.fillStyle = '#475569';
+        ctx.beginPath(); ctx.arc(x, y, 3.8, 0, Math.PI * 2); ctx.fill();
+        ctx.font = '10px "Inter", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(rf.name, x + 6, y + 3);
+      });
+
+      // Current User Point
+      const cur = calcScalingPhysics(state.scale.mw, state.scale.dsMPa, state.scale.mu);
+      const cxP = xOf(Math.log10(cur.rMeters)), cyP = yOf(Math.log10(cur.m0));
+      if (cxP >= padL && cxP <= padL + plotW && cyP >= padT && cyP <= padT + plotH) {
+        ctx.fillStyle = 'rgba(220, 38, 38, 0.22)';
+        ctx.beginPath(); ctx.arc(cxP, cyP, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#DC2626';
+        ctx.beginPath(); ctx.arc(cxP, cyP, 5.5, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 2; ctx.stroke();
+      }
+
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(padL, padT, plotW, plotH);
+
+      ctx.fillStyle = '#334155';
+      ctx.font = 'bold 11px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(state.lang === 'zh' ? '等效断层半径 r (km)' : 'Fault Radius r (km)', padL + plotW * 0.5, h - 4);
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // 6. Module 5: 9.4.3 Empirical Green's Function (EGF) Deconvolution
+    // =========================================================================
+    // Iterative Radix-2 Cooley-Tukey FFT
+    function fft(re, im, invert = false) {
+      const n = re.length;
+      for (let i = 1, j = 0; i < n; i++) {
+        let bit = n >> 1;
+        for (; j & bit; bit >>= 1) j ^= bit;
+        j ^= bit;
+        if (i < j) {
+          [re[i], re[j]] = [re[j], re[i]];
+          [im[i], im[j]] = [im[j], im[i]];
+        }
+      }
+      for (let len = 2; len <= n; len <<= 1) {
+        const ang = (2 * Math.PI / len) * (invert ? 1 : -1);
+        const wlenRe = Math.cos(ang), wlenIm = Math.sin(ang);
+        for (let i = 0; i < n; i += len) {
+          let wRe = 1, wIm = 0;
+          for (let j = 0; j < len / 2; j++) {
+            const uRe = re[i + j], uIm = im[i + j];
+            const vRe = re[i + j + len/2] * wRe - im[i + j + len/2] * wIm;
+            const vIm = re[i + j + len/2] * wIm + im[i + j + len/2] * wRe;
+            re[i + j] = uRe + vRe;
+            im[i + j] = uIm + vIm;
+            re[i + j + len/2] = uRe - vRe;
+            im[i + j + len/2] = uIm - vIm;
+            const nextWRe = wRe * wlenRe - wIm * wlenIm;
+            wIm = wRe * wlenIm + wIm * wlenRe;
+            wRe = nextWRe;
+          }
+        }
+      }
+      if (invert) {
+        for (let i = 0; i < n; i++) { re[i] /= n; im[i] /= n; }
+      }
+    }
+
+    function setEGFPreset(type) {
+      if (type === 'ideal') {
+        document.getElementById('egf-path').value = 0.70;
+        document.getElementById('egf-loc').value = 0;
+        document.getElementById('egf-mech').value = 0;
+        document.getElementById('egf-wl').value = 0.03;
+        document.getElementById('egf-noise').value = 0.02;
+      } else if (type === 'bad_loc') {
+        document.getElementById('egf-path').value = 0.70;
+        document.getElementById('egf-loc').value = 26;
+        document.getElementById('egf-mech').value = 0;
+      } else if (type === 'bad_mech') {
+        document.getElementById('egf-path').value = 0.70;
+        document.getElementById('egf-loc').value = 0;
+        document.getElementById('egf-mech').value = 74;
+      }
+      updateEGF();
+    }
+
+    function updateEGF() {
+      state.egf.stfType = document.getElementById('egf-stf-type').value;
+      state.egf.pathComplexity = parseFloat(document.getElementById('egf-path').value);
+      state.egf.locOffsetKm = parseFloat(document.getElementById('egf-loc').value);
+      state.egf.mechMismatchDeg = parseFloat(document.getElementById('egf-mech').value);
+      state.egf.waterLevel = parseFloat(document.getElementById('egf-wl').value);
+      state.egf.noise = parseFloat(document.getElementById('egf-noise').value);
+
+      document.getElementById('egf-val-path').textContent = Math.round(state.egf.pathComplexity * 100) + '%';
+      document.getElementById('egf-val-loc').textContent = state.egf.locOffsetKm + ' km';
+      document.getElementById('egf-val-mech').textContent = state.egf.mechMismatchDeg + '°';
+      document.getElementById('egf-val-wl').textContent = `${state.egf.waterLevel.toFixed(3)} / ${Math.round(state.egf.noise*100)}%`;
+
+      computeAndDrawEGF();
+    }
+
+    function computeAndDrawEGF() {
+      const N = 512;
+      const dt = 0.0625; // 32 s total buffer
+      const stfTrue = new Float64Array(N);
+      const gMain = new Float64Array(N);
+      const gEGF = new Float64Array(N);
+
+      // Deterministic pseudo-random generator for reproducible coda
+      let seed = 4219;
+      const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+
+      // 1. True Mainshock STF starting at t = 0.6 s
+      for (let i = 0; i < N; i++) {
+        const t = i * dt;
+        if (state.egf.stfType === 'double') {
+          stfTrue[i] = 1.0 * Math.exp(-Math.pow((t - 1.6)/0.45, 2)) + 0.78 * Math.exp(-Math.pow((t - 4.0)/0.55, 2));
+        } else if (state.egf.stfType === 'triple') {
+          stfTrue[i] = 0.65 * Math.exp(-Math.pow((t - 1.3)/0.38, 2)) + 1.0 * Math.exp(-Math.pow((t - 3.1)/0.42, 2)) + 0.55 * Math.exp(-Math.pow((t - 5.2)/0.50, 2));
+        } else {
+          if (t > 0.6) {
+            const u = (t - 0.6) / 0.9;
+            stfTrue[i] = u * Math.exp(1 - u);
+          }
+        }
+      }
+
+      // 2. Build Earth Path Green's function (direct P + Moho/crustal reflections + coda)
+      const comp = state.egf.pathComplexity;
+      const locShift = state.egf.locOffsetKm * 0.045; // time shift of secondary arrivals
+      const mechRad = state.egf.mechMismatchDeg * Math.PI / 180;
+      const pPol = Math.cos(mechRad * 1.4); // crosses zero / flips sign as mismatch grows
+      const sPol = Math.cos(mechRad * 0.9 + 0.25 * Math.sin(mechRad));
+
+      const broadbandPulse = (t, t0, w) => {
+        const u = (t - t0) / w;
+        return Math.exp(-u * u) - 0.35 * Math.exp(-Math.pow((t - (t0 + w * 1.1)) / (w * 1.1), 2));
+      };
+      const ricker = (t, t0, w) => {
+        const u = (t - t0) / w;
+        return (1 - 2 * u * u) * Math.exp(-u * u);
+      };
+
+      // Generate scattering coda spikes
+      const codaSpikes = [];
+      for (let k = 0; k < 28; k++) {
+        codaSpikes.push({
+          t: 4.0 + k * 0.44 + rand() * 0.3,
+          amp: (rand() * 2 - 1) * 0.65 * Math.exp(-k * 0.065),
+          shiftFactor: (rand() * 2 - 1) * 1.1,
+          mechFactor: (rand() > 0.5 ? 1 : -1)
+        });
+      }
+
+      for (let i = 0; i < N; i++) {
+        const t = i * dt;
+        // Mainshock path (broadband direct P + depth/Moho reflections + coda)
+        let gm = 1.0 * broadbandPulse(t, 2.5, 0.24)
+               + comp * (0.85 * ricker(t, 4.1, 0.28) - 0.72 * ricker(t, 5.9, 0.30));
+        // EGF path (modulated by location offset & mechanism mismatch)
+        let ge = 1.0 * pPol * broadbandPulse(t, 2.5 + 0.15 * locShift, 0.24)
+               + comp * (0.85 * sPol * ricker(t, 4.1 + 1.3 * locShift, 0.28) - 0.72 * sPol * ricker(t, 5.9 - 1.1 * locShift, 0.30));
+
+        if (comp > 0.02) {
+          for (let k = 0; k < codaSpikes.length; k++) {
+            const sp = codaSpikes[k];
+            gm += comp * sp.amp * ricker(t, sp.t, 0.24);
+            const egfAmp = sp.amp * (pPol * 0.6 + sp.mechFactor * Math.sin(mechRad) * 0.55);
+            ge += comp * egfAmp * ricker(t, sp.t + sp.shiftFactor * locShift, 0.24);
+          }
+        }
+        // Small noise
+        const n2 = (rand() * 2 - 1) * state.egf.noise * 0.6;
+        gMain[i] = gm;
+        gEGF[i] = ge + n2;
+      }
+
+      // 3. Convolve stfTrue * gMain -> uMain in frequency domain (+ noise)
+      const stfRe = Float64Array.from(stfTrue), stfIm = new Float64Array(N);
+      const gmRe = Float64Array.from(gMain), gmIm = new Float64Array(N);
+      const geRe = Float64Array.from(gEGF), geIm = new Float64Array(N);
+      fft(stfRe, stfIm, false);
+      fft(gmRe, gmIm, false);
+      fft(geRe, geIm, false);
+
+      const uRe = new Float64Array(N), uIm = new Float64Array(N);
+      for (let k = 0; k < N; k++) {
+        uRe[k] = stfRe[k] * gmRe[k] - stfIm[k] * gmIm[k];
+        uIm[k] = stfRe[k] * gmIm[k] + stfIm[k] * gmRe[k];
+      }
+
+      const uTimeRe = Float64Array.from(uRe), uTimeIm = Float64Array.from(uIm);
+      fft(uTimeRe, uTimeIm, true);
+      // Add time-domain noise to mainshock and re-FFT
+      let maxU = 0.01;
+      for (let i = 0; i < N; i++) {
+        uTimeRe[i] += (rand() * 2 - 1) * state.egf.noise * 1.8;
+        if (Math.abs(uTimeRe[i]) > maxU) maxU = Math.abs(uTimeRe[i]);
+      }
+      const uNoisyRe = Float64Array.from(uTimeRe), uNoisyIm = new Float64Array(N);
+      fft(uNoisyRe, uNoisyIm, false);
+
+      // 4. Water-level spectral division: STF_rec = U * conj(G_egf) / max(|G_egf|^2, wl * max|G_egf|^2) * GaussianLP
+      let maxPower = 1e-12;
+      const gPower = new Float64Array(N);
+      for (let k = 0; k < N; k++) {
+        gPower[k] = geRe[k]*geRe[k] + geIm[k]*geIm[k];
+        if (gPower[k] > maxPower) maxPower = gPower[k];
+      }
+      const wlFloor = state.egf.waterLevel * maxPower;
+      const recRe = new Float64Array(N), recIm = new Float64Array(N);
+      const fNyq = 0.5 / dt; // 8 Hz
+
+      for (let k = 0; k < N; k++) {
+        const freqIdx = k <= N / 2 ? k : N - k;
+        const f = (freqIdx / N) * (1 / dt);
+        const lp = Math.exp(-Math.pow(f / (fNyq * 0.45), 2)); // Gaussian lowpass to match pulse bandwidth
+        const denom = Math.max(gPower[k], wlFloor);
+        const numRe = uNoisyRe[k] * geRe[k] + uNoisyIm[k] * geIm[k];
+        const numIm = uNoisyIm[k] * geRe[k] - uNoisyRe[k] * geIm[k];
+        recRe[k] = (numRe / denom) * lp;
+        recIm[k] = (numIm / denom) * lp;
+      }
+
+      const recTimeRe = Float64Array.from(recRe), recTimeIm = Float64Array.from(recIm);
+      fft(recTimeRe, recTimeIm, true);
+
+      // Normalize recovered STF to match True STF peak for shape comparison
+      let maxTrue = 0.01, maxRec = 0.01;
+      for (let i = 0; i < 160; i++) {
+        if (Math.abs(stfTrue[i]) > maxTrue) maxTrue = Math.abs(stfTrue[i]);
+        if (Math.abs(recTimeRe[i]) > maxRec) maxRec = Math.abs(recTimeRe[i]);
+      }
+      // Compute Pearson correlation on [0, 8s] (indices 0..128)
+      const M = 135;
+      let sumT = 0, sumR = 0;
+      for (let i = 0; i < M; i++) { sumT += stfTrue[i]; sumR += recTimeRe[i]; }
+      const meanT = sumT / M, meanR = sumR / M;
+      let numC = 0, denT = 0, denR = 0;
+      for (let i = 0; i < M; i++) {
+        const dtV = stfTrue[i] - meanT, drV = recTimeRe[i] - meanR;
+        numC += dtV * drV; denT += dtV * dtV; denR += drV * drV;
+      }
+      const corr = (denT > 1e-9 && denR > 1e-9) ? (numC / Math.sqrt(denT * denR)) : 0;
+
+      const badge = document.getElementById('egf-corr-badge');
+      badge.textContent = `Corr r = ${corr.toFixed(2)}`;
+      badge.className = corr > 0.85
+        ? 'px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-mono font-bold'
+        : corr > 0.55
+        ? 'px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-xs font-mono font-bold'
+        : 'px-2.5 py-1 rounded-lg bg-red-50 text-red-800 border border-red-200 text-xs font-mono font-bold';
+
+      drawEGFTraces(uTimeRe, gEGF, stfTrue, recTimeRe, dt, maxRec, maxTrue);
+      drawEGFSpectra(uNoisyRe, uNoisyIm, geRe, geIm, recRe, recIm, wlFloor, dt, N);
+    }
+
+    function drawEGFTraces(uMain, gEGF, stfTrue, recSTF, dt, maxRec, maxTrue) {
+      const canvas = document.getElementById('canvas-egf-traces');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr, h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const padL = 14, padR = 14;
+      const plotW = w - padL - padR;
+      const rowH = h / 3;
+
+      const drawWave = (arr, nPts, yMid, scale, color, lw, dashed = false, wrapPre = false) => {
+        ctx.save();
+        if (dashed) ctx.setLineDash([5, 4]);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lw;
+        ctx.beginPath();
+        if (wrapPre) {
+          // Display -1.5s .. +9.5s (total 11s)
+          const preN = Math.round(1.5 / dt);
+          const postN = Math.round(9.5 / dt);
+          const tot = preN + postN;
+          for (let k = 0; k < tot; k++) {
+            const idx = (k < preN) ? (arr.length - preN + k) : (k - preN);
+            const x = padL + (k / (tot - 1)) * plotW;
+            const y = yMid - Math.max(-1.15, Math.min(1.15, arr[idx] * scale)) * (rowH * 0.36);
+            if (k === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+        } else {
+          for (let i = 0; i < nPts; i++) {
+            const x = padL + (i / (nPts - 1)) * plotW;
+            const y = yMid - Math.max(-1.1, Math.min(1.1, arr[i] * scale)) * (rowH * 0.36);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+        }
+        ctx.stroke();
+        ctx.restore();
+      };
+
+      const nSeis = Math.round(22 / dt); // 22 s seismogram
+      let maxU = 0.01, maxG = 0.01;
+      for (let i = 0; i < nSeis; i++) {
+        if (Math.abs(uMain[i]) > maxU) maxU = Math.abs(uMain[i]);
+        if (Math.abs(gEGF[i]) > maxG) maxG = Math.abs(gEGF[i]);
+      }
+
+      // Row 1: Mainshock
+      const y1 = rowH * 0.56;
+      ctx.strokeStyle = '#CBD5E1'; ctx.beginPath(); ctx.moveTo(padL, y1); ctx.lineTo(w - padR, y1); ctx.stroke();
+      drawWave(uMain, nSeis, y1, 1 / maxU, '#0F172A', 1.8);
+      ctx.fillStyle = '#0F172A'; ctx.font = 'bold 11.5px "Inter", "Noto Sans SC", sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText(state.lang === 'zh' ? '1. 主震观测波形 U_main(t) = STF * G_path (0 ~ 22 s)' : '1. Mainshock Seismogram U_main(t) = STF * G_path (0–22 s)', padL + 2, 16);
+
+      // Row 2: EGF
+      const y2 = rowH * 1.56;
+      ctx.strokeStyle = '#CBD5E1'; ctx.beginPath(); ctx.moveTo(padL, y2); ctx.lineTo(w - padR, y2); ctx.stroke();
+      drawWave(gEGF, nSeis, y2, 1 / maxG, '#059669', 1.8);
+      ctx.fillStyle = '#059669'; ctx.font = 'bold 11.5px "Inter", "Noto Sans SC", sans-serif';
+      ctx.fillText(state.lang === 'zh' ? '2. 小震经验格林函数 g_EGF(t) ≈ δ(t) * G_path (0 ~ 22 s)' : '2. Small Earthquake EGF g_EGF(t) ≈ δ(t) * G_path (0–22 s)', padL + 2, rowH + 16);
+
+      // Row 3: Recovered STF vs True STF
+      const y3 = rowH * 2.66;
+      ctx.fillStyle = '#EFF6FF';
+      ctx.fillRect(4, rowH * 2 + 2, w - 8, rowH - 6);
+      ctx.strokeStyle = '#93C5FD'; ctx.strokeRect(4, rowH * 2 + 2, w - 8, rowH - 6);
+      ctx.strokeStyle = '#CBD5E1'; ctx.beginPath(); ctx.moveTo(padL, y3); ctx.lineTo(w - padR, y3); ctx.stroke();
+
+      drawWave(recSTF, 0, y3, 1 / maxRec, '#2563EB', 2.6, false, true);
+      drawWave(stfTrue, 0, y3, 1 / maxTrue, '#DC2626', 2.0, true, true);
+
+      ctx.fillStyle = '#1E3A8A'; ctx.font = 'bold 11.5px "Inter", "Noto Sans SC", sans-serif';
+      ctx.fillText(state.lang === 'zh' ? '3. 反褶积提取结果：蓝色实线 = 恢复 STF(t)  |  红色虚线 = 真实 STF(t) (−1.5 ~ 9.5 s)' : '3. Deconvolved STF: Solid Blue = Recovered  |  Dashed Red = True (−1.5 to 9.5 s)', padL + 2, rowH * 2 + 18);
+
+      ctx.restore();
+    }
+
+    function drawEGFSpectra(uRe, uIm, geRe, geIm, recRe, recIm, wlFloor, dt, N) {
+      const canvas = document.getElementById('canvas-egf-spec');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const w = canvas.width / dpr, h = canvas.height / dpr;
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, w, h);
+
+      const padL = 46, padR = 16, padT = 26, padB = 38;
+      const plotW = w - padL - padR, plotH = h - padT - padB;
+      const maxK = N / 2;
+      const df = 1 / (N * dt);
+      const fMax = 5.0;
+      const kMax = Math.min(maxK, Math.floor(fMax / df));
+
+      const xOf = f => padL + (f / fMax) * plotW;
+
+      // Compute normalized log spectra
+      const uLog = [], gLog = [], rLog = [];
+      let uPeak = 1e-9, gPeak = 1e-9, rPeak = 1e-9;
+      for (let k = 0; k <= kMax; k++) {
+        const ua = Math.hypot(uRe[k], uIm[k]);
+        const ga = Math.hypot(geRe[k], geIm[k]);
+        const ra = Math.hypot(recRe[k], recIm[k]);
+        if (ua > uPeak) uPeak = ua;
+        if (ga > gPeak) gPeak = ga;
+        if (ra > rPeak) rPeak = ra;
+      }
+      for (let k = 0; k <= kMax; k++) {
+        uLog.push(Math.max(-3.5, Math.log10(Math.hypot(uRe[k], uIm[k]) / uPeak + 1e-4)));
+        gLog.push(Math.max(-3.5, Math.log10(Math.hypot(geRe[k], geIm[k]) / gPeak + 1e-4)));
+        rLog.push(Math.max(-3.5, Math.log10(Math.hypot(recRe[k], recIm[k]) / rPeak + 1e-4)));
+      }
+      const wlLog = Math.max(-3.5, Math.log10(Math.sqrt(wlFloor) / gPeak + 1e-4));
+      const yOf = lg => padT + (1 - (lg - (-3.5)) / 3.7) * plotH;
+
+      // Grid
+      ctx.strokeStyle = '#E2E8F0';
+      ctx.lineWidth = 1;
+      [0, 1, 2, 3, 4, 5].forEach(f => {
+        const x = xOf(f);
+        ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT + plotH); ctx.stroke();
+        ctx.fillStyle = '#64748B'; ctx.font = '10px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+        ctx.fillText(f + ' Hz', x, h - 18);
+      });
+      [-3, -2, -1, 0].forEach(ly => {
+        const y = yOf(ly);
+        ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + plotW, y); ctx.stroke();
+        ctx.fillStyle = '#64748B'; ctx.font = '10px "JetBrains Mono", monospace'; ctx.textAlign = 'right';
+        ctx.fillText(`10^${ly}`, padL - 6, y + 3);
+      });
+
+      const plotArr = (arr, color, lw) => {
+        ctx.beginPath();
+        for (let k = 0; k <= kMax; k++) {
+          const x = xOf(k * df), y = yOf(arr[k]);
+          if (k === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.stroke();
+      };
+
+      plotArr(uLog, '#0F172A', 1.6);
+      plotArr(gLog, '#059669', 1.8);
+      plotArr(rLog, '#2563EB', 2.4);
+
+      // Water-level horizontal line
+      const yWl = yOf(wlLog);
+      ctx.strokeStyle = '#DC2626';
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([5, 3]);
+      ctx.beginPath(); ctx.moveTo(padL, yWl); ctx.lineTo(padL + plotW, yWl); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#DC2626';
+      ctx.font = 'bold 10px "Inter", sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('Water-level floor', padL + plotW - 4, yWl - 4);
+
+      // Legend
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.fillRect(padL + plotW - 142, padT + 6, 136, 56);
+      ctx.strokeStyle = '#CBD5E1';
+      ctx.strokeRect(padL + plotW - 142, padT + 6, 136, 56);
+      ctx.font = 'bold 10px "Inter", sans-serif'; ctx.textAlign = 'left';
+      ctx.fillStyle = '#0F172A'; ctx.fillText('— |U_main(f)|', padL + plotW - 134, padT + 20);
+      ctx.fillStyle = '#059669'; ctx.fillText('— |g_EGF(f)|',  padL + plotW - 134, padT + 36);
+      ctx.fillStyle = '#2563EB'; ctx.fillText('— |STF_rec(f)|', padL + plotW - 134, padT + 52);
+
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(padL, padT, plotW, plotH);
+
+      ctx.fillStyle = '#334155';
+      ctx.font = 'bold 11px "Inter", "Noto Sans SC", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(state.lang === 'zh' ? '频率 Frequency (Hz)' : 'Frequency (Hz)', padL + plotW * 0.5, h - 4);
+      ctx.restore();
+    }
+
+    // =========================================================================
+    // 7. Pointer Events, Animation Loop & Initialization
+    // =========================================================================
+    function setupInteractions() {
+      document.getElementById('btn-lang-zh').addEventListener('click', () => window.setLanguage('zh'));
+      document.getElementById('btn-lang-en').addEventListener('click', () => window.setLanguage('en'));
+
+      // 3D drag rotation for Module 3
+      const c3d = document.getElementById('canvas-mt-3d');
+      const getPos = e => e.touches ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+
+      c3d.addEventListener('mousedown', e => {
+        state.nondc.dragging = true;
+        const p = getPos(e);
+        state.nondc.lastX = p.x; state.nondc.lastY = p.y;
+      });
+      window.addEventListener('mousemove', e => {
+        if (!state.nondc.dragging) return;
+        const p = getPos(e);
+        state.nondc.yaw += (p.x - state.nondc.lastX) * 0.012;
+        state.nondc.pitch = Math.max(-1.35, Math.min(1.35, state.nondc.pitch + (p.y - state.nondc.lastY) * 0.012));
+        state.nondc.lastX = p.x; state.nondc.lastY = p.y;
+        drawMT3D();
+      });
+      window.addEventListener('mouseup', () => { state.nondc.dragging = false; });
+      c3d.addEventListener('touchstart', e => {
+        state.nondc.dragging = true;
+        const p = getPos(e);
+        state.nondc.lastX = p.x; state.nondc.lastY = p.y;
+      }, { passive: true });
+      window.addEventListener('touchmove', e => {
+        if (!state.nondc.dragging) return;
+        const p = getPos(e);
+        state.nondc.yaw += (p.x - state.nondc.lastX) * 0.012;
+        state.nondc.pitch = Math.max(-1.35, Math.min(1.35, state.nondc.pitch + (p.y - state.nondc.lastY) * 0.012));
+        state.nondc.lastX = p.x; state.nondc.lastY = p.y;
+        drawMT3D();
+      }, { passive: true });
+      window.addEventListener('touchend', () => { state.nondc.dragging = false; });
+    }
+
+    let lastTs = 0;
+    function animationLoop(ts) {
+      const dt = lastTs ? Math.min(0.05, (ts - lastTs) / 1000) : 0.016;
+      lastTs = ts;
+
+      if (state.activeTab === 'tab-directivity' && state.dir.playing) {
+        const vr = state.dir.vrRatio * state.dir.c;
+        const maxT = (state.dir.length / vr) + 38;
+        state.dir.animTime += dt * 11.0; // real-time sped up ~11x for smooth pedagogy
+        if (state.dir.animTime > maxT) {
+          state.dir.animTime = 0;
+        }
+        drawDirectivityMap();
+      }
+      requestAnimationFrame(animationLoop);
+    }
+
+    window.addEventListener('resize', () => {
+      resizeAllCanvases();
+      renderActiveTab();
+    });
+
+    function initApp() {
+      resizeAllCanvases();
+      setupInteractions();
+      updateDirectivityParams();
+      updateSpectraParams();
+      updateNonDC();
+      updateScalingParams();
+      updateEGF();
+      // Start with an active directivity demo
+      state.dir.animTime = 24.0;
+      state.dir.playing = true;
+      window.setLanguage('zh');
+      requestAnimationFrame(animationLoop);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
